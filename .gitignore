@@ -1,0 +1,10 @@
+__pycache__/
+*.pyc
+.venv/
+build/
+dist/
+*.spec
+*.sqlite*
+*.dem
+*.dem.bz2
+.validation/

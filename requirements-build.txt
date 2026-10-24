@@ -1,0 +1,2 @@
+# Runtime uses only the Python standard library. Build tooling is optional.
+pyinstaller==6.21.0
