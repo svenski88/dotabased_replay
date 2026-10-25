@@ -329,6 +329,12 @@ API handling was validated with mocked responses. Live match/profile requests
 were not performed during implementation; manual API and actual client playback
 checks remain for the operator.
 
+Scrollbars keep the dark palette when their content fits completely, including
+disabled, hover and pressed states. The blue Replay mark reuses the website's
+classic DotaBASED geometry in the header, default window/dialog icon and packaged
+Windows executable. Asset provenance and optional regeneration instructions are
+in `assets/README.md`; runtime branding needs no extra dependencies.
+
 The supplied libraries were checked on 2026-10-24: 1,054 files, 1,052 unique
 entries, 1,024 unique matches with player summaries and 160 league matches. Two
 matches have duplicate copies. Twenty-eight auto recordings have no usable Dota

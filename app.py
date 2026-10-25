@@ -9,6 +9,7 @@ import threading
 import tkinter as tk
 from tkinter import filedialog, messagebox, simpledialog, ttk
 import webbrowser
+from branding import apply_window_icon, brand_root, set_windows_identity
 
 from library import DEFAULT_CLIENTS, Store, filter_matches, format_size, launch, note_preview, presence
 from delete_dialog import DeleteDialog
@@ -96,6 +97,7 @@ class ReplayApp:
         self.avatar_url = ""
         self.sort_column, self.sort_reverse = "match", True
         self.root.title("DotaBased Replay")
+        self.window_icons = apply_window_icon(self.root)
         self.root.geometry(store.get_pref("geometry", "1540x920"))
         self.root.minsize(1100, 720)
         self.root.configure(bg=BG)
@@ -114,7 +116,7 @@ class ReplayApp:
         style.configure("Panel.TFrame", background=PANEL)
         style.configure("TLabel", background=BG, foreground=FG)
         style.configure("Muted.TLabel", foreground=MUTED)
-        style.configure("Brand.TLabel", font=("Segoe UI", 23, "bold"), foreground=ACCENT)
+        style.configure("Brand.TLabel", font=("Segoe UI", 23, "bold"), foreground="#75c7ff")
         style.configure("Section.TLabel", font=("Segoe UI", 11, "bold"))
         style.configure("TButton", background="#253447", foreground=FG, padding=(10, 7), borderwidth=0)
         style.map("TButton", background=[("active", "#36516a"), ("disabled", "#202936")], foreground=[("disabled", "#758497")])
@@ -131,13 +133,25 @@ class ReplayApp:
         style.map("Treeview", background=[("selected", "#244c59")], foreground=[("selected", "#ffffff")])
         style.configure("Treeview.Heading", background="#233040", foreground=MUTED, padding=(5, 8), font=("Segoe UI", 9, "bold"))
         style.configure("TPanedwindow", background=BG)
-        style.configure("TScrollbar", background="#293949", troughcolor=BG, borderwidth=0)
+        # Clam's global map otherwise replaces fully visible/disabled bars with
+        # classic grey, even when the base scrollbar background is configured.
+        style.configure("TScrollbar", background="#293949", troughcolor=BG,
+                        arrowcolor=MUTED, bordercolor=BG, lightcolor="#293949",
+                        darkcolor="#293949", borderwidth=0)
+        for option in ("background", "lightcolor", "darkcolor"):
+            style.map("TScrollbar", **{option: [("disabled", "#202b38"),
+                      ("pressed", "#4b6b87"), ("active", "#3b536a")]})
+        style.map("TScrollbar", arrowcolor=[("disabled", "#536479"), ("active", FG)],
+                  troughcolor=[("disabled", BG), ("active", BG)],
+                  bordercolor=[("disabled", BG), ("active", BG)])
         self.root.option_add("*TCombobox*Listbox.background", PANEL)
         self.root.option_add("*TCombobox*Listbox.foreground", FG)
 
     def build(self):
         header = ttk.Frame(self.root, padding=(22, 16, 22, 10))
         header.pack(fill="x")
+        self.brand_mark = tk.PhotoImage(master=self.root, file=str(brand_root() / "replay-mark-48.png"))
+        ttk.Label(header, image=self.brand_mark).pack(side="left", padx=(0, 10))
         ttk.Label(header, text="DotaBased / Replay", style="Brand.TLabel").pack(side="left")
         ttk.Button(header, text="Libraries & clients", command=self.settings).pack(side="right", padx=(8, 0))
         self.scan_button = ttk.Button(header, text="Rescan library", style="Accent.TButton", command=self.scan)
@@ -822,6 +836,7 @@ def main():
     parser.add_argument("--database", type=Path, help="Override the local SQLite database path")
     parser.add_argument("--smoke", action="store_true", help="Open, scan and close after five seconds for UI verification")
     args = parser.parse_args()
+    set_windows_identity()
     root = tk.Tk()
     app = ReplayApp(root, Store(args.database))
     if args.smoke:

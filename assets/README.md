@@ -12,3 +12,25 @@ them.
 
 The runtime loads these local files only. PyInstaller includes this directory
 through `build.ps1`.
+
+# Replay application brand
+
+`brand/replay-mark.svg` derives from the website's
+`dotabased/public/assets/dotabased-mark-prism-classic.svg`. It retains the exact
+rounded tile and rune paths, with a blue/cyan frame (`#2589ff` to `#42d5ff`),
+pale blue rune (`#d3f3ff` to `#6dbdff`) and blue-black tile (`#101b2b`).
+No sibling website assets are modified. PNG exports are transparent and range
+from 16 to 512 pixels; `replay.ico` contains seven frames from 16 to 256 pixels.
+
+The header uses the 48px PNG. Tk uses multiple PNG sizes for its default window
+and dialog icon; the Windows executable embeds the ICO. All are bundled offline.
+To regenerate after editing the SVG:
+
+```powershell
+node scripts/build_brand_assets.cjs
+```
+
+This developer-only script uses Node, Microsoft Edge and Playwright. It defaults
+to the existing workspace `../dotabased/node_modules/playwright`; pass
+`--playwright C:/path/to/node_modules/playwright` to use another installed copy.
+No browser, Node, renderer or Python image package is required by app recipients.

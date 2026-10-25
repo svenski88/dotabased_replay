@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <title>DotaBASED Replay Blue Mark</title>
+  <defs>
+    <linearGradient id="classic-frame" x1="32" y1="7" x2="32" y2="57" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#2589ff"/>
+      <stop offset="1" stop-color="#42d5ff"/>
+    </linearGradient>
+    <linearGradient id="classic-rune" x1="32" y1="16" x2="32" y2="48" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#d3f3ff"/>
+      <stop offset="1" stop-color="#6dbdff"/>
+    </linearGradient>
+    <filter id="classic-glow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="1.4" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  <rect x="5" y="5" width="54" height="54" rx="11" fill="#101b2b"/>
+  <rect
+    x="6.5"
+    y="6.5"
+    width="51"
+    height="51"
+    rx="9.5"
+    fill="none"
+    stroke="url(#classic-frame)"
+    stroke-width="3"
+  />
+  <g fill="url(#classic-rune)" filter="url(#classic-glow)">
+    <path d="M48.92 38.87l-3.2 7.52A1 1 0 0 1 44.8 47h-5.33a1 1 0 0 1-.77-.36L15.23 18.72a1 1 0 0 1 .53-1.62l4.26-1.07a1 1 0 0 1 .86.18l27.73 21.48c.36.28.49.77.31 1.18z"/>
+    <path d="M46.99 19.41l-1.11 6.75a1 1 0 0 1-1.6.64l-8.88-6.75a1 1 0 0 1 .28-1.75l6.67-2.25a1 1 0 0 1 .88.12l3.33 2.25c.32.22.49.61.43.99z"/>
+    <path d="M27.97 45.03a1 1 0 0 1-.65.72l-6.6 2.2a1 1 0 0 1-.92-.15l-4.4-3.3a1 1 0 0 1-.36-1.07l2.2-7.7a1 1 0 0 1 1.67-.44l8.8 8.8c.24.25.34.6.26.94z"/>
+  </g>
+</svg>

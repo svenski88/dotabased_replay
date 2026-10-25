@@ -7,7 +7,7 @@ try {
   python -m PyInstaller --version
   if ($LASTEXITCODE -ne 0) { throw 'Install build tooling first: python -m pip install -r requirements-build.txt' }
   $bundleMode = if ($OneFile) { '--onefile' } else { '--onedir' }
-  python -m PyInstaller --noconfirm --clean --windowed $bundleMode --add-data 'assets:assets' --add-data 'third_party:third_party' --add-binary 'bin/replay-parser.exe:bin' --name DotaBasedReplay app.py
+  python -m PyInstaller --noconfirm --clean --windowed $bundleMode --icon 'assets/brand/replay.ico' --add-data 'assets:assets' --add-data 'third_party:third_party' --add-binary 'bin/replay-parser.exe:bin' --name DotaBasedReplay app.py
   if ($LASTEXITCODE -ne 0) { throw 'PyInstaller build failed' }
   if ($OneFile) {
     Write-Host 'Built dist/DotaBasedReplay.exe'
