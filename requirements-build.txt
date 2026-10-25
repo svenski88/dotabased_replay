@@ -1,2 +1,4 @@
 # Runtime uses only the Python standard library. Build tooling is optional.
 pyinstaller==6.21.0
+# Explicit for release PE/icon verification (also used by PyInstaller on Windows).
+pefile==2024.8.26

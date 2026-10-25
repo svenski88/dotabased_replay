@@ -32,7 +32,7 @@ def main():
             if path.is_file() and not module.get("Main"):
                 notices.append(f"{module['Path']} {module.get('Version', '')} — {name}\n{path.read_text(encoding='utf-8')}\n")
     go_root = Path(subprocess.check_output([go, "env", "GOROOT"], env=env, text=True).strip())
-    notices.append("Go runtime\n" + (go_root / "LICENSE").read_text())
+    notices.append("Go runtime\n" + (go_root / "LICENSE").read_text(encoding="utf-8"))
     licenses = ROOT / "third_party"
     licenses.mkdir(exist_ok=True)
     (licenses / "parser-licenses.txt").write_text("\n".join(notices), encoding="utf-8")

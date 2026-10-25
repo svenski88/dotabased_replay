@@ -1,0 +1,110 @@
+name: Windows release
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Artifact version (build only; does not publish a release)'
+        required: true
+        default: '1.0-test'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: windows-release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: windows-2025
+    timeout-minutes: 30
+    defaults:
+      run:
+        shell: pwsh
+    env:
+      PYTHONUTF8: '1'
+      RELEASE_VERSION: ${{ github.event_name == 'push' && github.ref_name || inputs.version }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: '3.12'
+          architecture: x64
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version: '1.27.3'
+          cache: false
+      - name: Validate version
+        run: |
+          python -c "import os; from scripts.package_release import version_name; print(version_name(os.environ['RELEASE_VERSION']))"
+          if ($LASTEXITCODE -ne 0) { throw 'Invalid release version' }
+      - name: Install build tools
+        run: python -m pip install -r requirements-build.txt
+      - name: Offline regression tests
+        run: python -m unittest discover -s tests -v
+      - name: Build native parser and desktop application
+        run: ./build.ps1
+      - name: Validate extracted release and package ZIP with checksum
+        run: python scripts/package_release.py --version "$env:RELEASE_VERSION"
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: windows-x64-release
+          path: |
+            release/*.zip
+            release/*.sha256
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 14
+
+  publish:
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
+    needs: build
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: windows-x64-release
+          path: release
+      - name: Publish verified portable build
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: |
+          $ErrorActionPreference = 'Stop'
+          if ($env:RELEASE_TAG -notmatch '^v\d+\.\d+(\.\d+)?(-[0-9A-Za-z]+([.-][0-9A-Za-z]+)*)?$') { throw 'Invalid release tag' }
+          $version = $env:RELEASE_TAG.Substring(1)
+          $archive = "release/DotaBasedReplay-$version-windows-x64.zip"
+          $checksum = "$archive.sha256"
+          $expected = (Get-Content -LiteralPath $checksum).Split(' ')[0]
+          if ((Get-FileHash -LiteralPath $archive -Algorithm SHA256).Hash.ToLowerInvariant() -ne $expected) { throw 'Artifact checksum mismatch' }
+          @"
+          Portable Windows x64 release of DotaBASED Replay.
+
+          Download **DotaBasedReplay-$version-windows-x64.zip**, extract the entire archive, and run **DotaBasedReplay.exe** inside the extracted folder. Keep the **_internal** folder alongside it. No Python or Go installation is needed.
+
+          Includes offline replay browsing and parsing, pinned accounts, notes, ratings, manual API enrichment, and the blue Replay application icon. Preferences and notes stay in your local application-data folder and are not included in this download.
+
+          The adjacent .sha256 file contains the download checksum. This build is unsigned.
+          "@ | Set-Content -LiteralPath release-notes.md -Encoding utf8
+          $existing = gh release view "$env:RELEASE_TAG" --json isDraft 2>$null
+          if ($LASTEXITCODE -eq 0) {
+            if (-not ($existing | ConvertFrom-Json).isDraft) { throw 'Release already published; refusing to overwrite it' }
+          } else {
+            gh release create "$env:RELEASE_TAG" --verify-tag --draft --title "DotaBASED Replay $version" --notes-file release-notes.md
+            if ($LASTEXITCODE -ne 0) { throw 'Draft release creation failed' }
+          }
+          gh release upload "$env:RELEASE_TAG" "$archive" "$checksum" --clobber
+          if ($LASTEXITCODE -ne 0) { throw 'Release asset upload failed' }
+          $releaseFlags = if ($version.Contains('-')) { @('--prerelease', '--latest=false') } else { @('--latest') }
+          gh release edit "$env:RELEASE_TAG" --draft=false @releaseFlags
+          if ($LASTEXITCODE -ne 0) { throw 'Release publication failed' }

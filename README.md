@@ -292,6 +292,49 @@ Python/Tcl/Tk and are larger than the source; no Electron/browser runtime is
 bundled. These are unsigned prototype builds. Build output and user data are
 ignored by Git. No installer or auto-updater is included.
 
+## GitHub releases
+
+The **Windows release** Actions workflow builds Windows x64 on a clean hosted
+runner with Python 3.12, Go 1.27.3 and the pinned build dependencies. It runs the
+offline Python tests and native parser tests, builds the application, verifies
+the embedded blue executable icon and packaged assets, then starts the app from
+the extracted ZIP using an empty temporary database. No personal replay folders
+or API credentials are used. Official Actions are pinned to immutable commits.
+
+Push a version tag to publish a release automatically:
+
+```powershell
+git tag -a v1.0 -m "DotaBASED Replay 1.0"
+git push origin main
+git push origin v1.0
+```
+
+The tag must point to the intended committed source. Use a new tag for each
+release; published releases are never overwritten. Tags such as `v1.1.0-beta.1`
+produce prereleases; stable versions become the latest release. Publication
+first creates a draft, uploads the verified ZIP and SHA-256 checksum, then makes
+it public. If upload fails, the draft stays unpublished and the workflow can be
+rerun. Only the publishing job has repository write permission.
+
+For a build without publishing, run **Windows release** using **Run workflow**
+and enter an artifact version. Manual runs never publish, even on a tag. Download
+the `windows-x64-release` workflow artifact, containing the ZIP and checksum.
+
+To create the same package locally after `build.ps1`:
+
+```powershell
+python scripts/package_release.py --version v1.0
+Get-FileHash release/DotaBasedReplay-1.0-windows-x64.zip -Algorithm SHA256
+```
+
+Upload `release/DotaBasedReplay-1.0-windows-x64.zip` and its `.zip.sha256` file.
+The archive contains one launch executable, its `_internal` runtime/helper/assets
+folder, and this README. Extract everything before running `DotaBasedReplay.exe`.
+The blue icon is embedded in the executable and survives downloading/extraction.
+The package remains unsigned. Personal settings and cached metadata remain in
+the local application-data directory when upgrading. A tagged release does not
+automatically update existing installations.
+
 ## Verification
 
 ```powershell
