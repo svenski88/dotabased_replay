@@ -42,8 +42,8 @@ def literal_snappy(payload):
     return vint(len(payload)) + prefix + payload
 
 
-def write_replay(path, match_id=123, compressed=True, magic=b"PBDEMS2\0"):
-    payload = summary(match_id)
+def write_replay(path, match_id=123, compressed=True, magic=b"PBDEMS2\0", duration=1800):
+    payload = summary(match_id, duration=duration)
     if compressed:
         payload = literal_snappy(payload)
     footer = vint(66 if compressed else 2) + vint(90000) + vint(len(payload)) + payload
@@ -101,6 +101,12 @@ class StoreTests(unittest.TestCase):
         directory.mkdir()
         self.store.add_library(str(directory), client)
         return directory
+
+    def test_zero_duration_survives_catalog_remote_fallback(self):
+        directory = self.add("zero-duration")
+        write_replay(directory / "123.dem", duration=0)
+        self.store.scan()
+        self.assertEqual(self.store.catalog()[0]["duration"], 0)
 
     def test_duplicate_match_one_presence_entry_and_two_launch_copies(self):
         first, second = self.add("modern"), self.add("classic", "classic")

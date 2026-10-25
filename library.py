@@ -42,6 +42,10 @@ class Store:
             CREATE TABLE IF NOT EXISTS cache (key TEXT PRIMARY KEY, data TEXT, expires REAL, status INTEGER);
             CREATE TABLE IF NOT EXISTS note_imports (source TEXT, fingerprint TEXT, match_id TEXT, note TEXT,
               source_line TEXT, line_number INTEGER, imported_at REAL, PRIMARY KEY(source, fingerprint));
+            CREATE TABLE IF NOT EXISTS full_parse (path TEXT PRIMARY KEY, size INTEGER, mtime INTEGER,
+              version TEXT, data TEXT, updated REAL);
+            CREATE TABLE IF NOT EXISTS parse_attempts (path TEXT PRIMARY KEY, size INTEGER, mtime INTEGER,
+              version TEXT, status TEXT, error TEXT, updated REAL);
             """)
             columns = {row["name"] for row in db.execute("PRAGMA table_info(matches)")}
             if "rating" not in columns:
@@ -147,9 +151,24 @@ class Store:
             rows = [dict(r) for r in db.execute("SELECT f.*, l.client, l.path AS library_path FROM files f JOIN libraries l ON f.library_id=l.id WHERE present=1 ORDER BY f.path")]
             notes = {r["id"]: dict(r) for r in db.execute("SELECT * FROM matches")}
             api = {r["key"].removeprefix("matches/"): json.loads(r["data"]) for r in db.execute("SELECT * FROM cache WHERE key LIKE 'matches/%' AND status=200")}
+            parsed = {r["path"]: dict(r) for r in db.execute("SELECT * FROM full_parse")}
+            attempts = {r["path"]: dict(r) for r in db.execute("SELECT * FROM parse_attempts")}
         grouped = {}
         for row in rows:
             local = json.loads(row["metadata"])
+            full = parsed.get(row["path"])
+            full_data = None
+            if full and full["size"] == row["size"] and full["mtime"] == row["mtime"]:
+                candidate = json.loads(full["data"])
+                if candidate.get("complete") and candidate.get("schema_version") == 1:
+                    identity = candidate.get("fields", {})
+                    if local.get("match_id") and identity.get("match_id") and str(local["match_id"]) != str(identity["match_id"]):
+                        row["error"] = "Local parser identity conflicts with replay summary/filename; result not applied"
+                    else:
+                        full_data = candidate
+                        for field in ("match_id", "players", "league_id", "winner", "end_time", "game_mode"):
+                            if not local.get(field) and identity.get(field):
+                                local[field] = identity[field]
             key = local.get("match_id") or "file:" + row["path"]
             if key not in grouped:
                 grouped[key] = {**local, "key": key, "copies": [], "errors": [], "notes": notes.get(key, {}).get("notes", ""), "client_override": notes.get(key, {}).get("client", ""), "rating": notes.get(key, {}).get("rating", 0)}
@@ -157,24 +176,58 @@ class Store:
             if not match.get("players") and local.get("players"):
                 match.update(local)
             match["copies"].append({"path": row["path"], "client": row["client"], "library_id": row["library_id"], "library_path": row["library_path"], "size": row["size"], "mtime": row["mtime"]})
+            match.setdefault("local_results", [])
+            match.setdefault("parse_attempts", [])
+            if full_data:
+                match["local_results"].append({"path": row["path"], "version": full["version"], "updated": full["updated"], **full_data})
+            attempt = attempts.get(row["path"])
+            if attempt and attempt["size"] == row["size"] and attempt["mtime"] == row["mtime"]:
+                match["parse_attempts"].append(attempt)
             if row["error"]:
                 match["errors"].append(row["error"])
         for key, match in grouped.items():
             match["total_size"] = sum(copy["size"] for copy in match["copies"])
             remote = api.get(key) or {}
             match["api_cached"] = bool(remote)
+            match["provenance"] = {field: "Replay summary" for field in ("match_id", "players", "league_id", "winner", "end_time", "game_mode") if match.get(field) is not None}
+            if match.get("duration") is not None:
+                match["provenance"]["duration"] = "Replay summary playback time (not game clock)"
             for field in ("lobby_type", "radiant_score", "dire_score"):
                 match[field] = remote.get(field)
+                if match[field] is not None:
+                    match["provenance"][field] = "Cached OpenDota"
+            # Older API responses often use 0:0 placeholders even with recorded
+            # player combat. Keep the raw cache unchanged, but do not show a false final.
+            suspicious_zero = remote.get("radiant_score") == 0 and remote.get("dire_score") == 0 and any((p.get("kills") or 0) > 0 or (p.get("deaths") or 0) > 0 for p in remote.get("players", []))
+            if suspicious_zero:
+                match["radiant_score"] = match["dire_score"] = None
+                match["score_notice"] = "Cached API 0:0 is unverified despite player combat; parse locally to recover the final score"
             if not match.get("league_id") and remote.get("leagueid"):
                 match["league_id"] = remote["leagueid"]
             match["league_name"] = (remote.get("league") or {}).get("name", "")
             match["start_time"] = remote.get("start_time")
             if match.get("winner") not in (2, 3) and isinstance(remote.get("radiant_win"), bool):
                 match["winner"] = 2 if remote["radiant_win"] else 3
-            if not match.get("duration"):
+            if match.get("duration") is None:
                 match["duration"] = remote.get("duration")
+                if match["duration"] is not None:
+                    match["provenance"]["duration"] = "Cached OpenDota game duration"
             if not match.get("players"):
                 match["players"] = [{"account_id": p.get("account_id"), "name": p.get("personaname", ""), "hero": f"Hero #{p.get('hero_id', '?')}", "team": 3 if p.get("player_slot", 0) >= 128 else 2} for p in remote.get("players", [])]
+            # Complete entity-stream results upgrade only fields actually present.
+            # Never take relative game clock times as epoch start_time/end_time.
+            from local_parser import PARSER_VERSION
+            for full in sorted(match["local_results"], key=lambda item: (item.get("helper_version") == PARSER_VERSION, item.get("updated", 0))):
+                for field in ("radiant_score", "dire_score", "duration", "lobby_type", "players", "match_id", "league_id", "game_mode", "winner", "end_time"):
+                    value = full.get("fields", {}).get(field)
+                    if field in ("players", "match_id", "league_id", "game_mode", "winner", "end_time") and not value:
+                        continue
+                    if value is not None:
+                        match[field] = value
+                        match["provenance"][field] = full.get("provenance", {}).get(field, "Complete local parser")
+            match["local_complete"] = bool(match["local_results"])
+            if match["local_complete"]:
+                match.pop("score_notice", None)
         return sorted(grouped.values(), key=lambda match: int(match.get("match_id") or 0), reverse=True)
 
     def save_match(self, key, notes=None, client=None, rating=None):
@@ -214,6 +267,22 @@ class Store:
     def cache(self, key, data, ttl, status=200, now=None):
         with self.connect() as db:
             db.execute("INSERT OR REPLACE INTO cache VALUES (?,?,?,?)", (key, json.dumps(data), (time.time() if now is None else now) + ttl, status))
+
+    def full_cached(self, copy, version):
+        with self.connect() as db:
+            row = db.execute("SELECT * FROM full_parse WHERE path=? AND size=? AND mtime=? AND version=?", (copy["path"], copy["size"], copy["mtime"], version)).fetchone()
+        return json.loads(row["data"]) if row else None
+
+    def save_full_parse(self, copy, version, result):
+        if not result.get("complete"):
+            raise ValueError("Only complete local results may replace a successful parse")
+        with self.connect() as db:
+            db.execute("INSERT OR REPLACE INTO full_parse VALUES (?,?,?,?,?,?)", (copy["path"], copy["size"], copy["mtime"], version, json.dumps(result), time.time()))
+            db.execute("DELETE FROM parse_attempts WHERE path=?", (copy["path"],))
+
+    def save_parse_attempt(self, copy, version, status, error):
+        with self.connect() as db:
+            db.execute("INSERT OR REPLACE INTO parse_attempts VALUES (?,?,?,?,?,?,?)", (copy["path"], copy["size"], copy["mtime"], version, status, error, time.time()))
 
 
 def presence(catalog):

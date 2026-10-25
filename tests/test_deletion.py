@@ -32,12 +32,10 @@ class RatingMigrationTests(unittest.TestCase):
 
     def test_star_hit_regions_and_selection_transitions(self):
         self.assertIsNone(rating_hit_test(4))
-        self.assertEqual(rating_hit_test(5), 0)
-        self.assertEqual(rating_hit_test(21.99), 0)
         for value in range(1, 6):
-            self.assertEqual(rating_hit_test(22 + (value - 1) * 17), value)
-            self.assertEqual(rating_hit_test(22 + value * 17 - .01), value)
-        self.assertIsNone(rating_hit_test(107))
+            self.assertEqual(rating_hit_test(5 + (value - 1) * 17), value)
+            self.assertEqual(rating_hit_test(5 + value * 17 - .01), value)
+        self.assertIsNone(rating_hit_test(90))
         order = ["a", "b", "c", "d"]
         selected, anchor = selection_click(order, set(), None, "a")
         selected, anchor = selection_click(order, selected, anchor, "c", control=True)

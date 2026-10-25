@@ -6,6 +6,23 @@ delegate recursively or edit sibling projects from this area.
 
 Runtime is Python 3.11+ with Tkinter and SQLite from the standard library. Run
 `python app.py`; `python -m unittest discover -s tests -v` checks offline logic.
+Full parsing uses the bundled native Go/Manta helper in `parser_helper/`.
+`python scripts/build_parser.py` runs Go tests, builds `bin/replay-parser.exe`
+and collects third-party licenses; `build.ps1` includes both in the app bundle.
+Source builds need Go 1.25+ (or `scripts/bootstrap_go.py`); end users do not.
+`local_parser.py` serializes helper processes, enforces a ten minute file timeout,
+and kills the active helper on Stop/close. Clear cancellation before launching
+the worker, never inside its entry point. Default Parse All refreshes the catalog
+first, includes hidden recordings, caches complete results by file size/mtime
+and helper version, and commits incrementally. Keep verified game-clock duration
+and team hero-kill score distinct from summary playback time/API placeholders;
+do not infer final score from player kill sums or overwrite identities with zeros.
+Parse Selected passes a fixed catalog subset through the same queue. The live
+progress model/window is in `parse_progress.py`; keep helper events keyed by
+match and path, with explicit cached/completed/error outcomes. Update it from
+the main UI event queue, never by rereading SQLite on every progress tick.
+Use `scripts/smoke_parser.py --screenshot .validation/ui-parser.png` for synthetic
+offline UI progress/Stop validation, with optional `--geometry 1100x720`.
 `python inspect_library.py` inventories the configured default replay folders
 using a disposable database. Scanning/parsing replay files is read-only. The
 application also supports separately confirmed permanent deletion; never select

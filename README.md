@@ -7,7 +7,8 @@ separate action requiring confirmation of concrete files.
 
 ## Run
 
-Python 3.11 or newer with Tkinter is sufficient. Windows Python includes Tkinter.
+Python 3.11 or newer with Tkinter starts the browser. Windows Python includes Tkinter.
+Source users also build the native helper below to use Parse All; packaged builds include it.
 From this repository:
 
 ```powershell
@@ -36,13 +37,20 @@ catalog copies but preserves match notes and account preferences.
 - Select a replay to see heroes, teams, account IDs, outcome, provenance and notes.
   Search matches IDs, file paths, heroes, names and saved notes. Column headings
   sort the list. League matches have green text and a **League games** filter.
-- The grid places **Radiant heroes** and **Dire heroes** immediately after Date,
-  with five inline hero icons for each team. Hover an icon for its hero name.
+- The grid places **Duration** after Date, followed by **Radiant heroes** and **Dire heroes**,
+  with five inline hero icons for each team and a spaced **vs** divider. Hover
+  an icon for its hero name. Winner text is green for Radiant and red for Dire.
   Notes appear as a first-line preview, with literal `...` when shortened. The
   full note stays in the editor. League is the last column. Use the horizontal
   scrollbar at smaller window widths, and mouse wheel or arrow keys to navigate.
   The grid paints visible rows only, so a large catalog does not create thousands
   of hidden image widgets.
+- Drag the right edge of the **Pinned Players**, **Notes** or **League** header to resize
+  that column. The resize cursor marks its boundary. These widths are saved
+  locally and restored on startup; dragging does not sort or change selection.
+  A chosen Notes width stays fixed rather than expanding to fill spare space.
+  **Duration** shows minutes and seconds and sorts numerically; unknown values
+  stay last in either sort direction.
 - Frequent players appear strictly above 5% presence, sorted by descending count.
   One match counts once even if multiple copies are stored. The denominator is
   every unique library entry, including unknown recordings; unidentified files
@@ -53,9 +61,50 @@ catalog copies but preserves match notes and account preferences.
   enabled accounts** uses OR: a match qualifies when any enabled account appears.
   With no enabled accounts, that filter shows no games. The pinned-player column
   shows all tracked players present, including those whose filter is disabled.
+  Radiant and Dire have separate labeled, colored lines in that column; a side
+  appears only when it has pinned players. With none present the cell is empty. Hover
+  for full nicknames and any players whose team was not recorded.
 - Notes save after a short typing pause, on focus/selection/filter changes and on
   exit. Notes and launch overrides belong to the match, so duplicate copies share
   them. OpenDota and Dotabuff buttons open the selected match in your browser.
+
+## Full replay parsing offline
+
+**Parse All** reads the entire library catalog, including hidden unknown
+recordings, with the bundled native Go/Manta helper. No network or Dota client
+is involved. One helper runs at a time. Progress shows the current file and
+completed, cached and failed counts. **Stop Parsing** terminates the current
+helper promptly; completed results remain saved. A later run skips successful,
+unchanged files with the current helper version. Duplicate copies are parsed
+once, with another copy tried if the first fails. Each file has a ten minute
+timeout, then the queue continues. Parse All first refreshes the local catalog,
+including new and changed files. Stop also cancels this initial scan.
+
+**Parse Selected** uses the same offline parser and cache for only the selected
+matches. Use Ctrl-click or Shift-click to select several. Selection is captured
+when the batch starts; changing the grid selection does not change the queue.
+Rescan first if these files have changed since the last catalog scan.
+
+Verified post-game team hero-kill counters supply the final score; player kill
+sums and the old base score field are never used. Duration uses the recorded
+game start/end clock. Typed file-info messages recover available player,
+identity, league and outcome fields. Missing or incomplete recordings remain
+unknown rather than receiving a fabricated score. Recorded lobby enums are
+shown where available; older recordings may leave Lobby unknown. Local verified
+fields take priority over cached API values. Suspicious old API 0:0 placeholders
+remain unknown until locally verified, without rewriting the raw API cache.
+**Parse details** opens live batch progress with per-match queued, parsing,
+cached, completed, incomplete, failed and stopped states. Select a row to see
+its score, duration, winner, lobby, players, recorded field sources and copy
+errors. The window can be opened or reopened while parsing, and includes a Stop
+button. Outside a session it shows saved local results and attempts from prior
+runs. Incomplete files count as unsuccessful; they never receive invented metadata.
+
+The packaged app needs no Go or Java installation. For source development,
+build the helper with `python scripts/build_parser.py` (Go 1.25+), or first run
+`python scripts/bootstrap_go.py` for a SHA256-verified portable Windows toolchain.
+`build.ps1` builds the helper and includes it and dependency license notices in
+the application bundle. The helper source pins Manta 1.5.2 in `parser_helper/`.
 
 ## Sizes, personal ratings and selection
 
@@ -65,8 +114,9 @@ to see its copy count and total; the **Copy** chooser and **Selected** label sho
 the individual file's size. Size sorts by actual bytes, independent of display
 rounding. Rescan after outside file changes to refresh these values.
 
-Click a star directly in the **Rating 0–5** grid column to save a personal rating
-with no dialog. The `0` region clears the rating. While the grid has keyboard
+Click a star directly in the **Rating** grid column to save a personal rating
+with no dialog. Click the same selected star again to clear the rating. The
+column displays only five stars. While the grid has keyboard
 focus, keys `0`–`5` do the same for the focused match. These local ratings belong
 to the match, so duplicate copies share a rating. Existing databases gain the
 rating column without replacing notes, client overrides or import provenance.
@@ -162,12 +212,13 @@ duration, winner, league ID and end time when present. A nonzero league ID
 identifies league play without any API request. Bot and hidden accounts are
 excluded from suggestions.
 
-**Lobby type and team kill score are not in this summary record.** They display
-`Unknown` until you request **Fetch selected metadata** or **Enrich next 20**.
-These use OpenDota's public match endpoint and cache the result locally; league
-names, start time and missing winner/players may also be filled. Local replay
-summary fields take priority over remote fields. This is a summary parser, not a
-full event/entity parser; a recording without the summary may remain unknown.
+Lobby type and final team kill scores are recovered by **Parse All** from the
+full recorded entity stream where available. **Fetch selected metadata** and
+**Enrich next 20** are optional manual fallbacks using OpenDota's public match
+endpoint; league names, start time and missing winner/players may also be filled.
+Verified local full parse fields take priority, followed by usable local summary
+fields and cached API data. A truncated recording without sufficient final state
+may remain unknown; inspect Parse details for its failure and available sources.
 
 **Look up account on OpenDota** fetches the selected account's current name and
 avatar URL metadata, cached for seven days. Local nicknames retain priority.

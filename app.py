@@ -2,6 +2,7 @@
 import argparse
 from datetime import datetime
 import json
+import math
 from pathlib import Path
 import queue
 import threading
@@ -15,6 +16,8 @@ from deletion import delete_files, make_delete_plan
 from notes_import import DEFAULT_NOTES, import_notes
 from opendota import OpenDota
 from replay_grid import ReplayGrid
+from local_parser import LocalParser
+from parse_progress import ParseProgress, ParseProgressWindow
 
 BG = "#10151d"
 PANEL = "#18212c"
@@ -41,14 +44,37 @@ def when(match):
         return "Unknown"
 
 
-def duration(match):
+def duration_seconds(match):
     seconds = match.get("duration")
+    return seconds if type(seconds) in (int, float) and math.isfinite(seconds) and seconds >= 0 else None
+
+
+def duration(match):
+    seconds = duration_seconds(match)
     return f"{int(seconds) // 60}:{int(seconds) % 60:02}" if seconds is not None else "Unknown"
+
+
+def sort_durations(matches, reverse=False):
+    known = [match for match in matches if duration_seconds(match) is not None]
+    unknown = [match for match in matches if duration_seconds(match) is None]
+    return sorted(known, key=duration_seconds, reverse=reverse) + unknown
 
 
 def score(match):
     radiant, dire = match.get("radiant_score"), match.get("dire_score")
     return f"{radiant} : {dire}" if radiant is not None and dire is not None else "Unknown"
+
+
+def pinned_teams(match, labels):
+    groups = {2: [], 3: [], None: []}
+    for player in match.get("players", []):
+        if player.get("account_id") in labels:
+            team = player.get("team") if player.get("team") in (2, 3) else None
+            groups[team].append(labels[player["account_id"]])
+    lines = [label + ": " + ", ".join(dict.fromkeys(groups[team])) for team, label in ((2, "Radiant"), (3, "Dire")) if groups[team]]
+    if groups[None]:
+        lines.append("Unknown team: " + ", ".join(dict.fromkeys(groups[None])))
+    return "\n".join(lines)
 
 
 class ReplayApp:
@@ -63,6 +89,9 @@ class ReplayApp:
         self.busy = False
         self.closed = False
         self.cancel = threading.Event()
+        self.local_parser = LocalParser()
+        self.parse_progress = ParseProgress()
+        self.parse_window = None
         self.copy_options = []
         self.avatar_url = ""
         self.sort_column, self.sort_reverse = "match", True
@@ -174,15 +203,28 @@ class ReplayApp:
         ttk.Label(manage, textvariable=self.selection_summary, style="Muted.TLabel").pack(side="left")
         self.delete_button = ttk.Button(manage, text="Delete selected files…", style="Danger.TButton", command=self.confirm_delete, state="disabled")
         self.delete_button.pack(side="right")
+        parse_controls = ttk.Frame(content)
+        parse_controls.pack(fill="x", pady=(0, 8))
+        self.parse_button = ttk.Button(parse_controls, text="Parse All", command=self.parse_all)
+        self.parse_button.pack(side="left")
+        self.parse_selected_button = ttk.Button(parse_controls, text="Parse Selected", command=self.parse_selected)
+        self.parse_selected_button.pack(side="left", padx=(6, 0))
+        self.stop_parse_button = ttk.Button(parse_controls, text="Stop Parsing", command=self.local_parser.stop, state="disabled")
+        self.stop_parse_button.pack(side="left", padx=6)
+        ttk.Button(parse_controls, text="Parse details", command=self.parse_details).pack(side="left")
+        self.parse_fraction = tk.DoubleVar(value=0)
+        ttk.Progressbar(parse_controls, variable=self.parse_fraction, maximum=1, length=140).pack(side="right")
         panes = ttk.Panedwindow(content, orient="vertical")
         panes.pack(fill="both", expand=True)
         list_frame = ttk.Frame(panes)
         panes.add(list_frame, weight=3)
-        columns = ("match", "rating", "date", "radiant", "dire", "winner", "size", "score", "lobby", "tracked", "notes", "league")
+        columns = ("match", "rating", "date", "duration", "radiant", "dire", "winner", "size", "score", "lobby", "tracked", "notes", "league")
         self.match_tree = ReplayGrid(list_frame, columns=columns)
-        for column, title, width in zip(columns, ("MATCH / FILE", "RATING 0–5", "DATE", "RADIANT HEROES", "DIRE HEROES", "WINNER", "SIZE TOTAL", "R : D", "LOBBY", "PINNED PLAYERS", "NOTES", "LEAGUE"), (100, 112, 85, 132, 132, 65, 85, 65, 80, 110, 140, 110)):
+        for column, title, width in zip(columns, ("MATCH / FILE", "RATING", "DATE", "DURATION", "RADIANT HEROES", "DIRE HEROES", "WINNER", "SIZE TOTAL", "R : D", "LOBBY", "PINNED PLAYERS", "NOTES", "LEAGUE"), (100, 95, 85, 78, 158, 140, 65, 85, 65, 80, 110, 140, 110)):
             self.match_tree.heading(column, text=title, command=lambda key=column: self.sort(key))
             self.match_tree.column(column, width=width)
+        self.match_tree.restore_widths(self.store.get_pref("column_widths", {}))
+        self.match_tree.on_column_resize = self.save_column_width
         self.match_tree.grid(row=0, column=0, sticky="nsew")
         vertical = ttk.Scrollbar(list_frame, orient="vertical", command=self.match_tree.yview)
         vertical.grid(row=0, column=1, sticky="ns")
@@ -227,7 +269,7 @@ class ReplayApp:
         self.notes.bind("<KeyRelease>", self.note_changed)
         self.notes_timer = None
         bottom = ttk.Frame(details)
-        bottom.pack(fill="x", pady=10)
+        bottom.pack(side="bottom", fill="x", pady=10, before=lower)
         ttk.Label(bottom, text="Copy:").pack(side="left")
         self.copy_choice = ttk.Combobox(bottom, state="readonly", width=34)
         self.copy_choice.pack(side="left", padx=7)
@@ -240,7 +282,7 @@ class ReplayApp:
         self.copy_size = tk.StringVar()
         ttk.Label(bottom, textvariable=self.copy_size, style="Muted.TLabel").pack(side="left", padx=9)
         links = ttk.Frame(details)
-        links.pack(fill="x", pady=(0, 5))
+        links.pack(side="bottom", fill="x", pady=(0, 5), before=bottom)
         ttk.Button(links, text="OpenDota ↗", command=lambda: self.match_link("opendota")).pack(side="left")
         ttk.Button(links, text="Dotabuff ↗", command=lambda: self.match_link("dotabuff")).pack(side="left", padx=7)
         ttk.Button(links, text="Fetch selected metadata", command=self.enrich_selected).pack(side="left", padx=(8, 0))
@@ -254,7 +296,7 @@ class ReplayApp:
         self.last_report = None
         self.detail_panes = panes
         self.sidebar_canvas = sidebar_canvas
-        panes.bind("<Configure>", lambda event: panes.sashpos(0, max(150, event.height - 340)))
+        panes.bind("<Configure>", lambda event: panes.sashpos(0, max(90, event.height - 340)))
 
     def text_widget(self, parent, **kwargs):
         return tk.Text(parent, bg=PANEL, fg=FG, insertbackground=FG, relief="flat", padx=10, pady=7, font=("Segoe UI", 10), wrap="word", **kwargs)
@@ -293,10 +335,10 @@ class ReplayApp:
         self.show_account()
 
     def match_values(self, match):
-        pinned = [self.account_labels[p["account_id"]] for p in match.get("players", []) if p.get("account_id") in self.account_labels]
+        pinned = pinned_teams(match, self.account_labels)
         heroes = {team: ", ".join(hero_name(p.get("hero")) for p in match.get("players", []) if p.get("team") == team) for team in (2, 3)}
-        return (match.get("match_id") or Path(match["copies"][0]["path"]).name, match.get("rating", 0), when(match), heroes[2], heroes[3], winner(match), format_size(match["total_size"]), score(match),
-                LOBBIES.get(match.get("lobby_type"), "Unknown"), ", ".join(dict.fromkeys(pinned)) or "—", note_preview(match.get("notes", "")),
+        return (match.get("match_id") or Path(match["copies"][0]["path"]).name, match.get("rating", 0), when(match), duration(match), heroes[2], heroes[3], winner(match), format_size(match["total_size"]), score(match),
+                LOBBIES.get(match.get("lobby_type"), "Unknown"), pinned, note_preview(match.get("notes", "")),
                 match.get("league_name") or (f"League {match['league_id']}" if match.get("league_id") else "—"))
 
     def render_matches(self, save_pending=True):
@@ -314,7 +356,10 @@ class ReplayApp:
             if self.sort_column == "rating":
                 return match.get("rating", 0)
             return str(self.match_values(match)[index]).casefold()
-        self.visible.sort(key=sort_value, reverse=self.sort_reverse)
+        if self.sort_column == "duration":
+            self.visible = sort_durations(self.visible, reverse=self.sort_reverse)
+        else:
+            self.visible.sort(key=sort_value, reverse=self.sort_reverse)
         selected = self.match_tree.selection()
         focused = self.match_tree.focus() or self.current_key
         self.match_tree.delete(*self.match_tree.get_children())
@@ -338,6 +383,9 @@ class ReplayApp:
         self.sort_column = column
         self.render_matches()
 
+    def save_column_width(self, column, width):
+        self.store.set_pref("column_widths", {key: self.match_tree.definitions[key]["width"] for key in ("tracked", "notes", "league") if key in self.match_tree.explicit_widths})
+
     def filter_changed(self):
         self.store.set_pref("tracked_filter", self.tracked_filter.get())
         self.store.set_pref("league_only", self.league_only.get())
@@ -360,7 +408,7 @@ class ReplayApp:
 
     def show_match(self, match):
         self.detail_title.set(f"Match {match.get('match_id') or 'unknown'}   ·   {winner(match)} victory" if match.get("winner") in (2, 3) else f"Replay {Path(match['copies'][0]['path']).name}   ·   outcome unknown")
-        self.detail_meta.set(f"{when(match)}  ·  {duration(match)}  ·  {MODES.get(match.get('game_mode'), 'Mode unknown')}  ·  Score {score(match)}  ·  {len(match['copies'])} local {'copy' if len(match['copies']) == 1 else 'copies'} ({format_size(match['total_size'])} total)  ·  {'Replay + cached API' if match.get('api_cached') else 'Replay summary only'}" + ("\n" + "; ".join(dict.fromkeys(match["errors"])) if match["errors"] else ""))
+        self.detail_meta.set(f"{when(match)}  ·  {duration(match)}  ·  {MODES.get(match.get('game_mode'), 'Mode unknown')}  ·  Score {score(match)}  ·  {len(match['copies'])} local {'copy' if len(match['copies']) == 1 else 'copies'} ({format_size(match['total_size'])} total)  ·  {'Full local parse' if match.get('local_complete') else 'Replay + cached API' if match.get('api_cached') else 'Replay summary only'}" + ("\n" + "; ".join(dict.fromkeys(match["errors"])) if match["errors"] else ""))
         lines = []
         for team in (2, 3, None):
             players = [p for p in match.get("players", []) if (p.get("team") if p.get("team") in (2, 3) else None) == team]
@@ -528,6 +576,8 @@ class ReplayApp:
             self.status.set("Wait for the current scan or lookup, or stop the network batch.")
             return
         self.busy = True
+        self.parse_button.configure(state="disabled")
+        self.parse_selected_button.configure(state="disabled")
         self.update_selection_status()
         self.cancel.clear()
         self.scan_button.configure(state="disabled")
@@ -545,14 +595,31 @@ class ReplayApp:
                 kind, payload = self.events.get_nowait()
                 if kind == "progress":
                     self.status.set(payload)
+                elif kind == "parse_progress":
+                    self.parse_progress.update(payload)
+                    self.refresh_parse_window()
+                    if payload.get("phase") == "scan":
+                        self.status.set("Preparing offline parse · " + payload["path"])
+                        continue
+                    self.parse_fraction.set(self.parse_progress.fraction)
+                    self.status.set(f"{self.parse_progress.fraction:.0%} batch · {payload['completed']} parsed · {payload['cached']} cached · {payload['failed']} unsuccessful · {self.parse_progress.message}")
                 elif kind == "error":
                     self.busy = False
+                    self.parse_button.configure(state="normal")
+                    self.parse_selected_button.configure(state="normal")
+                    self.stop_parse_button.configure(state="disabled")
                     self.scan_button.configure(state="normal")
                     self.reload()
                     self.status.set(payload)
+                    if self.parse_progress.active:
+                        self.parse_progress.finish(error=payload)
+                        self.refresh_parse_window()
                     messagebox.showerror("Operation stopped", payload, parent=self.root)
                 else:
                     self.busy = False
+                    self.parse_button.configure(state="normal")
+                    self.parse_selected_button.configure(state="normal")
+                    self.stop_parse_button.configure(state="disabled")
                     self.scan_button.configure(state="normal")
                     callback, value = payload
                     self.reload()
@@ -567,6 +634,46 @@ class ReplayApp:
             self.last_report = report
             self.status.set(f"Scan complete · {report['files']:,} files · {report['cached']:,} unchanged · {len(report['errors']):,} notices (Scan details)")
         self.run_job("Scanning replay folders locally…", lambda: self.store.scan(lambda text: self.events.put(("progress", text)), self.cancel.is_set), complete)
+
+    def parse_all(self):
+        self.start_parse()
+
+    def parse_selected(self):
+        keys = set(self.match_tree.selection())
+        matches = [match for match in self.catalog if match["key"] in keys]
+        if not matches:
+            self.status.set("Select one or more matches in the grid, then click Parse Selected.")
+            return
+        self.start_parse(matches)
+
+    def start_parse(self, matches=None):
+        if self.busy:
+            self.status.set("Wait for the current operation before parsing.")
+            return
+        self.local_parser.reset()  # Clear before thread start; an immediate Stop must survive.
+        self.parse_fraction.set(0)
+        self.parse_progress.start(matches)
+        self.refresh_parse_window()
+        self.stop_parse_button.configure(state="normal")
+        def complete(report):
+            self.parse_progress.finish(report)
+            self.parse_fraction.set(self.parse_progress.fraction)
+            self.refresh_parse_window()
+            self.status.set(f"Parsing {'stopped' if report['cancelled'] else 'complete'} · {report['completed']} completed · {report['cached']} cached · {report['failed']} failed · completed results saved locally")
+        title = "Parsing all library recordings offline…" if matches is None else f"Parsing {len(matches)} selected matches offline…"
+        self.run_job(title, lambda: self.local_parser.parse_all(self.store, lambda event: self.events.put(("parse_progress", event)), matches=matches), complete)
+
+    def parse_details(self):
+        if self.parse_window and self.parse_window.winfo_exists():
+            self.parse_window.lift()
+            return
+        if not self.parse_progress.session:
+            self.parse_progress.load_history(self.store.catalog())
+        self.parse_window = ParseProgressWindow(self.root, self.parse_progress, self.local_parser.stop)
+
+    def refresh_parse_window(self):
+        if self.parse_window and self.parse_window.winfo_exists():
+            self.parse_window.refresh()
 
     def scan_details(self):
         dialog = tk.Toplevel(self.root)
@@ -705,6 +812,7 @@ class ReplayApp:
         self.save_notes()
         self.store.set_pref("geometry", self.root.geometry())
         self.cancel.set()
+        self.local_parser.close()
         self.closed = True
         self.root.destroy()
 

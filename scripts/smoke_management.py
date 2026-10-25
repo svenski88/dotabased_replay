@@ -37,7 +37,7 @@ def main():
             store.add_library(folder, client)
             for identifier in ([901, 902, 903] if client == "modern" else [901]):
                 path = folder / f"{identifier}.dem"
-                write_replay(path, match_id=identifier)
+                write_replay(path, match_id=identifier, duration={901: 1800, 902: 900, 903: 0}[identifier])
                 with path.open("ab") as stream:
                     stream.write(b"\0" * ((512 * 1024 if identifier == 901 else (identifier - 900) * 1024 * 1024) - path.stat().st_size))
                 files.append(path)
@@ -95,18 +95,22 @@ def main():
                 return
             try:
                 grid = app.match_tree
+                assert grid.columns[:6] == ("match", "rating", "date", "duration", "radiant", "dire")
+                duration_index = grid.columns.index("duration")
+                assert grid.rows["901"]["values"][duration_index] == "30:00"
+                assert grid.rows["903"]["values"][duration_index] == "0:00"
                 grid.selection_set(["901", "903"], focus="903")
                 root.update()
                 app.notes.insert("end", " · pending edit retained")
                 row = grid.order.index("901")
-                x = grid.widths()[0] + 22 + 4 * 17 + 8
+                x = grid.widths()[0] + 5 + 4 * 17 + 8
                 grid.click(SimpleNamespace(x=x, y=row * ROW_HEIGHT + 17, state=0))
                 root.update()
                 assert set(grid.selection()) == {"901", "903"}
                 assert app.current_key == "901"
                 assert next(m for m in store.catalog() if m["key"] == "901")["rating"] == 5
                 assert next(m for m in store.catalog() if m["key"] == "903")["notes"].endswith("pending edit retained")
-                grid.click(SimpleNamespace(x=grid.widths()[0] + 12, y=row * ROW_HEIGHT + 17, state=0))
+                grid.click(SimpleNamespace(x=x, y=row * ROW_HEIGHT + 17, state=0))
                 assert next(m for m in store.catalog() if m["key"] == "901")["rating"] == 0
                 grid.rate_focused(4)
                 app.sort("size")
@@ -116,6 +120,13 @@ def main():
                 assert app.current_key == "901"
                 assert "Selected: 0.5 MiB" == app.copy_size.get()
                 assert "2 matches selected" in app.selection_summary.get()
+                app.sort("duration")
+                root.update()
+                assert grid.order == ["903", "902", "901"]
+                app.sort("duration")
+                root.update()
+                assert grid.order == ["901", "902", "903"]
+                assert set(grid.selection()) == {"901", "903"}
                 app.status.set("Management validation · synthetic temp fixtures only · original replay libraries never selected")
                 capture_then(root, args.screenshot, modal)
             except Exception as exc:

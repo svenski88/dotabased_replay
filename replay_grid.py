@@ -17,12 +17,25 @@ ROW_HEIGHT = 34
 
 
 def rating_hit_test(x):
-    """Local rating-cell x: a clear-to-zero button followed by five 17px stars."""
-    if 5 <= x < 22:
-        return 0
-    if 22 <= x < 107:
-        return 1 + int((x - 22) // 17)
+    """Local rating-cell x: five 17px stars, with no numeric clear region."""
+    if 5 <= x < 90:
+        return 1 + int((x - 5) // 17)
     return None
+
+
+def resize_boundary(columns, widths, x, tolerance=5):
+    edge = 0
+    for column, width in zip(columns, widths):
+        edge += width
+        if column in ("tracked", "notes", "league") and abs(x - edge) <= tolerance:
+            return column
+    return None
+
+
+def clamp_column_width(value):
+    if type(value) not in (int, float) or not math.isfinite(value):
+        raise ValueError("Column width must be finite and numeric")
+    return max(70, min(2000, int(value)))
 
 
 def selection_click(order, selected, anchor, key, control=False, shift=False):
@@ -85,6 +98,10 @@ class ReplayGrid(ttk.Frame):
         self.selected_keys = set()
         self.anchor = None
         self.on_rating = None
+        self.on_column_resize = None
+        self.explicit_widths = set()
+        self.resizing = None
+        self.pressed_column = None
         self.pending = None
         self.tooltip = None
         self.tooltip_text = ""
@@ -101,7 +118,11 @@ class ReplayGrid(ttk.Frame):
         self.body.pack(fill="both", expand=True)
         self.body.configure(xscrollcommand=self.on_xscroll, yscrollcommand=self.on_yscroll)
         self.body.bind("<Configure>", lambda event: self.invalidate())
-        self.header.bind("<Button-1>", self.header_click)
+        self.header.bind("<Button-1>", self.header_press)
+        self.header.bind("<B1-Motion>", self.header_drag)
+        self.header.bind("<ButtonRelease-1>", self.header_release)
+        self.header.bind("<Motion>", self.header_motion)
+        self.header.bind("<Leave>", lambda event: self.header.configure(cursor="") if not self.resizing else None)
         self.body.bind("<Button-1>", self.click)
         self.body.bind("<MouseWheel>", self.wheel)
         self.body.bind("<Shift-MouseWheel>", self.horizontal_wheel)
@@ -138,6 +159,18 @@ class ReplayGrid(ttk.Frame):
 
     def column(self, key, **kwargs):
         self.definitions[key].update(kwargs)
+        self.invalidate()
+
+    def restore_widths(self, saved):
+        if not isinstance(saved, dict):
+            return
+        for key in ("tracked", "notes", "league"):
+            if key in saved and key in self.definitions:
+                try:
+                    self.definitions[key]["width"] = clamp_column_width(saved[key])
+                    self.explicit_widths.add(key)
+                except ValueError:
+                    continue
         self.invalidate()
 
     def tag_configure(self, *args, **kwargs):
@@ -229,7 +262,7 @@ class ReplayGrid(ttk.Frame):
 
     def widths(self):
         widths = [self.definitions[key]["width"] for key in self.columns]
-        if "notes" in self.columns:
+        if "notes" in self.columns and "notes" not in self.explicit_widths:
             widths[self.columns.index("notes")] += max(0, self.body.winfo_width() - sum(widths))
         return widths
 
@@ -282,9 +315,8 @@ class ReplayGrid(ttk.Frame):
             for position, (column, width) in enumerate(zip(self.columns, widths)):
                 if column == "rating":
                     rating = int(row["values"][position])
-                    self.body.create_text(x + 13, y + 17, text="0", fill="#a8b9cd", font=self.text_font)
                     for value in range(1, 6):
-                        self.body.create_text(x + 22 + (value - 1) * 17 + 8, y + 17, text="★" if value <= rating else "☆", fill="#f4c665" if value <= rating else "#8294a9", font=self.star_font, tags=("rating_star",))
+                        self.body.create_text(x + 5 + (value - 1) * 17 + 8, y + 17, text="★" if value <= rating else "☆", fill="#f4c665" if value <= rating else "#8294a9", font=self.star_font, tags=("rating_star",))
                 elif column in ("radiant", "dire"):
                     heroes = row["heroes"].get(2 if column == "radiant" else 3, [])[:5]
                     for slot in range(5):
@@ -300,20 +332,70 @@ class ReplayGrid(ttk.Frame):
                             self.icon_hits.append((icon_x, y + 5, icon_x + 24, y + 29, self.icons.name(hero)))
                         else:
                             self.body.create_text(icon_x + 11, y + 17, text="·", fill="#536479", font=self.text_font)
+                    if column == "radiant" and width >= 152:
+                        self.body.create_text(x + width - 13, y + 17, text="vs", fill="#96a7ba", font=self.text_font, tags=("hero_vs",))
+                elif column == "tracked":
+                    value = str(row["values"][position])
+                    lines = [line for line in value.split("\n") if line]
+                    for line_number, line in enumerate(lines[:2]):
+                        color = "#70d9a0" if line.startswith("Radiant:") else "#ee9696" if line.startswith("Dire:") else FG
+                        self.body.create_text(x + 6, y + (17 if len(lines) == 1 else 9 + line_number * 16), anchor="w", text=self.clipped(line, width - 12), fill=color, font=self.text_font, tags=("pinned_team",))
+                    if value:
+                        self.icon_hits.append((x, y, x + width, y + ROW_HEIGHT, value))
                 else:
                     value = row["values"][position] if position < len(row["values"]) else ""
-                    self.body.create_text(x + 6, y + 17, anchor="w", text=self.clipped(value, width - 12), fill=text_color, font=self.text_font)
+                    color = {"Radiant": "#70d9a0", "Dire": "#ee9696"}.get(value, text_color) if column == "winner" else text_color
+                    self.body.create_text(x + 6, y + 17, anchor="w", text=self.clipped(value, width - 12), fill=color, font=self.text_font, tags=("winner_text",) if column == "winner" else ())
                 x += width
 
-    def header_click(self, event):
-        x = self.header.canvasx(event.x)
+    def header_column(self, x):
         for key, width in zip(self.columns, self.widths()):
             if x < width:
-                command = self.definitions[key].get("command")
-                if command:
-                    command()
-                return
+                return key
             x -= width
+        return None
+
+    def header_motion(self, event):
+        if self.resizing:
+            return
+        edge = resize_boundary(self.columns, self.widths(), self.header.canvasx(event.x))
+        self.header.configure(cursor="sb_h_double_arrow" if edge else "")
+
+    def header_press(self, event):
+        content_x = self.header.canvasx(event.x)
+        key = resize_boundary(self.columns, self.widths(), content_x)
+        self.pressed_column = None
+        if key:
+            width = self.widths()[self.columns.index(key)]
+            self.resizing = (key, event.x_root, width)
+            self.explicit_widths.add(key)
+            self.definitions[key]["width"] = width
+            self.header.configure(cursor="sb_h_double_arrow")
+        else:
+            self.pressed_column = self.header_column(content_x)
+        return "break"
+
+    def header_drag(self, event):
+        if self.resizing:
+            key, start, width = self.resizing
+            self.definitions[key]["width"] = clamp_column_width(width + event.x_root - start)
+            self.invalidate()
+        return "break"
+
+    def header_release(self, event):
+        if self.resizing:
+            self.header_drag(event)
+            key = self.resizing[0]
+            self.resizing = None
+            if self.on_column_resize:
+                self.on_column_resize(key, self.definitions[key]["width"])
+        elif self.pressed_column and self.header_column(self.header.canvasx(event.x)) == self.pressed_column:
+            command = self.definitions[self.pressed_column].get("command")
+            if command:
+                command()
+        self.pressed_column = None
+        self.header_motion(event)
+        return "break"
 
     def click(self, event):
         self.body.focus_set()
@@ -329,7 +411,8 @@ class ReplayGrid(ttk.Frame):
                             # A rating acts on one row and retains the current multi-selection.
                             self.selection_set(self.selected_keys | {key}, focus=key)
                             if self.on_rating:
-                                self.on_rating(key, value)
+                                current = int(self.rows[key]["values"][self.columns.index("rating")])
+                                self.on_rating(key, 0 if current == value else value)
                             return
                     break
                 x -= width
@@ -371,6 +454,14 @@ class ReplayGrid(ttk.Frame):
     def hover(self, event):
         x, y = self.body.canvasx(event.x), self.body.canvasy(event.y)
         text = next((name for left, top, right, bottom, name in self.icon_hits if left <= x < right and top <= y < bottom), "")
+        if not text and 0 <= y < len(self.order) * ROW_HEIGHT:
+            remaining_x = x
+            for column, width in zip(self.columns, self.widths()):
+                if remaining_x < width:
+                    if column == "rating":
+                        text = "Click a star to rate; click the same star again to clear. Keyboard: 0–5."
+                    break
+                remaining_x -= width
         if text == self.tooltip_text:
             return
         self.hide_tooltip()

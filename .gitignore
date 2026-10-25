@@ -8,3 +8,4 @@ dist/
 *.dem
 *.dem.bz2
 .validation/
+bin/
