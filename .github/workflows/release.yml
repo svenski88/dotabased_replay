@@ -105,6 +105,9 @@ jobs:
           }
           gh release upload "$env:RELEASE_TAG" "$archive" "$checksum" --clobber
           if ($LASTEXITCODE -ne 0) { throw 'Release asset upload failed' }
-          $releaseFlags = if ($version.Contains('-')) { @('--prerelease', '--latest=false') } else { @('--latest') }
-          gh release edit "$env:RELEASE_TAG" --draft=false @releaseFlags
+          if ($version.Contains('-')) {
+            gh release edit "$env:RELEASE_TAG" --draft=false --prerelease --latest=false
+          } else {
+            gh release edit "$env:RELEASE_TAG" --draft=false --latest
+          }
           if ($LASTEXITCODE -ne 0) { throw 'Release publication failed' }
