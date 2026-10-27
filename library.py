@@ -9,6 +9,7 @@ import subprocess
 import time
 
 from replay_parser import parse_replay, filename_match_id
+from search import SearchIndex, compile_terms, query_terms
 
 DEFAULT_LIBRARIES = [
     {"path": r"G:\STEAM\steamapps\common\dota 2 beta\game\dota\replays", "client": "modern"},
@@ -310,13 +311,14 @@ def note_preview(notes, limit=80):
     return first_line if len(first_line) <= limit else first_line[:max(0, limit - 3)].rstrip() + "..."
 
 
-def filter_matches(catalog, accounts, enabled=False, search="", league_only=False, hide_unknown=False):
+def filter_matches(catalog, accounts, enabled=False, search="", league_only=False, hide_unknown=False, search_index=None):
     wanted = {a["id"] for a in accounts if a["enabled"]}
-    query = search.strip().casefold()
+    terms = compile_terms(query_terms(search)) if search.strip() else ()
+    index = search_index if search_index is not None else (SearchIndex(catalog, accounts) if terms else None)
     return [m for m in catalog if (not enabled or bool(wanted & {p.get("account_id") for p in m.get("players", [])}))
             and (not league_only or bool(m.get("league_id")))
             and (not hide_unknown or not is_unknown(m))
-            and (not query or query in json.dumps(m, ensure_ascii=False).casefold())]
+            and (not terms or index.matches(m, terms))]
 
 
 def launch_command(executable, replay):

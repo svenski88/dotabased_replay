@@ -68,7 +68,7 @@ unavailable API match may still have unknown fields after both steps.
 
 - **Rescan library** — discover new or changed files and refresh fast summaries; unavailable folders retain their previous catalog until accessible.
 - **Scan details** — inspect missing folders, unreadable summaries and scan errors.
-- **Search** — filter by match ID, file path, hero, player name or saved notes.
+- **Search** — all terms must match the same game. Separate terms with spaces or commas: `SF, CM comeback` finds games matching both heroes and “comeback”. Search includes recorded player names/IDs, your local player nicknames (even when their account filter is disabled), hero display/internal names, DotaBASED aliases and abbreviations, replay paths, match metadata and saved/imported notes. Use double quotes for phrases: `"Shadow Fiend", "late comeback"`. Matching ignores case; metadata matching also normalizes accents, punctuation and underscores. Short terms such as `AM` match whole words, avoiding accidental matches inside longer text. Ambiguous abbreviations such as `ES` match either corresponding hero. All fields share the search, so a hero mentioned in notes can also satisfy a term. Literal `and` is ordinary search text, not an operator.
 - **League games** — show only matches with a recorded or enriched league ID.
 - **Hide unknown recordings** — hide entries without usable match/player information; enabled by default.
 - **Select matches** — click one row, Ctrl-click to toggle more, Shift-click for a range, or Ctrl+A for all visible rows.
@@ -94,6 +94,7 @@ unavailable API match may still have unknown fields after both steps.
 - **Look up account on OpenDota / Open cached avatar** — fetch a player's public profile metadata or open the cached avatar URL in your browser.
 - **OpenDota / Dotabuff** — open the focused match's page in your browser.
 - **Watch replay** — launch your configured game executable with the chosen replay; the per-match client override is saved.
+- **Copy Match ID** — copy the selected replay's match ID using the button beside its detail heading. Disabled when no replay is selected or its match ID is unknown.
 - **Delete selected files…** — review exact physical copies, uncheck any to keep, then confirm permanent deletion; Cancel changes no files.
 
 Deletion bypasses the Recycle Bin and cannot be undone. Match notes, ratings and
@@ -154,6 +155,13 @@ synthetic fixtures; `scripts/smoke_management.py` similarly tests management and
 the confirmation dialog. `scripts/smoke_ui.py` and `inspect_library.py` read the
 configured default replay folders using disposable databases. No automated check
 launches Dota; actual playback and live API availability require manual testing.
+
+Search prepares its metadata index once per catalog reload and waits 150 ms
+after the last keystroke before filtering, so typing bursts produce one redraw.
+Notes and ratings update without rebuilding the metadata index. Run
+`python scripts/smoke_search.py` for synthetic search/debounce UI checks, or
+`python scripts/benchmark_search.py` for index preparation and warm query
+timings on 1,000- and 5,000-game synthetic catalogs. Neither reads user replays.
 
 ## Package and publish a release
 

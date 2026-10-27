@@ -1,0 +1,1216 @@
+{
+  "schema_version": 1,
+  "source": "DotaBASED public.heroes (read-only snapshot, 2026-10-27)",
+  "heroes": [
+    {
+      "id": 0,
+      "localized_name": "Unknown",
+      "abbreviations": [],
+      "aliases": []
+    },
+    {
+      "id": 1,
+      "localized_name": "Anti-Mage",
+      "abbreviations": [
+        "AM"
+      ],
+      "aliases": [
+        "Magina"
+      ]
+    },
+    {
+      "id": 2,
+      "localized_name": "Axe",
+      "abbreviations": [],
+      "aliases": [
+        "Mogul Khan"
+      ]
+    },
+    {
+      "id": 3,
+      "localized_name": "Bane",
+      "abbreviations": [],
+      "aliases": [
+        "Atropos"
+      ]
+    },
+    {
+      "id": 4,
+      "localized_name": "Bloodseeker",
+      "abbreviations": [
+        "BS"
+      ],
+      "aliases": [
+        "Strygwyr"
+      ]
+    },
+    {
+      "id": 5,
+      "localized_name": "Crystal Maiden",
+      "abbreviations": [
+        "CM"
+      ],
+      "aliases": [
+        "Rylai",
+        "Rylai Crestfall"
+      ]
+    },
+    {
+      "id": 6,
+      "localized_name": "Drow Ranger",
+      "abbreviations": [
+        "DR"
+      ],
+      "aliases": [
+        "Traxex"
+      ]
+    },
+    {
+      "id": 7,
+      "localized_name": "Earthshaker",
+      "abbreviations": [
+        "ES"
+      ],
+      "aliases": [
+        "Raigor",
+        "Raigor Stonehoof"
+      ]
+    },
+    {
+      "id": 8,
+      "localized_name": "Juggernaut",
+      "abbreviations": [
+        "Jugg",
+        "Jug"
+      ],
+      "aliases": [
+        "Yurnero"
+      ]
+    },
+    {
+      "id": 9,
+      "localized_name": "Mirana",
+      "abbreviations": [
+        "PotM"
+      ],
+      "aliases": [
+        "Priestess of the Moon"
+      ]
+    },
+    {
+      "id": 10,
+      "localized_name": "Morphling",
+      "abbreviations": [
+        "Morph"
+      ],
+      "aliases": []
+    },
+    {
+      "id": 11,
+      "localized_name": "Shadow Fiend",
+      "abbreviations": [
+        "SF"
+      ],
+      "aliases": [
+        "Nevermore"
+      ]
+    },
+    {
+      "id": 12,
+      "localized_name": "Phantom Lancer",
+      "abbreviations": [
+        "PL"
+      ],
+      "aliases": [
+        "Azwraith"
+      ]
+    },
+    {
+      "id": 13,
+      "localized_name": "Puck",
+      "abbreviations": [],
+      "aliases": [
+        "Faerie Dragon"
+      ]
+    },
+    {
+      "id": 14,
+      "localized_name": "Pudge",
+      "abbreviations": [],
+      "aliases": [
+        "Butcher",
+        "Dendi"
+      ]
+    },
+    {
+      "id": 15,
+      "localized_name": "Razor",
+      "abbreviations": [],
+      "aliases": [
+        "Lightning Revenant"
+      ]
+    },
+    {
+      "id": 16,
+      "localized_name": "Sand King",
+      "abbreviations": [
+        "SK"
+      ],
+      "aliases": [
+        "Crixalis"
+      ]
+    },
+    {
+      "id": 17,
+      "localized_name": "Storm Spirit",
+      "abbreviations": [
+        "SS"
+      ],
+      "aliases": [
+        "Raijin",
+        "Raijin Thunderkeg"
+      ]
+    },
+    {
+      "id": 18,
+      "localized_name": "Sven",
+      "abbreviations": [],
+      "aliases": [
+        "Rogue Knight"
+      ]
+    },
+    {
+      "id": 19,
+      "localized_name": "Tiny",
+      "abbreviations": [],
+      "aliases": [
+        "Stone Giant"
+      ]
+    },
+    {
+      "id": 20,
+      "localized_name": "Vengeful Spirit",
+      "abbreviations": [
+        "VS",
+        "Venge"
+      ],
+      "aliases": [
+        "Shendelzare"
+      ]
+    },
+    {
+      "id": 21,
+      "localized_name": "Windranger",
+      "abbreviations": [
+        "WR"
+      ],
+      "aliases": [
+        "Windrunner",
+        "Lyralei"
+      ]
+    },
+    {
+      "id": 22,
+      "localized_name": "Zeus",
+      "abbreviations": [],
+      "aliases": [
+        "Lord of Olympus"
+      ]
+    },
+    {
+      "id": 23,
+      "localized_name": "Kunkka",
+      "abbreviations": [],
+      "aliases": [
+        "Admiral"
+      ]
+    },
+    {
+      "id": 25,
+      "localized_name": "Lina",
+      "abbreviations": [],
+      "aliases": [
+        "Lina Inverse",
+        "Slayer"
+      ]
+    },
+    {
+      "id": 26,
+      "localized_name": "Lion",
+      "abbreviations": [],
+      "aliases": [
+        "Demon Witch"
+      ]
+    },
+    {
+      "id": 27,
+      "localized_name": "Shadow Shaman",
+      "abbreviations": [
+        "SS"
+      ],
+      "aliases": [
+        "Rhasta"
+      ]
+    },
+    {
+      "id": 28,
+      "localized_name": "Slardar",
+      "abbreviations": [],
+      "aliases": [
+        "Slithereen Guard"
+      ]
+    },
+    {
+      "id": 29,
+      "localized_name": "Tidehunter",
+      "abbreviations": [],
+      "aliases": [
+        "Leviathan"
+      ]
+    },
+    {
+      "id": 30,
+      "localized_name": "Witch Doctor",
+      "abbreviations": [
+        "WD"
+      ],
+      "aliases": [
+        "Zharvakko"
+      ]
+    },
+    {
+      "id": 31,
+      "localized_name": "Lich",
+      "abbreviations": [],
+      "aliases": [
+        "Ethreain"
+      ]
+    },
+    {
+      "id": 32,
+      "localized_name": "Riki",
+      "abbreviations": [
+        "SA"
+      ],
+      "aliases": [
+        "Rikimaru",
+        "Stealth Assassin"
+      ]
+    },
+    {
+      "id": 33,
+      "localized_name": "Enigma",
+      "abbreviations": [],
+      "aliases": [
+        "Darchrow"
+      ]
+    },
+    {
+      "id": 34,
+      "localized_name": "Tinker",
+      "abbreviations": [],
+      "aliases": [
+        "Boush"
+      ]
+    },
+    {
+      "id": 35,
+      "localized_name": "Sniper",
+      "abbreviations": [],
+      "aliases": [
+        "Kardel Sharpeye"
+      ]
+    },
+    {
+      "id": 36,
+      "localized_name": "Necrophos",
+      "abbreviations": [
+        "Necro"
+      ],
+      "aliases": [
+        "Necrolyte",
+        "Rotund'jere"
+      ]
+    },
+    {
+      "id": 37,
+      "localized_name": "Warlock",
+      "abbreviations": [],
+      "aliases": [
+        "Demnok Lannik"
+      ]
+    },
+    {
+      "id": 38,
+      "localized_name": "Beastmaster",
+      "abbreviations": [
+        "BM"
+      ],
+      "aliases": [
+        "Karroch"
+      ]
+    },
+    {
+      "id": 39,
+      "localized_name": "Queen of Pain",
+      "abbreviations": [
+        "QoP"
+      ],
+      "aliases": [
+        "Akasha"
+      ]
+    },
+    {
+      "id": 40,
+      "localized_name": "Venomancer",
+      "abbreviations": [
+        "Veno"
+      ],
+      "aliases": [
+        "Lesale Deathbringer"
+      ]
+    },
+    {
+      "id": 41,
+      "localized_name": "Faceless Void",
+      "abbreviations": [
+        "FV"
+      ],
+      "aliases": [
+        "Darkterror"
+      ]
+    },
+    {
+      "id": 42,
+      "localized_name": "Wraith King",
+      "abbreviations": [
+        "WK",
+        "SK"
+      ],
+      "aliases": [
+        "Skeleton King",
+        "Ostarion",
+        "King Leoric",
+        "Leoric"
+      ]
+    },
+    {
+      "id": 43,
+      "localized_name": "Death Prophet",
+      "abbreviations": [
+        "DP"
+      ],
+      "aliases": [
+        "Krobelus"
+      ]
+    },
+    {
+      "id": 44,
+      "localized_name": "Phantom Assassin",
+      "abbreviations": [
+        "PA"
+      ],
+      "aliases": [
+        "Mortred"
+      ]
+    },
+    {
+      "id": 45,
+      "localized_name": "Pugna",
+      "abbreviations": [],
+      "aliases": [
+        "Oblivion"
+      ]
+    },
+    {
+      "id": 46,
+      "localized_name": "Templar Assassin",
+      "abbreviations": [
+        "TA"
+      ],
+      "aliases": [
+        "Lanaya"
+      ]
+    },
+    {
+      "id": 47,
+      "localized_name": "Viper",
+      "abbreviations": [],
+      "aliases": [
+        "Netherdrake"
+      ]
+    },
+    {
+      "id": 48,
+      "localized_name": "Luna",
+      "abbreviations": [],
+      "aliases": [
+        "Moon Rider"
+      ]
+    },
+    {
+      "id": 49,
+      "localized_name": "Dragon Knight",
+      "abbreviations": [
+        "DK"
+      ],
+      "aliases": [
+        "Davion"
+      ]
+    },
+    {
+      "id": 50,
+      "localized_name": "Dazzle",
+      "abbreviations": [],
+      "aliases": [
+        "Shadow Priest"
+      ]
+    },
+    {
+      "id": 51,
+      "localized_name": "Clockwerk",
+      "abbreviations": [
+        "Clock"
+      ],
+      "aliases": [
+        "Rattletrap"
+      ]
+    },
+    {
+      "id": 52,
+      "localized_name": "Leshrac",
+      "abbreviations": [
+        "Lesh"
+      ],
+      "aliases": [
+        "Tormented Soul"
+      ]
+    },
+    {
+      "id": 53,
+      "localized_name": "Nature's Prophet",
+      "abbreviations": [
+        "NP"
+      ],
+      "aliases": [
+        "Furion"
+      ]
+    },
+    {
+      "id": 54,
+      "localized_name": "Lifestealer",
+      "abbreviations": [
+        "LS"
+      ],
+      "aliases": [
+        "Naix",
+        "N'aix"
+      ]
+    },
+    {
+      "id": 55,
+      "localized_name": "Dark Seer",
+      "abbreviations": [
+        "DS"
+      ],
+      "aliases": [
+        "Ish'Kafel"
+      ]
+    },
+    {
+      "id": 56,
+      "localized_name": "Clinkz",
+      "abbreviations": [],
+      "aliases": [
+        "Bone Fletcher"
+      ]
+    },
+    {
+      "id": 57,
+      "localized_name": "Omniknight",
+      "abbreviations": [
+        "Omni"
+      ],
+      "aliases": [
+        "Purist Thunderwrath"
+      ]
+    },
+    {
+      "id": 58,
+      "localized_name": "Enchantress",
+      "abbreviations": [
+        "Ench"
+      ],
+      "aliases": [
+        "Aiushtha"
+      ]
+    },
+    {
+      "id": 59,
+      "localized_name": "Huskar",
+      "abbreviations": [],
+      "aliases": [
+        "Sacred Warrior"
+      ]
+    },
+    {
+      "id": 60,
+      "localized_name": "Night Stalker",
+      "abbreviations": [
+        "NS"
+      ],
+      "aliases": [
+        "Balanar"
+      ]
+    },
+    {
+      "id": 61,
+      "localized_name": "Broodmother",
+      "abbreviations": [],
+      "aliases": [
+        "Black Arachnia"
+      ]
+    },
+    {
+      "id": 62,
+      "localized_name": "Bounty Hunter",
+      "abbreviations": [
+        "BH"
+      ],
+      "aliases": [
+        "Gondar"
+      ]
+    },
+    {
+      "id": 63,
+      "localized_name": "Weaver",
+      "abbreviations": [],
+      "aliases": [
+        "Skitskurr"
+      ]
+    },
+    {
+      "id": 64,
+      "localized_name": "Jakiro",
+      "abbreviations": [],
+      "aliases": [
+        "Twin Head Dragon"
+      ]
+    },
+    {
+      "id": 65,
+      "localized_name": "Batrider",
+      "abbreviations": [],
+      "aliases": [
+        "Jin'zakk",
+        "Jex"
+      ]
+    },
+    {
+      "id": 66,
+      "localized_name": "Chen",
+      "abbreviations": [],
+      "aliases": [
+        "Holy Knight"
+      ]
+    },
+    {
+      "id": 67,
+      "localized_name": "Spectre",
+      "abbreviations": [],
+      "aliases": [
+        "Mercurial"
+      ]
+    },
+    {
+      "id": 68,
+      "localized_name": "Ancient Apparition",
+      "abbreviations": [
+        "AA"
+      ],
+      "aliases": [
+        "Kaldr"
+      ]
+    },
+    {
+      "id": 69,
+      "localized_name": "Doom",
+      "abbreviations": [],
+      "aliases": [
+        "Doom Bringer",
+        "Lucifer"
+      ]
+    },
+    {
+      "id": 70,
+      "localized_name": "Ursa",
+      "abbreviations": [],
+      "aliases": [
+        "Ulfsaar",
+        "Fuzzy Wuzzy"
+      ]
+    },
+    {
+      "id": 71,
+      "localized_name": "Spirit Breaker",
+      "abbreviations": [
+        "SB"
+      ],
+      "aliases": [
+        "Bara",
+        "Barathrum"
+      ]
+    },
+    {
+      "id": 72,
+      "localized_name": "Gyrocopter",
+      "abbreviations": [
+        "Gyro"
+      ],
+      "aliases": [
+        "Aurel",
+        "Vlaicu"
+      ]
+    },
+    {
+      "id": 73,
+      "localized_name": "Alchemist",
+      "abbreviations": [
+        "Alch"
+      ],
+      "aliases": [
+        "Razzil Darkbrew"
+      ]
+    },
+    {
+      "id": 74,
+      "localized_name": "Invoker",
+      "abbreviations": [],
+      "aliases": [
+        "Carl",
+        "Kael"
+      ]
+    },
+    {
+      "id": 75,
+      "localized_name": "Silencer",
+      "abbreviations": [],
+      "aliases": [
+        "Nortrom"
+      ]
+    },
+    {
+      "id": 76,
+      "localized_name": "Outworld Destroyer",
+      "abbreviations": [
+        "OD"
+      ],
+      "aliases": [
+        "Outworld Devourer",
+        "Obsidian Destroyer",
+        "Harbinger",
+        "Outhouse"
+      ]
+    },
+    {
+      "id": 77,
+      "localized_name": "Lycan",
+      "abbreviations": [],
+      "aliases": [
+        "Banehallow"
+      ]
+    },
+    {
+      "id": 78,
+      "localized_name": "Brewmaster",
+      "abbreviations": [
+        "Brew"
+      ],
+      "aliases": [
+        "Panda",
+        "Pandaren Brewmaster",
+        "Mangix"
+      ]
+    },
+    {
+      "id": 79,
+      "localized_name": "Shadow Demon",
+      "abbreviations": [
+        "SD"
+      ],
+      "aliases": [
+        "Eredar"
+      ]
+    },
+    {
+      "id": 80,
+      "localized_name": "Lone Druid",
+      "abbreviations": [
+        "LD"
+      ],
+      "aliases": [
+        "Sylla",
+        "Syllabear"
+      ]
+    },
+    {
+      "id": 81,
+      "localized_name": "Chaos Knight",
+      "abbreviations": [
+        "CK"
+      ],
+      "aliases": [
+        "Nessaj"
+      ]
+    },
+    {
+      "id": 82,
+      "localized_name": "Meepo",
+      "abbreviations": [],
+      "aliases": [
+        "Geomancer"
+      ]
+    },
+    {
+      "id": 83,
+      "localized_name": "Treant Protector",
+      "abbreviations": [],
+      "aliases": [
+        "Rooftrellen",
+        "Tree"
+      ]
+    },
+    {
+      "id": 84,
+      "localized_name": "Ogre Magi",
+      "abbreviations": [],
+      "aliases": [
+        "Aggron Stonebreak"
+      ]
+    },
+    {
+      "id": 85,
+      "localized_name": "Undying",
+      "abbreviations": [],
+      "aliases": [
+        "Dirge"
+      ]
+    },
+    {
+      "id": 86,
+      "localized_name": "Rubick",
+      "abbreviations": [],
+      "aliases": [
+        "Grand Magus"
+      ]
+    },
+    {
+      "id": 87,
+      "localized_name": "Disruptor",
+      "abbreviations": [],
+      "aliases": [
+        "Thrall",
+        "Stormcaller"
+      ]
+    },
+    {
+      "id": 88,
+      "localized_name": "Nyx Assassin",
+      "abbreviations": [
+        "Nyx",
+        "NA"
+      ],
+      "aliases": [
+        "Nerubian Assassin",
+        "Anub'arak",
+        "Anubarak"
+      ]
+    },
+    {
+      "id": 89,
+      "localized_name": "Naga Siren",
+      "abbreviations": [
+        "Naga"
+      ],
+      "aliases": [
+        "Slithice"
+      ]
+    },
+    {
+      "id": 90,
+      "localized_name": "Keeper of the Light",
+      "abbreviations": [
+        "KotL"
+      ],
+      "aliases": [
+        "Ezalor"
+      ]
+    },
+    {
+      "id": 91,
+      "localized_name": "Io",
+      "abbreviations": [],
+      "aliases": [
+        "Wisp"
+      ]
+    },
+    {
+      "id": 92,
+      "localized_name": "Visage",
+      "abbreviations": [],
+      "aliases": [
+        "Necro'lic"
+      ]
+    },
+    {
+      "id": 93,
+      "localized_name": "Slark",
+      "abbreviations": [],
+      "aliases": [
+        "Nightcrawler"
+      ]
+    },
+    {
+      "id": 94,
+      "localized_name": "Medusa",
+      "abbreviations": [
+        "Dusa"
+      ],
+      "aliases": [
+        "Gorgon"
+      ]
+    },
+    {
+      "id": 95,
+      "localized_name": "Troll Warlord",
+      "abbreviations": [
+        "Troll"
+      ],
+      "aliases": [
+        "Jah'rakal"
+      ]
+    },
+    {
+      "id": 96,
+      "localized_name": "Centaur Warrunner",
+      "abbreviations": [
+        "Centaur"
+      ],
+      "aliases": [
+        "Bradwarden"
+      ]
+    },
+    {
+      "id": 97,
+      "localized_name": "Magnus",
+      "abbreviations": [
+        "Mag"
+      ],
+      "aliases": [
+        "Magnataur",
+        "Magnoceros"
+      ]
+    },
+    {
+      "id": 98,
+      "localized_name": "Timbersaw",
+      "abbreviations": [
+        "Timber"
+      ],
+      "aliases": [
+        "Shredder",
+        "Rizzrack"
+      ]
+    },
+    {
+      "id": 99,
+      "localized_name": "Bristleback",
+      "abbreviations": [
+        "BB"
+      ],
+      "aliases": [
+        "Rigwarl"
+      ]
+    },
+    {
+      "id": 100,
+      "localized_name": "Tusk",
+      "abbreviations": [],
+      "aliases": [
+        "Ymir"
+      ]
+    },
+    {
+      "id": 101,
+      "localized_name": "Skywrath Mage",
+      "abbreviations": [
+        "Sky"
+      ],
+      "aliases": [
+        "Dragonus"
+      ]
+    },
+    {
+      "id": 102,
+      "localized_name": "Abaddon",
+      "abbreviations": [
+        "Aba"
+      ],
+      "aliases": [
+        "Lord of Avernus"
+      ]
+    },
+    {
+      "id": 103,
+      "localized_name": "Elder Titan",
+      "abbreviations": [
+        "ET"
+      ],
+      "aliases": [
+        "Cairne",
+        "Worldsmith"
+      ]
+    },
+    {
+      "id": 104,
+      "localized_name": "Legion Commander",
+      "abbreviations": [
+        "LC"
+      ],
+      "aliases": [
+        "Tresdin"
+      ]
+    },
+    {
+      "id": 105,
+      "localized_name": "Techies",
+      "abbreviations": [],
+      "aliases": [
+        "Squee",
+        "Spleen",
+        "Spoon"
+      ]
+    },
+    {
+      "id": 106,
+      "localized_name": "Ember Spirit",
+      "abbreviations": [
+        "Ember"
+      ],
+      "aliases": [
+        "Xin"
+      ]
+    },
+    {
+      "id": 107,
+      "localized_name": "Earth Spirit",
+      "abbreviations": [
+        "ES"
+      ],
+      "aliases": [
+        "Kaolin"
+      ]
+    },
+    {
+      "id": 108,
+      "localized_name": "Underlord",
+      "abbreviations": [],
+      "aliases": [
+        "Pit Lord",
+        "Abyssal Underlord",
+        "Vrogros",
+        "Azgalor"
+      ]
+    },
+    {
+      "id": 109,
+      "localized_name": "Terrorblade",
+      "abbreviations": [
+        "TB"
+      ],
+      "aliases": [
+        "Demon Marauder"
+      ]
+    },
+    {
+      "id": 110,
+      "localized_name": "Phoenix",
+      "abbreviations": [],
+      "aliases": [
+        "Icarus"
+      ]
+    },
+    {
+      "id": 111,
+      "localized_name": "Oracle",
+      "abbreviations": [],
+      "aliases": [
+        "Nerif"
+      ]
+    },
+    {
+      "id": 112,
+      "localized_name": "Winter Wyvern",
+      "abbreviations": [
+        "WW"
+      ],
+      "aliases": [
+        "Auroth"
+      ]
+    },
+    {
+      "id": 113,
+      "localized_name": "Arc Warden",
+      "abbreviations": [
+        "Arc"
+      ],
+      "aliases": [
+        "Zet"
+      ]
+    },
+    {
+      "id": 114,
+      "localized_name": "Monkey King",
+      "abbreviations": [
+        "MK"
+      ],
+      "aliases": [
+        "Sun Wukong"
+      ]
+    },
+    {
+      "id": 119,
+      "localized_name": "Dark Willow",
+      "abbreviations": [
+        "DW"
+      ],
+      "aliases": [
+        "Mireska Sunbreeze"
+      ]
+    },
+    {
+      "id": 120,
+      "localized_name": "Pangolier",
+      "abbreviations": [
+        "Pango"
+      ],
+      "aliases": [
+        "Donte Panlin"
+      ]
+    },
+    {
+      "id": 121,
+      "localized_name": "Grimstroke",
+      "abbreviations": [
+        "Grim"
+      ],
+      "aliases": [
+        "Stroke of Fate"
+      ]
+    },
+    {
+      "id": 123,
+      "localized_name": "Hoodwink",
+      "abbreviations": [
+        "Hood"
+      ],
+      "aliases": [
+        "Mistwoods"
+      ]
+    },
+    {
+      "id": 126,
+      "localized_name": "Void Spirit",
+      "abbreviations": [
+        "VS"
+      ],
+      "aliases": [
+        "Inai"
+      ]
+    },
+    {
+      "id": 128,
+      "localized_name": "Snapfire",
+      "abbreviations": [
+        "Snap"
+      ],
+      "aliases": [
+        "Beatrix",
+        "Beatrix Snapfire"
+      ]
+    },
+    {
+      "id": 129,
+      "localized_name": "Mars",
+      "abbreviations": [],
+      "aliases": [
+        "God of War"
+      ]
+    },
+    {
+      "id": 131,
+      "localized_name": "Ringmaster",
+      "abbreviations": [
+        "RM"
+      ],
+      "aliases": [
+        "Cogliostro Kettle",
+        "Marionetto"
+      ]
+    },
+    {
+      "id": 135,
+      "localized_name": "Dawnbreaker",
+      "abbreviations": [
+        "DB"
+      ],
+      "aliases": [
+        "Valora"
+      ]
+    },
+    {
+      "id": 136,
+      "localized_name": "Marci",
+      "abbreviations": [],
+      "aliases": [
+        "Companion"
+      ]
+    },
+    {
+      "id": 137,
+      "localized_name": "Primal Beast",
+      "abbreviations": [
+        "PB"
+      ],
+      "aliases": [
+        "Ageless Hunter"
+      ]
+    },
+    {
+      "id": 138,
+      "localized_name": "Muerta",
+      "abbreviations": [],
+      "aliases": [
+        "Spectral Nightmare"
+      ]
+    },
+    {
+      "id": 145,
+      "localized_name": "Kez",
+      "abbreviations": [],
+      "aliases": [
+        "Kestrel",
+        "Flightless"
+      ]
+    },
+    {
+      "id": 155,
+      "localized_name": "Largo",
+      "abbreviations": [],
+      "aliases": [
+        "Bard",
+        "Frog"
+      ]
+    }
+  ]
+}

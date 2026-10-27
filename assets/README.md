@@ -13,6 +13,15 @@ them.
 The runtime loads these local files only. PyInstaller includes this directory
 through `build.ps1`.
 
+`hero_search.json` is a read-only snapshot of DotaBASED `public.heroes`, exported
+2026-10-27 (128 rows including Unknown). It supplies localized names,
+abbreviations and aliases; numeric IDs join to internal names in `heroes.json`.
+Search never queries the backend at runtime. To refresh, export the JSON rows of
+`SELECT id, localized_name, abbreviations, aliases FROM public.heroes ORDER BY id`
+and run `python scripts/import_hero_search.py path/to/export.json --exported-on YYYY-MM-DD`.
+The importer validates the export before replacing the bundled snapshot. No
+credentials or personal account metadata are included.
+
 # Replay application brand
 
 `brand/replay-mark.svg` derives from the website's

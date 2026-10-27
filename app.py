@@ -19,6 +19,7 @@ from opendota import OpenDota
 from replay_grid import ReplayGrid
 from local_parser import LocalParser
 from parse_progress import ParseProgress, ParseProgressWindow
+from search import SearchIndex
 
 BG = "#10151d"
 PANEL = "#18212c"
@@ -89,6 +90,8 @@ class ReplayApp:
         self.api = OpenDota(store)
         self.events = queue.Queue()
         self.catalog = []
+        self.search_index = SearchIndex([])
+        self.search_timer = None
         self.visible = []
         self.current_key = None
         self.selected_account = None
@@ -211,11 +214,12 @@ class ReplayApp:
         self.search = tk.StringVar()
         entry = ttk.Entry(controls, textvariable=self.search)
         entry.pack(side="left", fill="x", expand=True)
-        self.search.trace_add("write", lambda *args: self.render_matches())
+        self.search.trace_add("write", self.search_changed)
         self.league_only = tk.BooleanVar(value=self.store.get_pref("league_only", False))
         ttk.Checkbutton(controls, text="League games", variable=self.league_only, command=self.filter_changed).pack(side="left", padx=12)
         self.hide_unknown = tk.BooleanVar(value=self.store.get_pref("hide_unknown", True))
         ttk.Checkbutton(controls, text="Hide unknown recordings", variable=self.hide_unknown, command=self.filter_changed).pack(side="left")
+        ttk.Label(content, text='All terms must match · separate with spaces or commas · use "quotes" for phrases · names, nicknames, heroes and notes', style="Muted.TLabel", wraplength=800).pack(anchor="w", pady=(0, 8))
         manage = ttk.Frame(content)
         manage.pack(fill="x", pady=(0, 8))
         self.selection_summary = tk.StringVar(value="0 matches selected · Ctrl-click / Shift-click to select more")
@@ -259,8 +263,12 @@ class ReplayApp:
         self.match_tree.body.bind("<Delete>", self.confirm_delete)
         details = ttk.Frame(panes, padding=(0, 12, 0, 0))
         panes.add(details, weight=2)
+        detail_header = ttk.Frame(details)
+        detail_header.pack(fill="x")
         self.detail_title = tk.StringVar(value="Select a replay")
-        ttk.Label(details, textvariable=self.detail_title, style="Section.TLabel").pack(anchor="w")
+        ttk.Label(detail_header, textvariable=self.detail_title, style="Section.TLabel").pack(side="left")
+        self.copy_match_id_button = ttk.Button(detail_header, text="Copy Match ID", command=self.copy_match_id, state="disabled")
+        self.copy_match_id_button.pack(side="right")
         self.detail_meta = tk.StringVar()
         ttk.Label(details, textvariable=self.detail_meta, style="Muted.TLabel", wraplength=1000).pack(anchor="w", pady=5)
         lower = ttk.Frame(details)
@@ -332,6 +340,7 @@ class ReplayApp:
         self.save_notes()
         self.catalog = self.store.catalog()
         self.account_rows = self.store.accounts()
+        self.search_index = SearchIndex(self.catalog, self.account_rows)
         self.suggestions = presence(self.catalog)
         counts = {row["id"]: row["count"] for row in self.suggestions}
         all_counts = {}
@@ -360,12 +369,22 @@ class ReplayApp:
                 LOBBIES.get(match.get("lobby_type"), "Unknown"), pinned, note_preview(match.get("notes", "")),
                 match.get("league_name") or (f"League {match['league_id']}" if match.get("league_id") else "—"))
 
+    def search_changed(self, *args):
+        self.cancel_search_timer()
+        self.search_timer = self.root.after(150, self.render_matches)
+
+    def cancel_search_timer(self):
+        if self.search_timer is not None:
+            self.root.after_cancel(self.search_timer)
+            self.search_timer = None
+
     def render_matches(self, save_pending=True):
+        self.cancel_search_timer()
         if not hasattr(self, "match_tree"):
             return
         if save_pending:
             self.save_notes()
-        self.visible = filter_matches(self.catalog, getattr(self, "account_rows", []), self.tracked_filter.get(), self.search.get(), self.league_only.get(), self.hide_unknown.get())
+        self.visible = filter_matches(self.catalog, getattr(self, "account_rows", []), self.tracked_filter.get(), self.search.get(), self.league_only.get(), self.hide_unknown.get(), self.search_index)
         index = list(self.match_tree["columns"]).index(self.sort_column)
         def sort_value(match):
             if self.sort_column == "match":
@@ -426,6 +445,7 @@ class ReplayApp:
             self.show_match(match)
 
     def show_match(self, match):
+        self.copy_match_id_button.configure(state="normal" if match.get("match_id") else "disabled")
         self.detail_title.set(f"Match {match.get('match_id') or 'unknown'}   ·   {winner(match)} victory" if match.get("winner") in (2, 3) else f"Replay {Path(match['copies'][0]['path']).name}   ·   outcome unknown")
         self.detail_meta.set(f"{when(match)}  ·  {duration(match)}  ·  {MODES.get(match.get('game_mode'), 'Mode unknown')}  ·  Score {score(match)}  ·  {len(match['copies'])} local {'copy' if len(match['copies']) == 1 else 'copies'} ({format_size(match['total_size'])} total)  ·  {'Full local parse' if match.get('local_complete') else 'Replay + cached API' if match.get('api_cached') else 'Replay summary only'}" + ("\n" + "; ".join(dict.fromkeys(match["errors"])) if match["errors"] else ""))
         lines = []
@@ -452,6 +472,7 @@ class ReplayApp:
         self.client_choice.set(match.get("client_override") or "Library default")
 
     def clear_match(self):
+        self.copy_match_id_button.configure(state="disabled")
         self.detail_title.set("Select a replay")
         self.detail_meta.set("")
         self.players_text.configure(state="normal")
@@ -739,6 +760,20 @@ class ReplayApp:
             return self.api.enrich(targets, self.cancel.is_set, lambda done, total, match_id: self.events.put(("progress", f"Enriching {done + 1}/{total} · match {match_id} (maximum 20 per batch)…")))
         self.run_job(f"Enriching up to {len(targets)} visible matches…", work, lambda result: self.status.set(f"Enriched {result['completed']} matches; {result['unavailable']} unavailable. Results cached locally."))
 
+    def copy_match_id(self):
+        match = self.current_match()
+        if not match or not match.get("match_id"):
+            self.status.set("Select a replay with a known match ID to copy.")
+            return
+        match_id = str(match["match_id"])
+        try:
+            self.root.clipboard_clear()
+            self.root.clipboard_append(match_id)
+        except tk.TclError:
+            self.status.set("Could not access the clipboard. Try Copy Match ID again.")
+            return
+        self.status.set(f"Match ID {match_id} copied to clipboard.")
+
     def match_link(self, site):
         match = self.current_match()
         if match and match.get("match_id"):
@@ -828,6 +863,7 @@ class ReplayApp:
         ttk.Button(dialog, text="Save & scan", style="Accent.TButton", command=save).pack(anchor="e", padx=18, pady=(0, 16))
 
     def close(self):
+        self.cancel_search_timer()
         self.save_notes()
         self.store.set_pref("geometry", self.root.geometry())
         self.cancel.set()

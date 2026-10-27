@@ -79,8 +79,10 @@ def main():
                 app.select_match()
                 app.notes.insert("1.0", "UI smoke: saved on selection and filtering.")
                 app.search.set("axe")
+                app.render_matches()
                 assert next(m for m in app.store.catalog() if m["key"] == first["key"])["notes"].startswith("UI smoke")
                 app.search.set("")
+                app.render_matches()
                 suggestion = app.suggestions[0]
                 app.store.pin(suggestion["id"], "Svenge")
                 app.selected_account = suggestion["id"]
