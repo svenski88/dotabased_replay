@@ -72,7 +72,12 @@ def pinned_teams(match, labels):
         if player.get("account_id") in labels:
             team = player.get("team") if player.get("team") in (2, 3) else None
             groups[team].append(labels[player["account_id"]])
-    lines = [label + ": " + ", ".join(dict.fromkeys(groups[team])) for team, label in ((2, "Radiant"), (3, "Dire")) if groups[team]]
+    lines = []
+    for team, label in ((2, "Radiant"), (3, "Dire")):
+        if groups[team]:
+            if match.get("winner") in (2, 3):
+                label = f"({'Win' if match['winner'] == team else 'Loss'}) {label}"
+            lines.append(label + ": " + ", ".join(dict.fromkeys(groups[team])))
     if groups[None]:
         lines.append("Unknown team: " + ", ".join(dict.fromkeys(groups[None])))
     return "\n".join(lines)

@@ -338,7 +338,7 @@ class ReplayGrid(ttk.Frame):
                     value = str(row["values"][position])
                     lines = [line for line in value.split("\n") if line]
                     for line_number, line in enumerate(lines[:2]):
-                        color = "#70d9a0" if line.startswith("Radiant:") else "#ee9696" if line.startswith("Dire:") else FG
+                        color = "#70d9a0" if line.startswith("(Win) ") else "#ee9696" if line.startswith("(Loss) ") else FG
                         self.body.create_text(x + 6, y + (17 if len(lines) == 1 else 9 + line_number * 16), anchor="w", text=self.clipped(line, width - 12), fill=color, font=self.text_font, tags=("pinned_team",))
                     if value:
                         self.icon_hits.append((x, y, x + width, y + ROW_HEIGHT, value))

@@ -20,6 +20,23 @@ class ProgressTests(unittest.TestCase):
         self.assertEqual(pinned_teams({"players": [{"account_id": 1, "team": 3}]}, {1: "One"}), "Dire: One")
         self.assertEqual(pinned_teams({"players": [{"account_id": 1}]}, {1: "One"}), "Unknown team: One")
 
+    def test_pinned_team_results_follow_winner_and_preserve_player_groups(self):
+        match = {"players": [{"account_id": 1, "team": 2}, {"account_id": 2, "team": 3},
+                             {"account_id": 3, "team": 3}, {"account_id": 2, "team": 3},
+                             {"account_id": 4}, {"account_id": 5, "team": 2}]}
+        labels = {1: "Radiant player", 2: "abc123", 3: "def456", 4: "Unassigned"}
+        for winner, expected in ((2, "(Win) Radiant: Radiant player\n(Loss) Dire: abc123, def456"),
+                                 (3, "(Loss) Radiant: Radiant player\n(Win) Dire: abc123, def456")):
+            with self.subTest(winner=winner):
+                match["winner"] = winner
+                self.assertEqual(pinned_teams(match, labels), expected + "\nUnknown team: Unassigned")
+        for outcome in (None, 0, 1):
+            with self.subTest(unknown_outcome=outcome):
+                match["winner"] = outcome
+                self.assertEqual(pinned_teams(match, labels), "Radiant: Radiant player\nDire: abc123, def456\nUnknown team: Unassigned")
+        self.assertEqual(pinned_teams({"winner": 3, "players": [{"account_id": 2, "team": 3}]}, labels), "(Win) Dire: abc123")
+        self.assertEqual(pinned_teams({"winner": 3, "players": []}, labels), "")
+
     def test_outcomes_have_identity_path_and_cached_fields_and_stop_not_complete(self):
         with tempfile.TemporaryDirectory() as directory:
             store = Store(Path(directory) / "test.sqlite3")
@@ -64,7 +81,7 @@ class PresentationTests(unittest.TestCase):
             self.skipTest(str(exc))
         self.addCleanup(self.root.destroy)
 
-    def test_lone_dire_color_winner_color_and_hero_separator(self):
+    def test_unknown_result_is_neutral_winner_keeps_team_color_and_hero_separator(self):
         self.root.geometry("800x220")
         grid = ReplayGrid(self.root, ("radiant", "dire", "winner", "tracked"))
         grid.pack(fill="both", expand=True)
@@ -75,10 +92,29 @@ class PresentationTests(unittest.TestCase):
         self.root.update()
         pinned = grid.body.find_withtag("pinned_team")
         self.assertEqual(len(pinned), 1)
-        self.assertEqual(grid.body.itemcget(pinned[0], "fill"), "#ee9696")
+        self.assertEqual(grid.body.itemcget(pinned[0], "fill"), "#e6edf5")
         winners = grid.body.find_withtag("winner_text")
         self.assertEqual([grid.body.itemcget(item, "fill") for item in winners], ["#70d9a0", "#ee9696"])
         self.assertEqual(len(grid.body.find_withtag("hero_vs")), 2)
+
+    def test_pinned_result_prefixes_set_result_colors_and_preserve_tooltip(self):
+        self.root.geometry("800x320")
+        grid = ReplayGrid(self.root, ("tracked",))
+        grid.pack(fill="both", expand=True)
+        grid.column("tracked", width=700)
+        values = ("(Win) Dire: abc123, def456", "(Loss) Radiant: One\n(Win) Dire: Two",
+                  "(Win) Radiant: One\n(Loss) Dire: Two",
+                  "Radiant: Unknown result\nDire: Unknown result", "Unknown team: Player")
+        for index, value in enumerate(values):
+            grid.insert("", "end", iid=str(index), values=(value,))
+        self.root.update()
+        pinned = grid.body.find_withtag("pinned_team")
+        self.assertEqual([grid.body.itemcget(item, "text") for item in pinned],
+                         [line for value in values for line in value.split("\n")])
+        self.assertEqual([grid.body.itemcget(item, "fill") for item in pinned],
+                         ["#70d9a0", "#ee9696", "#70d9a0", "#70d9a0", "#ee9696",
+                          "#e6edf5", "#e6edf5", "#e6edf5"])
+        self.assertEqual([hit[-1] for hit in grid.icon_hits], list(values))
 
     def test_selected_scope_live_window_reopen_and_friendly_saved_history(self):
         with tempfile.TemporaryDirectory() as directory:
