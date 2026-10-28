@@ -79,14 +79,16 @@ def hero_match(term, hero):
     return any(text_match(normalized, name) or (len(compact) > 2 and compact in name.replace(" ", "")) for name in names)
 
 
-def scalar_values(value):
+def scalar_values(value, include_chat=True):
     """Values, never JSON property names; repeated parser fields are deduplicated."""
     if isinstance(value, dict):
-        for child in value.values():
-            yield from scalar_values(child)
+        for key, child in value.items():
+            # Index the selected transcript once, not again for every cached copy.
+            if key != "chat" or include_chat:
+                yield from scalar_values(child, include_chat and key != "local_results")
     elif isinstance(value, (list, tuple)):
         for child in value:
-            yield from scalar_values(child)
+            yield from scalar_values(child, include_chat)
     elif value is not None:
         yield str(value).casefold()
 

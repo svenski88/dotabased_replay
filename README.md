@@ -87,6 +87,7 @@ unavailable API match may still have unknown fields after both steps.
 - **Only games with enabled accounts** — keep matches containing any enabled account; no enabled accounts means no matches.
 - **Pinned Players** — show present tracked players per team: green `(Win)`, muted red `(Loss)`, neutral for unknown outcomes; hover for full names and unknown teams.
 - **Parse All / Parse Selected** — run the offline native parser on the whole catalog or the selected matches only.
+- **Chat log** — view recorded messages in the scrollable pane beside players and match notes after a successful full parse. Messages show the recorded speaker, channel and game clock when available (otherwise the replay tick). Run **Parse Selected** again for previously parsed games after upgrading to the chat-capable parser. Only chat actually stored in a supported Source 2 recording is available; team/private chat may be absent, and unsupported or incomplete recordings may not produce a log. Chat is cached locally and included in library search after parsing; combine chat words or quoted phrases with heroes, players and notes.
 - **Stop Parsing** — stop the current helper and queue, retaining completed results for the next run.
 - **Parse details** — view live progress, saved results, field sources and per-copy errors; select a row for details.
 - **Fetch selected metadata** — request cached/public OpenDota metadata for the focused match with a known match ID.

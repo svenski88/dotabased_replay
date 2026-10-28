@@ -20,6 +20,7 @@ from replay_grid import ReplayGrid
 from local_parser import LocalParser
 from parse_progress import ParseProgress, ParseProgressWindow
 from search import SearchIndex
+from chat import chat_lines
 
 BG = "#10151d"
 PANEL = "#18212c"
@@ -219,7 +220,7 @@ class ReplayApp:
         ttk.Checkbutton(controls, text="League games", variable=self.league_only, command=self.filter_changed).pack(side="left", padx=12)
         self.hide_unknown = tk.BooleanVar(value=self.store.get_pref("hide_unknown", True))
         ttk.Checkbutton(controls, text="Hide unknown recordings", variable=self.hide_unknown, command=self.filter_changed).pack(side="left")
-        ttk.Label(content, text='All terms must match · separate with spaces or commas · use "quotes" for phrases · names, nicknames, heroes and notes', style="Muted.TLabel", wraplength=800).pack(anchor="w", pady=(0, 8))
+        ttk.Label(content, text='All terms must match · separate with spaces or commas · use "quotes" for phrases · names, nicknames, heroes, notes and parsed chat', style="Muted.TLabel", wraplength=800).pack(anchor="w", pady=(0, 8))
         manage = ttk.Frame(content)
         manage.pack(fill="x", pady=(0, 8))
         self.selection_summary = tk.StringVar(value="0 matches selected · Ctrl-click / Shift-click to select more")
@@ -275,19 +276,20 @@ class ReplayApp:
         lower.pack(fill="both", expand=True)
         lower.columnconfigure(0, weight=1)
         lower.columnconfigure(1, weight=1)
+        lower.columnconfigure(2, weight=2)
         lower.rowconfigure(1, weight=1)
         ttk.Label(lower, text="PLAYERS / HEROES").grid(row=0, column=0, sticky="w", pady=4)
         ttk.Label(lower, text="MATCH NOTES  ·  saved automatically").grid(row=0, column=1, sticky="w", pady=4, padx=(14, 0))
         player_frame = ttk.Frame(lower)
         player_frame.grid(row=1, column=0, sticky="nsew")
-        self.players_text = self.text_widget(player_frame, height=6, state="disabled")
+        self.players_text = self.text_widget(player_frame, width=1, height=6, state="disabled")
         player_scroll = ttk.Scrollbar(player_frame, orient="vertical", command=self.players_text.yview)
         player_scroll.pack(side="right", fill="y")
         self.players_text.pack(fill="both", expand=True)
         self.players_text.configure(yscrollcommand=player_scroll.set)
         note_frame = ttk.Frame(lower)
         note_frame.grid(row=1, column=1, sticky="nsew", padx=(14, 0))
-        self.notes = self.text_widget(note_frame, height=6, undo=True)
+        self.notes = self.text_widget(note_frame, width=1, height=6, undo=True)
         note_scroll = ttk.Scrollbar(note_frame, orient="vertical", command=self.notes.yview)
         note_scroll.pack(side="right", fill="y")
         self.notes.pack(fill="both", expand=True)
@@ -295,6 +297,14 @@ class ReplayApp:
         self.notes.bind("<FocusOut>", lambda event: self.save_notes())
         self.notes.bind("<KeyRelease>", self.note_changed)
         self.notes_timer = None
+        ttk.Label(lower, text="CHAT LOG").grid(row=0, column=2, sticky="w", pady=4, padx=(14, 0))
+        chat_frame = ttk.Frame(lower)
+        chat_frame.grid(row=1, column=2, sticky="nsew", padx=(14, 0))
+        self.chat_text = self.text_widget(chat_frame, width=1, height=6, state="disabled")
+        chat_scroll = ttk.Scrollbar(chat_frame, orient="vertical", command=self.chat_text.yview)
+        chat_scroll.pack(side="right", fill="y")
+        self.chat_text.pack(fill="both", expand=True)
+        self.chat_text.configure(yscrollcommand=chat_scroll.set)
         bottom = ttk.Frame(details)
         bottom.pack(side="bottom", fill="x", pady=10, before=lower)
         ttk.Label(bottom, text="Copy:").pack(side="left")
@@ -465,6 +475,11 @@ class ReplayApp:
         self.notes.configure(state="normal")
         self.notes.delete("1.0", "end")
         self.notes.insert("1.0", match.get("notes", ""))
+        self.chat_text.configure(state="normal")
+        self.chat_text.delete("1.0", "end")
+        self.chat_text.insert("1.0", chat_lines(match))
+        self.chat_text.yview_moveto(0)
+        self.chat_text.configure(state="disabled")
         self.copy_options = match["copies"]
         self.copy_choice["values"] = [f"{copy['client']} · {Path(copy['path']).name} · {format_size(copy['size'])} [{index + 1}]" for index, copy in enumerate(self.copy_options)]
         self.copy_choice.current(0)
@@ -481,6 +496,9 @@ class ReplayApp:
         self.notes.configure(state="normal")
         self.notes.delete("1.0", "end")
         self.notes.configure(state="disabled")
+        self.chat_text.configure(state="normal")
+        self.chat_text.delete("1.0", "end")
+        self.chat_text.configure(state="disabled")
         self.copy_options = []
         self.copy_choice.set("")
         self.copy_size.set("")

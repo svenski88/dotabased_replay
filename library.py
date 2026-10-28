@@ -227,6 +227,11 @@ class Store:
                         match[field] = value
                         match["provenance"][field] = full.get("provenance", {}).get(field, "Complete local parser")
             match["local_complete"] = bool(match["local_results"])
+            chat_results = [item for item in match["local_results"] if item.get("chat_complete") is True and isinstance(item.get("chat"), list)]
+            if chat_results:
+                chat_result = max(chat_results, key=lambda item: (item.get("helper_version") == PARSER_VERSION, item.get("updated", 0)))
+                match["chat"] = chat_result["chat"]
+                match["chat_complete"] = True
             if match["local_complete"]:
                 match.pop("score_notice", None)
         return sorted(grouped.values(), key=lambda match: int(match.get("match_id") or 0), reverse=True)

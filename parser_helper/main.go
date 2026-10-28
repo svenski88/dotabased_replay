@@ -15,7 +15,7 @@ import (
 	"time"
 )
 
-const Version = "1.0.0+manta1.5.2"
+const Version = "1.1.0+manta1.5.2"
 
 type getter interface{ Get(string) interface{} }
 
@@ -140,6 +140,28 @@ func parse(path string, probe bool, encoder *json.Encoder) (result map[string]in
 		return
 	}
 	var rules *manta.Entity
+	var players getter
+	chatCount := 0
+	emitChat := func(entry map[string]interface{}) error {
+		if entry == nil {
+			return nil
+		}
+		if rules != nil {
+			now, nok := rule(rules, "m_fGameTime")
+			start, sok := rule(rules, "m_flGameStartTime")
+			if nok && sok && start > 0 {
+				entry["time"] = now - start
+			}
+		}
+		chatCount++
+		return encoder.Encode(map[string]interface{}{"event": "chat", "entry": entry})
+	}
+	p.Callbacks.OnCUserMessageSayText2(func(message *dota.CUserMessageSayText2) error {
+		return emitChat(sayText(message, p.Tick))
+	})
+	p.Callbacks.OnCDOTAUserMsg_ChatMessage(func(message *dota.CDOTAUserMsg_ChatMessage) error {
+		return emitChat(dotaChat(message, players, p.Tick))
+	})
 	teams := map[int]*manta.Entity{}
 	var final *snapshot
 	identity := map[string]interface{}{}
@@ -180,6 +202,9 @@ func parse(path string, probe bool, encoder *json.Encoder) (result map[string]in
 	probes := map[string]map[string]interface{}{}
 	p.OnEntity(func(e *manta.Entity, op manta.EntityOp) error {
 		class := e.GetClassName()
+		if (class == "CDOTA_PlayerResource" || class == "C_DOTA_PlayerResource") && !op.Flag(manta.EntityOpDeleted) {
+			players = e
+		}
 		isRules := strings.Contains(strings.ToLower(class), "gamerules")
 		isTeam := class == "CDOTATeam" || class == "C_DOTATeam"
 		if (!isRules && !isTeam) || op.Flag(manta.EntityOpDeleted) {
@@ -232,6 +257,8 @@ func parse(path string, probe bool, encoder *json.Encoder) (result map[string]in
 		return
 	}
 	result["complete"] = true
+	result["chat_complete"] = true
+	result["chat_count"] = chatCount
 	for field, value := range identity {
 		final.Fields[field] = value
 		final.Provenance[field] = "CDemoFileInfo typed Dota summary (recorded identity)"

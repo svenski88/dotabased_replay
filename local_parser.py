@@ -9,7 +9,19 @@ import sys
 import threading
 import time
 
-PARSER_VERSION = "1.0.0+manta1.5.2"
+PARSER_VERSION = "1.1.0+manta1.5.2"
+MAX_CHAT_BYTES = 32 * 1024 * 1024
+
+
+def validate_chat(entry):
+    if not isinstance(entry, dict) or any(not isinstance(entry.get(key), str) for key in ("speaker", "text", "channel")):
+        raise ParseError("Invalid chat entry from local helper")
+    if type(entry.get("tick")) is not int or entry["tick"] < 0:
+        raise ParseError("Invalid chat tick from local helper")
+    value = entry.get("time")
+    if value is not None and (type(value) not in (int, float) or not math.isfinite(value)):
+        raise ParseError("Invalid chat time from local helper")
+    return entry
 
 
 def helper_path():
@@ -104,6 +116,7 @@ class LocalParser:
         reader = threading.Thread(target=read_output, daemon=True)
         reader.start()
         started, result, ended = time.monotonic(), None, False
+        chat, chat_bytes = [], 0
         try:
             while not ended or process.poll() is None:
                 if self.cancelled.is_set():
@@ -122,11 +135,21 @@ class LocalParser:
                     progress(event)
                 elif event.get("event") == "result":
                     result = event
+                elif event.get("event") == "chat":
+                    entry = validate_chat(event.get("entry"))
+                    chat_bytes += len(json.dumps(entry).encode("utf-8"))
+                    if chat_bytes > MAX_CHAT_BYTES:
+                        raise ParseError("Chat log exceeds the 32 MiB safety limit")
+                    chat.append(entry)
             if self.cancelled.is_set():
                 raise ParseError("Parsing stopped", "cancelled")
             if result is None:
                 raise ParseError(f"Local helper exited {process.returncode} without a result")
             validated = validate_result(result, self.version)
+            if result.get("chat_complete") is True:
+                if type(result.get("chat_count")) is not int or result["chat_count"] != len(chat):
+                    raise ParseError("Local helper chat stream is incomplete")
+                validated["chat"] = chat
             if process.returncode != 0:
                 raise ParseError(f"Local helper exited {process.returncode}")
             return validated
