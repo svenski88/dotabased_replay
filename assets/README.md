@@ -43,3 +43,14 @@ This developer-only script uses Node, Microsoft Edge and Playwright. It defaults
 to the existing workspace `../dotabased/node_modules/playwright`; pass
 `--playwright C:/path/to/node_modules/playwright` to use another installed copy.
 No browser, Node, renderer or Python image package is required by app recipients.
+
+# Match service icons
+
+`links/opendota.png` and `links/dotabuff.png` are offline 20-pixel PNG versions
+of the services' public website icons, fetched 2026-10-30. Runtime link buttons
+do not fetch icons or send any match/account data until clicked.
+
+- OpenDota source: https://www.opendota.com/assets/images/logo.png
+- Dotabuff source: https://www.dotabuff.com/favicon.ico
+
+These identify links to their respective services; they are not app branding.

@@ -7,6 +7,7 @@ import os
 import sqlite3
 import subprocess
 import time
+import zlib
 
 from replay_parser import parse_replay, filename_match_id
 from search import SearchIndex, compile_terms, query_terms
@@ -45,6 +46,8 @@ class Store:
               source_line TEXT, line_number INTEGER, imported_at REAL, PRIMARY KEY(source, fingerprint));
             CREATE TABLE IF NOT EXISTS full_parse (path TEXT PRIMARY KEY, size INTEGER, mtime INTEGER,
               version TEXT, data TEXT, updated REAL);
+            CREATE TABLE IF NOT EXISTS replay_graphs (path TEXT PRIMARY KEY, size INTEGER, mtime INTEGER,
+              extractor TEXT, summary TEXT NOT NULL, payload BLOB NOT NULL, updated REAL);
             CREATE TABLE IF NOT EXISTS parse_attempts (path TEXT PRIMARY KEY, size INTEGER, mtime INTEGER,
               version TEXT, status TEXT, error TEXT, updated REAL);
             """)
@@ -154,6 +157,7 @@ class Store:
             api = {r["key"].removeprefix("matches/"): json.loads(r["data"]) for r in db.execute("SELECT * FROM cache WHERE key LIKE 'matches/%' AND status=200")}
             parsed = {r["path"]: dict(r) for r in db.execute("SELECT * FROM full_parse")}
             attempts = {r["path"]: dict(r) for r in db.execute("SELECT * FROM parse_attempts")}
+            graphs = {r["path"]: dict(r) for r in db.execute("SELECT path,size,mtime,extractor,summary,updated FROM replay_graphs")}
         grouped = {}
         for row in rows:
             local = json.loads(row["metadata"])
@@ -179,6 +183,10 @@ class Store:
             match["copies"].append({"path": row["path"], "client": row["client"], "library_id": row["library_id"], "library_path": row["library_path"], "size": row["size"], "mtime": row["mtime"]})
             match.setdefault("local_results", [])
             match.setdefault("parse_attempts", [])
+            cached_graph = graphs.get(row["path"])
+            if full_data and cached_graph and (cached_graph["size"], cached_graph["mtime"]) == (row["size"], row["mtime"]):
+                summary = json.loads(cached_graph["summary"])
+                match.setdefault("graph_summaries", []).append({"path": row["path"], "updated": cached_graph["updated"], "extractor_version": cached_graph["extractor"], **summary})
             if full_data:
                 match["local_results"].append({"path": row["path"], "version": full["version"], "updated": full["updated"], **full_data})
             attempt = attempts.get(row["path"])
@@ -227,6 +235,12 @@ class Store:
                         match[field] = value
                         match["provenance"][field] = full.get("provenance", {}).get(field, "Complete local parser")
             match["local_complete"] = bool(match["local_results"])
+            graph_summaries = match.get("graph_summaries", [])
+            if graph_summaries:
+                match["graph_summary"] = max(graph_summaries, key=lambda g: (g.get("extractor_version") == PARSER_VERSION and g.get("schema_version") == 1, g.get("complete", False), g.get("sample_count", 0), g["updated"]))
+                match["category"] = match["graph_summary"].get("category", {}).get("label", "Insufficient data")
+            else:
+                match["category"] = "Not parsed"
             chat_results = [item for item in match["local_results"] if item.get("chat_complete") is True and isinstance(item.get("chat"), list)]
             if chat_results:
                 chat_result = max(chat_results, key=lambda item: (item.get("helper_version") == PARSER_VERSION, item.get("updated", 0)))
@@ -282,9 +296,51 @@ class Store:
     def save_full_parse(self, copy, version, result):
         if not result.get("complete"):
             raise ValueError("Only complete local results may replace a successful parse")
+        graph = result.get("graph")
+        metadata = {key: value for key, value in result.items() if key != "graph"}
         with self.connect() as db:
-            db.execute("INSERT OR REPLACE INTO full_parse VALUES (?,?,?,?,?,?)", (copy["path"], copy["size"], copy["mtime"], version, json.dumps(result), time.time()))
+            db.execute("INSERT OR REPLACE INTO full_parse VALUES (?,?,?,?,?,?)", (copy["path"], copy["size"], copy["mtime"], version, json.dumps(metadata), time.time()))
+            if graph is not None:
+                self._write_graph(db, copy, version, graph)
             db.execute("DELETE FROM parse_attempts WHERE path=?", (copy["path"],))
+
+    def _write_graph(self, db, copy, version, graph):
+        from graphs import graph_summary
+        summary = json.dumps(graph_summary(graph), allow_nan=False)
+        payload = zlib.compress(json.dumps(graph, separators=(",", ":"), allow_nan=False).encode("utf-8"))
+        db.execute("INSERT OR REPLACE INTO replay_graphs VALUES (?,?,?,?,?,?,?)",
+                   (copy["path"], copy["size"], copy["mtime"], version, summary, payload, time.time()))
+
+    def save_graph(self, copy, version, graph):
+        with self.connect() as db:
+            self._write_graph(db, copy, version, graph)
+
+    def graph_cached(self, copy, version=None):
+        with self.connect() as db:
+            row = db.execute("SELECT extractor,payload FROM replay_graphs WHERE path=? AND size=? AND mtime=?",
+                             (copy["path"], copy["size"], copy["mtime"])).fetchone()
+        if not row or (version is not None and row["extractor"] != version):
+            return None
+        try:
+            return json.loads(zlib.decompress(row["payload"]))
+        except (ValueError, zlib.error):
+            return None
+
+    def graph_for_match(self, match, preferred_path=None):
+        copies = list(match.get("copies", []))
+        from local_parser import PARSER_VERSION
+        preferred = preferred_path or match.get("graph_summary", {}).get("path")
+        summaries = {summary["path"]: summary for summary in match.get("graph_summaries", [])}
+        def priority(copy):
+            summary = summaries.get(copy["path"], {})
+            current = summary.get("extractor_version") == PARSER_VERSION and summary.get("schema_version") == 1
+            return (not current, copy["path"] != preferred)
+        copies.sort(key=priority)
+        for copy in copies:
+            graph = self.graph_cached(copy)
+            if graph is not None:
+                return graph
+        return None
 
     def save_parse_attempt(self, copy, version, status, error):
         with self.connect() as db:
@@ -316,11 +372,12 @@ def note_preview(notes, limit=80):
     return first_line if len(first_line) <= limit else first_line[:max(0, limit - 3)].rstrip() + "..."
 
 
-def filter_matches(catalog, accounts, enabled=False, search="", league_only=False, hide_unknown=False, search_index=None):
+def filter_matches(catalog, accounts, enabled=False, search="", league_only=False, hide_unknown=False, search_index=None, category="All categories"):
     wanted = {a["id"] for a in accounts if a["enabled"]}
     terms = compile_terms(query_terms(search)) if search.strip() else ()
     index = search_index if search_index is not None else (SearchIndex(catalog, accounts) if terms else None)
     return [m for m in catalog if (not enabled or bool(wanted & {p.get("account_id") for p in m.get("players", [])}))
+            and (category == "All categories" or m.get("category", "Not parsed") == category)
             and (not league_only or bool(m.get("league_id")))
             and (not hide_unknown or not is_unknown(m))
             and (not terms or index.matches(m, terms))]
@@ -335,7 +392,8 @@ def launch_command(executable, replay):
     # +playdemo enters the engine command parser, so reject its control characters.
     if any(character in str(replay) for character in ('"', ';', '\n', '\r')):
         raise ValueError("Replay path contains an engine command separator")
-    return [str(executable.resolve()), "-console", "+playdemo", str(replay.resolve()).replace("\\", "/")]
+    return [str(executable.resolve()), "-console", "-novid", "-gamestateintegration",
+            "+playdemo", str(replay.resolve()).replace("\\", "/")]
 
 
 def launch(executable, replay):

@@ -9,8 +9,9 @@ import sys
 import threading
 import time
 
-PARSER_VERSION = "1.1.0+manta1.5.2"
+PARSER_VERSION = "1.2.1+manta1.5.2"
 MAX_CHAT_BYTES = 32 * 1024 * 1024
+MAX_GRAPH_BYTES = 64 * 1024 * 1024
 
 
 def validate_chat(entry):
@@ -117,6 +118,7 @@ class LocalParser:
         reader.start()
         started, result, ended = time.monotonic(), None, False
         chat, chat_bytes = [], 0
+        graph_samples, graph_events, graph_bytes = [], [], 0
         try:
             while not ended or process.poll() is None:
                 if self.cancelled.is_set():
@@ -135,6 +137,21 @@ class LocalParser:
                     progress(event)
                 elif event.get("event") == "result":
                     result = event
+                elif event.get("event") in ("graph_sample", "graph_event"):
+                    from graphs import validate_sample, validate_event
+                    try:
+                        entry = (validate_sample if event["event"] == "graph_sample" else validate_event)(event.get("entry"))
+                    except ValueError as exc:
+                        raise ParseError(str(exc)) from exc
+                    graph_bytes += len(json.dumps(entry).encode("utf-8"))
+                    if graph_bytes > MAX_GRAPH_BYTES:
+                        raise ParseError("Graph stream exceeds the 64 MiB safety limit")
+                    if event["event"] == "graph_sample":
+                        if graph_samples and entry["time"] <= graph_samples[-1]["time"]:
+                            raise ParseError("Graph samples are not strictly ordered")
+                        graph_samples.append(entry)
+                    else:
+                        graph_events.append(entry)
                 elif event.get("event") == "chat":
                     entry = validate_chat(event.get("entry"))
                     chat_bytes += len(json.dumps(entry).encode("utf-8"))
@@ -150,6 +167,17 @@ class LocalParser:
                 if type(result.get("chat_count")) is not int or result["chat_count"] != len(chat):
                     raise ParseError("Local helper chat stream is incomplete")
                 validated["chat"] = chat
+            if result.get("graph_schema_version") is not None:
+                if result["graph_schema_version"] != 1 or type(result.get("graph_complete")) is not bool:
+                    raise ParseError("Invalid graph protocol version/completion")
+                if any(type(result.get(key)) is not int for key in ("graph_sample_count", "graph_event_count")) or result.get("graph_sample_count") != len(graph_samples) or result.get("graph_event_count") != len(graph_events):
+                    raise ParseError("Local helper graph stream is incomplete")
+                validated["graph"] = {"schema_version": 1, "complete": result["graph_complete"],
+                                      "samples": graph_samples, "events": graph_events,
+                                      "duration": result["fields"].get("duration"), "winner": result["fields"].get("winner"),
+                                      "extractor_version": self.version, "clock_source": result.get("graph_clock_source")}
+            elif graph_samples or graph_events:
+                raise ParseError("Graph stream has no final counts")
             if process.returncode != 0:
                 raise ParseError(f"Local helper exited {process.returncode}")
             return validated
@@ -162,6 +190,14 @@ class LocalParser:
             with self.lock:
                 if self.process is process:
                     self.process = None
+
+    def derive(self, graph):
+        from graphs import derive_graph, GraphCancelled
+        try:
+            return derive_graph(graph, self.cancelled.is_set)
+        except GraphCancelled as exc:
+            self.cancelled.set()
+            raise ParseError(str(exc), "cancelled") from exc
 
     def parse_all(self, store, progress=lambda event: None, matches=None):
         with self.lock:
@@ -188,8 +224,34 @@ class LocalParser:
                         return (stat.st_size, stat.st_mtime_ns) == (copy["size"], copy["mtime"])
                     except OSError:
                         return False
-                cached_copy = next((copy for copy in copies if unchanged(copy) and store.full_cached(copy, self.version)), None)
+                def cached_usable(copy):
+                    if not unchanged(copy):
+                        return False
+                    metadata = store.full_cached(copy, self.version)
+                    if not metadata:
+                        return False
+                    if metadata.get("graph_schema_version") is not None:
+                        graph = store.graph_cached(copy, self.version)
+                        return graph is not None and graph.get("schema_version") == 1
+                    return True  # retain compatibility with metadata-only synthetic fixtures
+                cached_copy = next((copy for copy in copies if cached_usable(copy)), None)
                 if cached_copy:
+                    cached = store.full_cached(cached_copy, self.version)
+                    graph = store.graph_cached(cached_copy, self.version)
+                    if graph is not None:
+                        from graphs import needs_derivation
+                        if needs_derivation(graph):
+                            try:
+                                self.derive(graph)
+                            except ParseError:
+                                report["cancelled"] = True
+                                break
+                            if not unchanged(cached_copy):
+                                report["failed"] += 1
+                                store.save_parse_attempt(cached_copy, self.version, "failed", "File changed during cached scoring; result discarded")
+                                announce({"status": "failed", "error": "File changed during cached scoring; result discarded", "fraction": 0}, cached_copy["path"])
+                                continue
+                            store.save_graph(cached_copy, self.version, graph)
                     report["cached"] += 1
                     announce({"status": "cached", "fraction": 1, "result": store.full_cached(cached_copy, self.version)}, cached_copy["path"])
                     continue
@@ -212,6 +274,14 @@ class LocalParser:
                             raise ParseError("File changed during parsing; result discarded")
                         if self.cancelled.is_set():
                             raise ParseError("Parsing stopped", "cancelled")
+                        if "graph" in result:
+                            announce({"phase": "scoring", "fraction": 1}, str(path))
+                            self.derive(result["graph"])
+                        if self.cancelled.is_set():
+                            raise ParseError("Parsing stopped", "cancelled")
+                        final_stat = path.stat()
+                        if (final_stat.st_size, final_stat.st_mtime_ns) != (copy["size"], copy["mtime"]):
+                            raise ParseError("File changed during scoring; result discarded")
                         store.save_full_parse(copy, self.version, result)
                         success = True
                         report["completed"] += 1

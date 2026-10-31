@@ -43,7 +43,7 @@ jobs:
         run: |
           python -c "import os; from scripts.package_release import version_name; print(version_name(os.environ['RELEASE_VERSION']))"
           if ($LASTEXITCODE -ne 0) { throw 'Invalid release version' }
-      - name: Install build tools
+      - name: Install offline inference and build dependencies
         run: python -m pip install -r requirements-build.txt
       - name: Offline regression tests
         run: python -m unittest discover -s tests -v
@@ -92,7 +92,7 @@ jobs:
 
           Download **DotaBasedReplay-$version-windows-x64.zip**, extract the entire archive, and run **DotaBasedReplay.exe** inside the extracted folder. Keep the **_internal** folder alongside it. No Python or Go installation is needed.
 
-          Includes offline replay browsing and parsing, pinned accounts, notes, ratings, manual API enrichment, and the blue Replay application icon. Preferences and notes stay in your local application-data folder and are not included in this download.
+          Includes offline replay browsing and parsing, gold/XP timelines with kill and objective markers, estimated win probabilities, and Comeback/Stomp/Close Game filters. Also includes pinned accounts, notes, ratings, manual API enrichment, and collapsible player/chat panels. Preferences and notes stay in your local application-data folder and are not included in this download.
 
           The adjacent .sha256 file contains the download checksum. This build is unsigned.
           "@ | Set-Content -LiteralPath release-notes.md -Encoding utf8

@@ -1,4 +1,7 @@
-# Runtime uses only the Python standard library. Build tooling is optional.
+# Include inference dependencies in source builds and release CI.
+-r requirements-runtime.txt
 pyinstaller==6.21.0
 # Explicit for release PE/icon verification (also used by PyInstaller on Windows).
 pefile==2024.8.26
+# Developer-only HWND screenshots; the desktop runtime uses Tk images.
+Pillow==13.0.0

@@ -1,0 +1,3 @@
+# Offline inference only; no training/scikit-learn runtime is required.
+lightgbm==4.7.0
+numpy>=1.26

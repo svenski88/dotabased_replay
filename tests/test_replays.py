@@ -162,10 +162,11 @@ class StoreTests(unittest.TestCase):
         executable.touch()
         replay.touch()
         args = launch_command(executable, replay)
-        self.assertEqual(args[1:3], ["-console", "+playdemo"])
-        self.assertEqual(args[3], str(replay.resolve()).replace("\\", "/"))
+        self.assertEqual(args[1:5], ["-console", "-novid", "-gamestateintegration", "+playdemo"])
+        self.assertEqual(args[5], str(replay.resolve()).replace("\\", "/"))
         with patch("library.subprocess.Popen") as popen:
             launch(executable, replay)
+            self.assertEqual(popen.call_args.args[0], args)
             self.assertIs(popen.call_args.kwargs["shell"], False)
         bad = self.root / "replay;quit.dem"
         bad.touch()

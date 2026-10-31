@@ -35,11 +35,15 @@ def payload_files(bundle):
             raise ValueError(f"Distribution contains user data or a log: {path}")
     for relative in (f"{APP}.exe", "_internal/bin/replay-parser.exe", "_internal/assets/brand/replay.ico",
                      "_internal/assets/brand/replay-mark-48.png", "_internal/assets/heroes.json",
-                     "_internal/third_party/parser-licenses.txt"):
+                     "_internal/third_party/parser-licenses.txt", "_internal/third_party/inference-licenses.txt",
+                     "_internal/models/micro19/model.txt", "_internal/models/micro19/model_meta.json",
+                     "_internal/assets/links/opendota.png", "_internal/assets/links/dotabuff.png"):
         if not (bundle / relative).is_file():
             raise ValueError(f"Required distribution file missing: {relative}")
     if len(list((bundle / "_internal/assets/heroes").glob("*.png"))) < 100:
         raise ValueError("Bundled hero icons are missing")
+    if not any((bundle / "_internal/lightgbm" / directory / "lib_lightgbm.dll").is_file() for directory in ("bin", "lib")):
+        raise ValueError("Required LightGBM inference DLL is missing")
     return files
 
 
@@ -78,6 +82,7 @@ def smoke(bundle, directory):
         db.execute("CREATE TABLE preferences (key TEXT PRIMARY KEY, value TEXT NOT NULL)")
         db.execute("INSERT INTO preferences VALUES ('initialized', 'true')")
     subprocess.run([str(bundle / "_internal/bin/replay-parser.exe"), "--version"], check=True, timeout=15)
+    subprocess.run([str(bundle / f"{APP}.exe"), "--smoke-model"], cwd=bundle, check=True, timeout=30)
     subprocess.run([str(bundle / f"{APP}.exe"), "--database", str(database), "--smoke"],
                    cwd=bundle, check=True, timeout=30)
     with closing(sqlite3.connect(database)) as db:
@@ -119,7 +124,7 @@ def package(version, bundle, output):
     checksum = archive.with_suffix(".zip.sha256")
     checksum.write_text(f"{digest}  {archive.name}\n", encoding="ascii")
     proof = {"version": version, "archive": archive.name, "bytes": archive.stat().st_size,
-             "sha256": digest, "icon_sizes": sizes, "extracted_startup": "passed"}
+             "sha256": digest, "icon_sizes": sizes, "extracted_startup": "passed", "bundled_inference": "passed"}
     print(json.dumps(proof, indent=2))
     return proof
 

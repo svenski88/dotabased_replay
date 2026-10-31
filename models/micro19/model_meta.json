@@ -1,0 +1,48 @@
+{
+  "feature_names": [
+    "nw_s0",
+    "nw_s1",
+    "nw_s2",
+    "nw_s3",
+    "nw_s4",
+    "nw_s5",
+    "nw_s6",
+    "nw_s7",
+    "nw_s8",
+    "nw_s9",
+    "nw_r",
+    "nw_d",
+    "nw_diff",
+    "towers_dead_R",
+    "towers_dead_D",
+    "towers_diff",
+    "rax_dead_R",
+    "rax_dead_D",
+    "rax_diff"
+  ],
+  "n_features": 19,
+  "lgb_params": {
+    "objective": "binary",
+    "metric": [
+      "binary_logloss",
+      "auc"
+    ],
+    "num_leaves": 127,
+    "learning_rate": 0.05,
+    "feature_fraction": 0.8,
+    "bagging_fraction": 0.8,
+    "bagging_freq": 5,
+    "min_child_samples": 50,
+    "lambda_l1": 0.1,
+    "lambda_l2": 1.0,
+    "n_jobs": -1,
+    "seed": 42,
+    "verbose": -1
+  },
+  "best_iteration": 165,
+  "n_train_rows": 1497198,
+  "n_test_rows": 374237,
+  "seed": 42,
+  "time_weights": true,
+  "notes": "Retrained from ablation/cache via make_model_bundle.py (pro_models4 recipe). Slot order: 0-4 Radiant, 5-9 Dire. Reload: lgb.Booster(model_file='model.txt')."
+}

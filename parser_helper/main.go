@@ -15,7 +15,7 @@ import (
 	"time"
 )
 
-const Version = "1.1.0+manta1.5.2"
+const Version = "1.2.1+manta1.5.2"
 
 type getter interface{ Get(string) interface{} }
 
@@ -139,6 +139,8 @@ func parse(path string, probe bool, encoder *json.Encoder) (result map[string]in
 		result["error"] = err.Error()
 		return
 	}
+	graph := newGraphState()
+	attachGraph(p, graph)
 	var rules *manta.Entity
 	var players getter
 	chatCount := 0
@@ -147,7 +149,7 @@ func parse(path string, probe bool, encoder *json.Encoder) (result map[string]in
 			return nil
 		}
 		if rules != nil {
-			now, nok := rule(rules, "m_fGameTime")
+			now, nok := graphClock(rules, graph.netTick, graph.tickInterval)
 			start, sok := rule(rules, "m_flGameStartTime")
 			if nok && sok && start > 0 {
 				entry["time"] = now - start
@@ -267,10 +269,15 @@ func parse(path string, probe bool, encoder *json.Encoder) (result map[string]in
 	result["provenance"] = final.Provenance
 	result["final_tick"] = final.Tick
 	result["final_state"] = final.State
+	if err := graph.emit(encoder, result); err != nil {
+		result["complete"] = false
+		result["error"] = err.Error()
+	}
 	return
 }
 func run() error {
 	probe := flag.Bool("probe", false, "Include selected field maps for developer compatibility checks")
+	graph := flag.Bool("graph-probe", false, "Development-only graph feasibility JSON (separate from app protocol)")
 	version := flag.Bool("version", false, "Print helper version")
 	flag.Parse()
 	if *version {
@@ -281,6 +288,16 @@ func run() error {
 		return errors.New("one local replay path required")
 	}
 	encoder := json.NewEncoder(os.Stdout)
+	if *graph {
+		result := graphProbe(flag.Arg(0))
+		if err := encoder.Encode(result); err != nil {
+			return err
+		}
+		if complete, _ := result["complete"].(bool); !complete {
+			return errors.New("graph probe incomplete")
+		}
+		return nil
+	}
 	result := parse(flag.Arg(0), *probe, encoder)
 	encoder.Encode(result)
 	if complete, _ := result["complete"].(bool); !complete {

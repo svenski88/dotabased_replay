@@ -1,4 +1,4 @@
-"""DotaBased Replay desktop application. Standard-library runtime only."""
+"""DotaBased Replay desktop application. Offline parsing and timeline graphs."""
 import argparse
 from datetime import datetime
 import json
@@ -21,6 +21,9 @@ from local_parser import LocalParser
 from parse_progress import ParseProgress, ParseProgressWindow
 from search import SearchIndex
 from chat import chat_lines
+from graph_view import CollapsiblePanel, ReplayGraph
+from ui_helpers import HorizontalToolbar, HoverTip
+from graphs import CATEGORIES
 
 BG = "#10151d"
 PANEL = "#18212c"
@@ -142,6 +145,10 @@ class ReplayApp:
         style.map("Treeview", background=[("selected", "#244c59")], foreground=[("selected", "#ffffff")])
         style.configure("Treeview.Heading", background="#233040", foreground=MUTED, padding=(5, 8), font=("Segoe UI", 9, "bold"))
         style.configure("TPanedwindow", background=BG)
+        style.configure("Compact.TButton", padding=(6, 3))
+        style.configure("CompactAccent.TButton", padding=(6, 3), background="#23796d")
+        style.configure("CompactDanger.TButton", padding=(6, 3), background="#833d43")
+        style.configure("Compact.TMenubutton", padding=(6, 3), background="#253447")
         # Clam's global map otherwise replaces fully visible/disabled bars with
         # classic grey, even when the base scrollbar background is configured.
         style.configure("TScrollbar", background="#293949", troughcolor=BG,
@@ -157,7 +164,7 @@ class ReplayApp:
         self.root.option_add("*TCombobox*Listbox.foreground", FG)
 
     def build(self):
-        header = ttk.Frame(self.root, padding=(22, 16, 22, 10))
+        header = ttk.Frame(self.root, padding=(22, 10, 22, 6))
         header.pack(fill="x")
         self.brand_mark = tk.PhotoImage(master=self.root, file=str(brand_root() / "replay-mark-48.png"))
         ttk.Label(header, image=self.brand_mark).pack(side="left", padx=(0, 10))
@@ -167,11 +174,14 @@ class ReplayApp:
         self.scan_button.pack(side="right")
         ttk.Button(header, text="Import notes…", command=self.import_match_notes).pack(side="right", padx=8)
         self.summary = tk.StringVar(value="Your replay collection, on your machine")
-        ttk.Label(self.root, textvariable=self.summary, style="Muted.TLabel", padding=(24, 0, 24, 12)).pack(anchor="w")
-        body = ttk.Panedwindow(self.root, orient="horizontal")
+        ttk.Label(self.root, textvariable=self.summary, style="Muted.TLabel", padding=(24, 0, 24, 6)).pack(anchor="w")
+        body = ttk.Frame(self.root)
         body.pack(fill="both", expand=True, padx=20)
-        sidebar_outer = ttk.Frame(body, width=320)
-        body.add(sidebar_outer, weight=0)
+        body.rowconfigure(0, weight=1)
+        body.columnconfigure(1, weight=1)
+        self.accounts_panel = CollapsiblePanel(body, self.store, "accounts_panel", "PLAYERS & ACCOUNTS", 320)
+        self.accounts_panel.grid(row=0, column=0, sticky="ns", padx=(0, 6))
+        sidebar_outer = self.accounts_panel.content
         sidebar_canvas = tk.Canvas(sidebar_outer, width=305, bg=BG, highlightthickness=0)
         sidebar_scroll = ttk.Scrollbar(sidebar_outer, orient="vertical", command=sidebar_canvas.yview)
         sidebar_scroll.pack(side="right", fill="y")
@@ -183,7 +193,9 @@ class ReplayApp:
         sidebar_canvas.bind("<Configure>", lambda event: sidebar_canvas.itemconfigure(sidebar_window, width=event.width))
         sidebar_canvas.bind("<MouseWheel>", lambda event: sidebar_canvas.yview_scroll(int(-event.delta / 120), "units"))
         content = ttk.Frame(body)
-        body.add(content, weight=1)
+        content.grid(row=0, column=1, sticky="nsew")
+        self.chat_panel = CollapsiblePanel(body, self.store, "chat_panel", "CHAT LOG", 360, side="right")
+        self.chat_panel.grid(row=0, column=2, sticky="ns", padx=(6, 0))
         ttk.Label(sidebar, text="TRACKED ACCOUNTS", style="Section.TLabel").pack(anchor="w", pady=(0, 8))
         self.account_tree = self.small_tree(sidebar, ("filter", "name", "count"), ("Filter", "Nickname / name", "Games"), (46, 180, 48), height=4)
         self.account_tree.bind("<<TreeviewSelect>>", lambda event: self.account_selection(self.account_tree))
@@ -191,60 +203,88 @@ class ReplayApp:
         self.account_tree.bind("<Double-1>", lambda event: self.nickname())
         actions = ttk.Frame(sidebar)
         actions.pack(fill="x", pady=7)
-        ttk.Button(actions, text="Add ID", command=self.add_account).pack(side="left")
-        ttk.Button(actions, text="Nickname", command=self.nickname).pack(side="left", padx=5)
-        ttk.Button(actions, text="Unpin", command=self.unpin).pack(side="left")
+        for index, (text, command) in enumerate((("Add ID", self.add_account), ("Nickname", self.nickname), ("Unpin", self.unpin))):
+            actions.columnconfigure(index, weight=1)
+            ttk.Button(actions, text=text, command=command, style="Compact.TButton").grid(
+                row=0, column=index, sticky="ew", padx=(0, 4 if index < 2 else 0))
         self.tracked_filter = tk.BooleanVar(value=self.store.get_pref("tracked_filter", False))
-        ttk.Checkbutton(sidebar, text="Only games with enabled accounts", variable=self.tracked_filter, command=self.filter_changed).pack(anchor="w", pady=(2, 12))
+        tracked_row = ttk.Frame(sidebar)
+        tracked_row.pack(fill="x", pady=(2, 12))
+        ttk.Checkbutton(tracked_row, variable=self.tracked_filter, command=self.filter_changed).pack(side="left")
+        tracked_label = ttk.Label(tracked_row, text="Only games with enabled accounts", wraplength=175)
+        tracked_label.pack(side="left", fill="x", expand=True)
+        def toggle_tracked(event):
+            self.tracked_filter.set(not self.tracked_filter.get())
+            self.filter_changed()
+        tracked_label.bind("<Button-1>", toggle_tracked)
         ttk.Label(sidebar, text="FREQUENT PLAYERS  > 5%", style="Section.TLabel").pack(anchor="w", pady=(10, 8))
         self.suggestion_tree = self.small_tree(sidebar, ("name", "count", "percent"), ("Replay name", "Games", "%"), (172, 48, 45), height=5)
         self.suggestion_tree.bind("<<TreeviewSelect>>", lambda event: self.account_selection(self.suggestion_tree))
         self.suggestion_tree.bind("<Double-1>", lambda event: self.pin_selected())
         ttk.Button(sidebar, text="Pin selected player", command=self.pin_selected).pack(fill="x", pady=7)
-        ttk.Label(sidebar, text="Presence counts unique library entries.\nUnknown recordings remain in the total.", style="Muted.TLabel", wraplength=290).pack(anchor="w")
+        ttk.Label(sidebar, text="Presence counts unique library entries.\nUnknown recordings remain in the total.", style="Muted.TLabel", wraplength=190).pack(anchor="w")
         ttk.Separator(sidebar).pack(fill="x", pady=14)
         self.profile_label = tk.StringVar(value="Select a player to inspect their account.")
-        ttk.Label(sidebar, textvariable=self.profile_label, wraplength=290).pack(anchor="w")
+        ttk.Label(sidebar, textvariable=self.profile_label, wraplength=190).pack(anchor="w")
         ttk.Button(sidebar, text="Look up account on OpenDota", command=self.lookup_account).pack(fill="x", pady=(10, 6))
         self.avatar_button = ttk.Button(sidebar, text="Open cached avatar", command=lambda: self.open_url(self.avatar_url), state="disabled")
         self.avatar_button.pack(fill="x")
-        ttk.Label(sidebar, text="Network reads happen only when requested.\nProfiles and match metadata stay cached locally.", style="Muted.TLabel", wraplength=290).pack(anchor="w", pady=12)
+        ttk.Label(sidebar, text="Network reads happen only when requested.\nProfiles and match metadata stay cached locally.", style="Muted.TLabel", wraplength=190).pack(anchor="w", pady=12)
         controls = ttk.Frame(content)
-        controls.pack(fill="x", pady=(0, 10))
-        ttk.Label(controls, text="Search").pack(side="left", padx=(0, 8))
+        controls.pack(fill="x", pady=(0, 5))
+        ttk.Label(controls, text="Search").pack(side="left", padx=(0, 5))
         self.search = tk.StringVar()
-        entry = ttk.Entry(controls, textvariable=self.search)
-        entry.pack(side="left", fill="x", expand=True)
+        self.search_entry = ttk.Entry(controls, textvariable=self.search, width=1)
+        self.search_entry.pack(side="left", fill="x", expand=True)
         self.search.trace_add("write", self.search_changed)
+        HoverTip(self.search_entry, 'All terms must match. Separate terms with spaces or commas; use "quotes" for phrases. Search names, nicknames, heroes, notes and parsed chat.')
         self.league_only = tk.BooleanVar(value=self.store.get_pref("league_only", False))
-        ttk.Checkbutton(controls, text="League games", variable=self.league_only, command=self.filter_changed).pack(side="left", padx=12)
+        league = ttk.Checkbutton(controls, text="League", variable=self.league_only, command=self.filter_changed)
+        league.pack(side="left", padx=5)
+        HoverTip(league, "Show league-detected matches only.")
         self.hide_unknown = tk.BooleanVar(value=self.store.get_pref("hide_unknown", True))
-        ttk.Checkbutton(controls, text="Hide unknown recordings", variable=self.hide_unknown, command=self.filter_changed).pack(side="left")
-        ttk.Label(content, text='All terms must match · separate with spaces or commas · use "quotes" for phrases · names, nicknames, heroes, notes and parsed chat', style="Muted.TLabel", wraplength=800).pack(anchor="w", pady=(0, 8))
-        manage = ttk.Frame(content)
-        manage.pack(fill="x", pady=(0, 8))
-        self.selection_summary = tk.StringVar(value="0 matches selected · Ctrl-click / Shift-click to select more")
-        ttk.Label(manage, textvariable=self.selection_summary, style="Muted.TLabel").pack(side="left")
-        self.delete_button = ttk.Button(manage, text="Delete selected files…", style="Danger.TButton", command=self.confirm_delete, state="disabled")
-        self.delete_button.pack(side="right")
-        parse_controls = ttk.Frame(content)
-        parse_controls.pack(fill="x", pady=(0, 8))
-        self.parse_button = ttk.Button(parse_controls, text="Parse All", command=self.parse_all)
+        unknown = ttk.Checkbutton(controls, text="Hide unknown", variable=self.hide_unknown, command=self.filter_changed)
+        unknown.pack(side="left")
+        HoverTip(unknown, "Hide recordings without usable match or player information.")
+        self.category_filter = tk.StringVar(value=self.store.get_pref("category_filter", "All categories"))
+        if self.category_filter.get() not in ("All categories", *CATEGORIES):
+            self.category_filter.set("All categories")
+        self.category_choice = ttk.Combobox(controls, textvariable=self.category_filter,
+                                          values=("All categories", *CATEGORIES), state="readonly", width=15)
+        self.category_choice.pack(side="left", padx=(5, 0))
+        self.category_choice.bind("<<ComboboxSelected>>", lambda event: self.filter_changed())
+        HoverTip(self.category_choice, "Gold first, XP fallback; independent of win estimates.\nComeback: 10% deficit for 2 minutes, then victory.\nStomp: 7.5% lead sustained by minute 10, then continued dominance.\nClose Game: 60% of the ending window within +/-5%, excluding the final minute.")
+        self.selection_summary = tk.StringVar(value="0 matches selected | Ctrl-click / Shift-click to select more")
+        self.parse_toolbar = HorizontalToolbar(content)
+        self.parse_toolbar.pack(fill="x", pady=(0, 5))
+        parse_controls = self.parse_toolbar.content
+        self.parse_button = ttk.Button(parse_controls, text="Parse All", command=self.parse_all, style="Compact.TButton")
         self.parse_button.pack(side="left")
-        self.parse_selected_button = ttk.Button(parse_controls, text="Parse Selected", command=self.parse_selected)
-        self.parse_selected_button.pack(side="left", padx=(6, 0))
-        self.stop_parse_button = ttk.Button(parse_controls, text="Stop Parsing", command=self.local_parser.stop, state="disabled")
-        self.stop_parse_button.pack(side="left", padx=6)
-        ttk.Button(parse_controls, text="Parse details", command=self.parse_details).pack(side="left")
+        self.parse_selected_button = ttk.Button(parse_controls, text="Parse Selected", command=self.parse_selected, style="Compact.TButton")
+        self.parse_selected_button.pack(side="left", padx=(4, 0))
+        self.stop_parse_button = ttk.Button(parse_controls, text="Stop", command=self.local_parser.stop, state="disabled", style="Compact.TButton")
+        self.stop_parse_button.pack(side="left", padx=4)
+        HoverTip(self.stop_parse_button, "Stop Parsing; completed matches remain cached.")
+        self.parse_details_button = ttk.Button(parse_controls, text="Parse details", command=self.parse_details, style="Compact.TButton")
+        self.parse_details_button.pack(side="left")
+        self.enrich_button = ttk.Button(parse_controls, text="Enrich 1", command=self.enrich_selected, style="Compact.TButton")
+        self.enrich_button.pack(side="left", padx=(6, 0))
+        HoverTip(self.enrich_button, "Fetch selected match metadata from OpenDota (explicit network request).")
+        self.enrich_next_button = ttk.Button(parse_controls, text="Next 20", command=self.enrich_batch, style="Compact.TButton")
+        self.enrich_next_button.pack(side="left", padx=4)
+        HoverTip(self.enrich_next_button, "Enrich the next 20 visible uncached matches from OpenDota.")
         self.parse_fraction = tk.DoubleVar(value=0)
-        ttk.Progressbar(parse_controls, variable=self.parse_fraction, maximum=1, length=140).pack(side="right")
+        ttk.Progressbar(parse_controls, variable=self.parse_fraction, maximum=1, length=90).pack(side="left", padx=6)
+        self.delete_button = ttk.Button(parse_controls, text="Delete selected files...", style="CompactDanger.TButton", command=self.confirm_delete, state="disabled")
+        self.delete_button.pack(side="left", padx=(6, 0))
+        HoverTip(self.delete_button, lambda: self.selection_summary.get() + "\nReview selected physical files before confirming permanent deletion.")
         panes = ttk.Panedwindow(content, orient="vertical")
         panes.pack(fill="both", expand=True)
         list_frame = ttk.Frame(panes)
         panes.add(list_frame, weight=3)
-        columns = ("match", "rating", "date", "duration", "radiant", "dire", "winner", "size", "score", "lobby", "tracked", "notes", "league")
+        columns = ("match", "rating", "date", "duration", "radiant", "dire", "winner", "size", "score", "lobby", "tracked", "notes", "league", "category")
         self.match_tree = ReplayGrid(list_frame, columns=columns)
-        for column, title, width in zip(columns, ("MATCH / FILE", "RATING", "DATE", "DURATION", "RADIANT HEROES", "DIRE HEROES", "WINNER", "SIZE TOTAL", "R : D", "LOBBY", "PINNED PLAYERS", "NOTES", "LEAGUE"), (100, 95, 85, 78, 158, 140, 65, 85, 65, 80, 110, 140, 110)):
+        for column, title, width in zip(columns, ("MATCH / FILE", "RATING", "DATE", "DURATION", "RADIANT HEROES", "DIRE HEROES", "WINNER", "SIZE TOTAL", "R : D", "LOBBY", "PINNED PLAYERS", "NOTES", "LEAGUE", "CATEGORY"), (100, 95, 85, 78, 158, 140, 65, 85, 65, 80, 110, 140, 110, 110)):
             self.match_tree.heading(column, text=title, command=lambda key=column: self.sort(key))
             self.match_tree.column(column, width=width)
         self.match_tree.restore_widths(self.store.get_pref("column_widths", {}))
@@ -262,24 +302,58 @@ class ReplayApp:
         self.match_tree.bind("<<TreeviewSelect>>", self.select_match)
         self.match_tree.on_rating = self.rate_match
         self.match_tree.body.bind("<Delete>", self.confirm_delete)
-        details = ttk.Frame(panes, padding=(0, 12, 0, 0))
+        details = ttk.Frame(panes, padding=(0, 5, 0, 0))
         panes.add(details, weight=2)
         detail_header = ttk.Frame(details)
-        detail_header.pack(fill="x")
+        detail_header.pack(fill="x", pady=(0, 2))
+        detail_header.columnconfigure(0, weight=1)
+        self.match_toolbar = HorizontalToolbar(detail_header)
+        self.match_toolbar.grid(row=0, column=0, sticky="ew")
+        match_controls = self.match_toolbar.content
         self.detail_title = tk.StringVar(value="Select a replay")
-        ttk.Label(detail_header, textvariable=self.detail_title, style="Section.TLabel").pack(side="left")
-        self.copy_match_id_button = ttk.Button(detail_header, text="Copy Match ID", command=self.copy_match_id, state="disabled")
-        self.copy_match_id_button.pack(side="right")
+        ttk.Label(match_controls, textvariable=self.detail_title, style="Section.TLabel", width=24).pack(side="left")
+        self.copy_match_id_button = ttk.Button(match_controls, text="Copy ID", command=self.copy_match_id, state="disabled", style="Compact.TButton")
+        self.copy_match_id_button.pack(side="left", padx=(4, 2))
+        HoverTip(self.copy_match_id_button, "Copy Match ID")
+        self.link_images = {}
+        self.link_buttons = {}
+        for service, title in (("opendota", "OpenDota"), ("dotabuff", "Dotabuff")):
+            image = tk.PhotoImage(master=self.root, file=str(brand_root().parent / "links" / f"{service}.png"))
+            self.link_images[service] = image
+            button = ttk.Button(match_controls, image=image, command=lambda name=service: self.match_link(name),
+                                style="Compact.TButton", width=1, state="disabled")
+            button.pack(side="left", padx=2)
+            self.link_buttons[service] = button
+            HoverTip(button, f"Open this match on {title}")
+        self.copy_choice = ttk.Combobox(match_controls, state="readonly", width=17)
+        self.copy_choice.pack(side="left", padx=(5, 4))
+        self.copy_choice.bind("<<ComboboxSelected>>", self.copy_changed)
+        HoverTip(self.copy_choice, "Replay copy to watch")
+        self.client_choice = tk.StringVar(value="Library default")
+        self.client_combo = ttk.Combobox(match_controls, textvariable=self.client_choice, values=("Library default", "modern", "classic"), state="readonly", width=12)
+        self.client_combo.pack(side="left", padx=(0, 4))
+        self.client_combo.bind("<<ComboboxSelected>>", self.override_client)
+        HoverTip(self.client_combo, "Dota client: use the library default or override for this match.")
+        self.copy_size = tk.StringVar()
+        self.match_tools = ttk.Menubutton(match_controls, text="Match tools", style="Compact.TMenubutton")
+        self.match_tools.pack(side="left", padx=4)
+        self.match_tools_menu = tk.Menu(self.match_tools, tearoff=False, bg=PANEL, fg=FG, activebackground="#36516a", activeforeground=FG)
+        self.match_tools.configure(menu=self.match_tools_menu)
+        self.match_tools_menu.add_command(label="Stop network batch", command=self.cancel.set)
+        self.watch_button = ttk.Button(detail_header, text="Watch Replay", style="CompactAccent.TButton", command=self.watch)
+        self.watch_button.grid(row=0, column=1, sticky="ne", padx=(5, 0))
         self.detail_meta = tk.StringVar()
-        ttk.Label(details, textvariable=self.detail_meta, style="Muted.TLabel", wraplength=1000).pack(anchor="w", pady=5)
+        ttk.Label(details, textvariable=self.detail_meta, style="Muted.TLabel", width=1).pack(fill="x", pady=(2, 3))
         lower = ttk.Frame(details)
         lower.pack(fill="both", expand=True)
         lower.columnconfigure(0, weight=1)
         lower.columnconfigure(1, weight=1)
         lower.columnconfigure(2, weight=2)
         lower.rowconfigure(1, weight=1)
-        ttk.Label(lower, text="PLAYERS / HEROES").grid(row=0, column=0, sticky="w", pady=4)
-        ttk.Label(lower, text="MATCH NOTES  ·  saved automatically").grid(row=0, column=1, sticky="w", pady=4, padx=(14, 0))
+        self.player_heading = ttk.Label(lower, text="PLAYERS / HEROES")
+        self.player_heading.grid(row=0, column=0, sticky="w", pady=4)
+        self.notes_heading = ttk.Label(lower, text="NOTES · autosaved")
+        self.notes_heading.grid(row=0, column=1, sticky="w", pady=4, padx=(14, 0))
         player_frame = ttk.Frame(lower)
         player_frame.grid(row=1, column=0, sticky="nsew")
         self.players_text = self.text_widget(player_frame, width=1, height=6, state="disabled")
@@ -297,43 +371,69 @@ class ReplayApp:
         self.notes.bind("<FocusOut>", lambda event: self.save_notes())
         self.notes.bind("<KeyRelease>", self.note_changed)
         self.notes_timer = None
-        ttk.Label(lower, text="CHAT LOG").grid(row=0, column=2, sticky="w", pady=4, padx=(14, 0))
-        chat_frame = ttk.Frame(lower)
-        chat_frame.grid(row=1, column=2, sticky="nsew", padx=(14, 0))
+        self.graph_heading = ttk.Label(lower, text="MATCH GRAPH")
+        self.graph_heading.grid(row=0, column=2, sticky="w", pady=4, padx=(14, 0))
+        self.graph_view = ReplayGraph(lower, self.match_tree.icons)
+        self.graph_view.grid(row=1, column=2, sticky="nsew", padx=(14, 0))
+        self.graph_selection = None
+        self.lower_width_mode = None
+        def lower_layout(event):
+            narrow = event.width < 820
+            if narrow == self.lower_width_mode:
+                return
+            self.lower_width_mode = narrow
+            if narrow:
+                lower.columnconfigure(0, weight=1)
+                lower.columnconfigure(1, weight=2)
+                lower.columnconfigure(2, weight=0)
+                lower.rowconfigure(3, weight=1)
+                self.notes_heading.grid_configure(row=2, column=0, padx=0)
+                note_frame.grid_configure(row=3, column=0, padx=0)
+                self.graph_heading.grid_configure(row=0, column=1)
+                self.graph_view.grid_configure(row=1, column=1, rowspan=3)
+            else:
+                lower.columnconfigure(0, weight=1)
+                lower.columnconfigure(1, weight=1)
+                lower.columnconfigure(2, weight=2)
+                lower.rowconfigure(3, weight=0)
+                self.notes_heading.grid_configure(row=0, column=1, padx=(14, 0))
+                note_frame.grid_configure(row=1, column=1, padx=(14, 0))
+                self.graph_heading.grid_configure(row=0, column=2)
+                self.graph_view.grid_configure(row=1, column=2, rowspan=1)
+        lower.bind("<Configure>", lower_layout)
+        chat_frame = ttk.Frame(self.chat_panel.content)
+        chat_frame.pack(fill="both", expand=True, padx=5, pady=5)
         self.chat_text = self.text_widget(chat_frame, width=1, height=6, state="disabled")
         chat_scroll = ttk.Scrollbar(chat_frame, orient="vertical", command=self.chat_text.yview)
         chat_scroll.pack(side="right", fill="y")
         self.chat_text.pack(fill="both", expand=True)
         self.chat_text.configure(yscrollcommand=chat_scroll.set)
-        bottom = ttk.Frame(details)
-        bottom.pack(side="bottom", fill="x", pady=10, before=lower)
-        ttk.Label(bottom, text="Copy:").pack(side="left")
-        self.copy_choice = ttk.Combobox(bottom, state="readonly", width=34)
-        self.copy_choice.pack(side="left", padx=7)
-        self.copy_choice.bind("<<ComboboxSelected>>", self.copy_changed)
-        self.client_choice = tk.StringVar(value="Library default")
-        self.client_combo = ttk.Combobox(bottom, textvariable=self.client_choice, values=("Library default", "modern", "classic"), state="readonly", width=14)
-        self.client_combo.pack(side="left", padx=(0, 7))
-        self.client_combo.bind("<<ComboboxSelected>>", self.override_client)
-        ttk.Button(bottom, text="Watch replay", style="Accent.TButton", command=self.watch).pack(side="left")
-        self.copy_size = tk.StringVar()
-        ttk.Label(bottom, textvariable=self.copy_size, style="Muted.TLabel").pack(side="left", padx=9)
-        links = ttk.Frame(details)
-        links.pack(side="bottom", fill="x", pady=(0, 5), before=bottom)
-        ttk.Button(links, text="OpenDota ↗", command=lambda: self.match_link("opendota")).pack(side="left")
-        ttk.Button(links, text="Dotabuff ↗", command=lambda: self.match_link("dotabuff")).pack(side="left", padx=7)
-        ttk.Button(links, text="Fetch selected metadata", command=self.enrich_selected).pack(side="left", padx=(8, 0))
-        ttk.Button(links, text="Enrich next 20", command=self.enrich_batch).pack(side="left", padx=7)
-        ttk.Button(links, text="Stop network batch", command=self.cancel.set).pack(side="left")
-        footer = ttk.Frame(self.root, padding=(22, 10))
+        footer = ttk.Frame(self.root, padding=(22, 6))
         footer.pack(side="bottom", fill="x", before=body)
         self.status = tk.StringVar(value="Ready · offline library")
         ttk.Label(footer, textvariable=self.status, style="Muted.TLabel").pack(side="left", fill="x", expand=True)
         ttk.Button(footer, text="Scan details", command=self.scan_details).pack(side="right")
+        ttk.Label(footer, textvariable=self.selection_summary, style="Muted.TLabel").pack(side="right", padx=10)
         self.last_report = None
         self.detail_panes = panes
         self.sidebar_canvas = sidebar_canvas
-        panes.bind("<Configure>", lambda event: panes.sashpos(0, max(90, event.height - 340)))
+        fraction = self.store.get_pref("detail_split", .52)
+        self.split_fraction = fraction if type(fraction) in (int, float) and .15 <= fraction <= .85 else .52
+        self.pane_height = 0
+        panes.bind("<Configure>", self.layout_details)
+        panes.bind("<ButtonRelease-1>", self.save_detail_split, add=True)
+
+    def layout_details(self, event):
+        if event.height != self.pane_height:
+            self.pane_height = event.height
+            height = event.height
+            self.detail_panes.sashpos(0, max(90, min(height-290, int(height*self.split_fraction))))
+
+    def save_detail_split(self, event=None):
+        height = self.detail_panes.winfo_height()
+        if height > 0:
+            self.split_fraction = max(.15, min(.85, self.detail_panes.sashpos(0)/height))
+            self.store.set_pref("detail_split", self.split_fraction)
 
     def text_widget(self, parent, **kwargs):
         return tk.Text(parent, bg=PANEL, fg=FG, insertbackground=FG, relief="flat", padx=10, pady=7, font=("Segoe UI", 10), wrap="word", **kwargs)
@@ -377,7 +477,7 @@ class ReplayApp:
         heroes = {team: ", ".join(hero_name(p.get("hero")) for p in match.get("players", []) if p.get("team") == team) for team in (2, 3)}
         return (match.get("match_id") or Path(match["copies"][0]["path"]).name, match.get("rating", 0), when(match), duration(match), heroes[2], heroes[3], winner(match), format_size(match["total_size"]), score(match),
                 LOBBIES.get(match.get("lobby_type"), "Unknown"), pinned, note_preview(match.get("notes", "")),
-                match.get("league_name") or (f"League {match['league_id']}" if match.get("league_id") else "—"))
+                match.get("league_name") or (f"League {match['league_id']}" if match.get("league_id") else "—"), match.get("category", "Not parsed"))
 
     def search_changed(self, *args):
         self.cancel_search_timer()
@@ -388,13 +488,13 @@ class ReplayApp:
             self.root.after_cancel(self.search_timer)
             self.search_timer = None
 
-    def render_matches(self, save_pending=True):
+    def render_matches(self, save_pending=True, refresh_details=True):
         self.cancel_search_timer()
         if not hasattr(self, "match_tree"):
             return
         if save_pending:
             self.save_notes()
-        self.visible = filter_matches(self.catalog, getattr(self, "account_rows", []), self.tracked_filter.get(), self.search.get(), self.league_only.get(), self.hide_unknown.get(), self.search_index)
+        self.visible = filter_matches(self.catalog, getattr(self, "account_rows", []), self.tracked_filter.get(), self.search.get(), self.league_only.get(), self.hide_unknown.get(), self.search_index, self.category_filter.get())
         index = list(self.match_tree["columns"]).index(self.sort_column)
         def sort_value(match):
             if self.sort_column == "match":
@@ -419,8 +519,10 @@ class ReplayApp:
         focused = focused if focused and self.match_tree.exists(focused) else next(iter(remaining), None)
         self.match_tree.selection_set(remaining, focus=focused)
         if focused:
+            changed = focused != self.current_key
             self.current_key = focused
-            self.show_match(next(m for m in self.visible if m["key"] == focused))
+            if refresh_details or changed:
+                self.show_match(next(m for m in self.visible if m["key"] == focused))
         else:
             self.current_key = None
             self.clear_match()
@@ -438,6 +540,7 @@ class ReplayApp:
         self.store.set_pref("tracked_filter", self.tracked_filter.get())
         self.store.set_pref("league_only", self.league_only.get())
         self.store.set_pref("hide_unknown", self.hide_unknown.get())
+        self.store.set_pref("category_filter", self.category_filter.get())
         self.render_matches()
 
     def current_match(self):
@@ -455,6 +558,8 @@ class ReplayApp:
             self.show_match(match)
 
     def show_match(self, match):
+        for button in self.link_buttons.values():
+            button.configure(state="normal" if match.get("match_id") else "disabled")
         self.copy_match_id_button.configure(state="normal" if match.get("match_id") else "disabled")
         self.detail_title.set(f"Match {match.get('match_id') or 'unknown'}   ·   {winner(match)} victory" if match.get("winner") in (2, 3) else f"Replay {Path(match['copies'][0]['path']).name}   ·   outcome unknown")
         self.detail_meta.set(f"{when(match)}  ·  {duration(match)}  ·  {MODES.get(match.get('game_mode'), 'Mode unknown')}  ·  Score {score(match)}  ·  {len(match['copies'])} local {'copy' if len(match['copies']) == 1 else 'copies'} ({format_size(match['total_size'])} total)  ·  {'Full local parse' if match.get('local_complete') else 'Replay + cached API' if match.get('api_cached') else 'Replay summary only'}" + ("\n" + "; ".join(dict.fromkeys(match["errors"])) if match["errors"] else ""))
@@ -487,6 +592,8 @@ class ReplayApp:
         self.client_choice.set(match.get("client_override") or "Library default")
 
     def clear_match(self):
+        for button in self.link_buttons.values():
+            button.configure(state="disabled")
         self.copy_match_id_button.configure(state="disabled")
         self.detail_title.set("Select a replay")
         self.detail_meta.set("")
@@ -500,12 +607,24 @@ class ReplayApp:
         self.chat_text.delete("1.0", "end")
         self.chat_text.configure(state="disabled")
         self.copy_options = []
+        self.graph_selection = None
+        self.graph_view.set_graph(None)
         self.copy_choice.set("")
         self.copy_size.set("")
 
     def copy_changed(self, event=None):
         index = self.copy_choice.current()
         self.copy_size.set(f"Selected: {format_size(self.copy_options[index]['size'])}" if 0 <= index < len(self.copy_options) else "")
+        match = self.current_match()
+        if match:
+            path = self.copy_options[index]["path"] if 0 <= index < len(self.copy_options) else None
+            summary = match.get("graph_summary", {})
+            selection = (match["key"], path, summary.get("updated"))
+            if selection != self.graph_selection:
+                graph = self.store.graph_for_match(match, path)
+                explanation = summary.get("category", {}).get("explanation", "")
+                self.graph_view.set_graph(graph, explanation)
+                self.graph_selection = selection
 
     def update_selection_status(self):
         count = len(self.match_tree.selection())
@@ -648,6 +767,8 @@ class ReplayApp:
         threading.Thread(target=worker, daemon=True).start()
 
     def poll(self):
+        parsed_paths = set()
+        catalog_changed = False
         try:
             while True:
                 kind, payload = self.events.get_nowait()
@@ -656,12 +777,18 @@ class ReplayApp:
                 elif kind == "parse_progress":
                     self.parse_progress.update(payload)
                     self.refresh_parse_window()
+                    if payload.get("phase") == "batch":
+                        catalog_changed = True
+                    if payload.get("status") in ("completed", "cached", "failed", "incomplete"):
+                        catalog_changed = True
+                        parsed_paths.add(payload.get("path"))
                     if payload.get("phase") == "scan":
                         self.status.set("Preparing offline parse · " + payload["path"])
                         continue
                     self.parse_fraction.set(self.parse_progress.fraction)
                     self.status.set(f"{self.parse_progress.fraction:.0%} batch · {payload['completed']} parsed · {payload['cached']} cached · {payload['failed']} unsuccessful · {self.parse_progress.message}")
                 elif kind == "error":
+                    catalog_changed = False  # The full reload below includes queued results.
                     self.busy = False
                     self.parse_button.configure(state="normal")
                     self.parse_selected_button.configure(state="normal")
@@ -674,6 +801,7 @@ class ReplayApp:
                         self.refresh_parse_window()
                     messagebox.showerror("Operation stopped", payload, parent=self.root)
                 else:
+                    catalog_changed = False
                     self.busy = False
                     self.parse_button.configure(state="normal")
                     self.parse_selected_button.configure(state="normal")
@@ -684,8 +812,31 @@ class ReplayApp:
                     callback(value)
         except queue.Empty:
             pass
+        if catalog_changed:
+            self.refresh_parsed_matches(parsed_paths)
         if not self.closed:
             self.root.after(100, self.poll)
+
+    def refresh_parsed_matches(self, paths):
+        """Publish committed results once per UI poll, never on helper progress ticks."""
+        self.save_notes()
+        match = self.current_match()
+        selected_path = next((copy["path"] for index, copy in enumerate(self.copy_options)
+                              if index == self.copy_choice.current()), None)
+        refresh_details = bool(match and any(copy["path"] in paths for copy in match["copies"]))
+        previous = {match["key"]: match for match in self.catalog}
+        self.catalog = [previous[match["key"]] if previous.get(match["key"]) == match else match
+                        for match in self.store.catalog()]
+        self.search_index.refresh(self.catalog)
+        if refresh_details:
+            self.graph_selection = None
+        self.render_matches(save_pending=False, refresh_details=refresh_details)
+        if refresh_details and selected_path:
+            for index, copy in enumerate(self.copy_options):
+                if copy["path"] == selected_path:
+                    self.copy_choice.current(index)
+                    self.copy_changed()
+                    break
 
     def scan(self):
         def complete(report):
@@ -894,7 +1045,14 @@ def main():
     parser = argparse.ArgumentParser(description="Browse local Dota 2 replays")
     parser.add_argument("--database", type=Path, help="Override the local SQLite database path")
     parser.add_argument("--smoke", action="store_true", help="Open, scan and close after five seconds for UI verification")
+    parser.add_argument("--smoke-model", action="store_true", help="Developer-only offline bundled inference verification")
     args = parser.parse_args()
+    if args.smoke_model:
+        from graphs import Micro19
+        probabilities = Micro19().predict([[10000]*10+[50000, 50000, 0, 0, 0, 0, 0, 0, 0]])
+        if not math.isclose(probabilities[0], .5222032224852916, abs_tol=1e-12):
+            raise RuntimeError("Bundled inference failed golden prediction verification")
+        return
     set_windows_identity()
     root = tk.Tk()
     app = ReplayApp(root, Store(args.database))

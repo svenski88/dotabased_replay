@@ -1,7 +1,8 @@
 # DotaBased Replay
 
 A local desktop library for Dota 2 replay files: browse matches, track players,
-save notes and ratings, recover recorded match details, and open replays in the
+save notes and ratings, recover recorded match details, inspect match graphs and
+automatic game-shape categories, and open replays in the
 right Dota client. Scanning and full parsing work offline and read replay files
 without changing them.
 
@@ -94,13 +95,82 @@ unavailable API match may still have unknown fields after both steps.
 - **Enrich next 20 / Stop network batch** — fetch up to 20 visible uncached matches or stop after the active request finishes.
 - **Look up account on OpenDota / Open cached avatar** — fetch a player's public profile metadata or open the cached avatar URL in your browser.
 - **OpenDota / Dotabuff** — open the focused match's page in your browser.
-- **Watch replay** — launch your configured game executable with the chosen replay; the per-match client override is saved.
+- **Watch replay** — launch your configured game executable with `-console -novid -gamestateintegration` and `+playdemo` for the chosen replay; the per-match client override is saved.
 - **Copy Match ID** — copy the selected replay's match ID using the button beside its detail heading. Disabled when no replay is selected or its match ID is unknown.
 - **Delete selected files…** — review exact physical copies, uncheck any to keep, then confirm permanent deletion; Cancel changes no files.
 
 Deletion bypasses the Recycle Bin and cannot be undone. Match notes, ratings and
 client overrides survive removal of replay copies. **Remove selected** in library
 settings only removes a folder from the catalog; it does not delete its files.
+
+## Match graphs and categories
+
+**Parse All / Parse Selected** now also extracts offline graph data. Existing
+metadata-only cache entries gain timelines on the next explicit parse. Match
+selection loads only that match's compressed graph, keeping inventory filtering
+lightweight. Completed graphs and derived results survive stopping a queue;
+changing the model or category rules lets parsing reuse compatible cached features.
+
+The **Players & Accounts** bar at the left and **Chat Log** bar at the right
+expand/collapse independently. Both start collapsed. Their state and expanded
+widths are remembered; drag an expanded panel's inner border to resize it. Expanded
+chat spans the main body height. The inventory/details divider is also adjustable
+and remembered. At narrow widths, players and notes stack beside the graph.
+Search, league/unknown filters and category selection share one row; hover for
+their guides. Parsing, enrichment and deletion share the action row above the grid.
+Copy/client controls, Match tools and the OpenDota/Dotabuff icon links share the
+match heading row, with **Watch Replay** fixed at the right. Narrow action rows
+provide horizontal scrolling so controls remain accessible with both panels open.
+
+The graph occupies the former chat area. Gold and XP are Radiant-minus-Dire
+advantages on a common symmetric raw-value axis. The green **Win estimate** line
+uses the same plot space with 100% at the top, 50% at neutral and 0% at the bottom.
+Hover to see actual units/probability, proportional gold/XP advantages and their
+30-second medians. Percentages divide the Radiant-minus-Dire difference by the
+combined team resource total, matching the category rules. Legend checkboxes hide
+individual lines. Radiant-credited kills appear at the top and Dire-credited kills
+at the bottom; grey markers retain unattributed deaths. Towers, barracks and Roshan
+have distinct markers. Events occupy aligned columns inside the chart, stacking
+inward from each edge beneath the data lines. Boxes are collapsed only when a
+column would reach the neutral center; its final box shows the overflow count,
+with exact event times retained in the tooltip. Windows tooltips use the monitor
+under the pointer, including displays with negative desktop coordinates.
+
+Right-click a graph time and choose **Copy 'demo_gototick N' console command**
+to copy a seek command for the nearest recorded one-second graph sample. Paste
+it into the Dota client console. The command uses the actual replay packet tick,
+including pregame and pause offsets, rather than multiplying game time by 30.
+Run **Parse Selected** once after upgrading to add tick mappings to older cached
+graphs; their menu explains this until the mapping is available.
+
+The local **micro19** model is used for both league and non-league recordings.
+Missing player NW or building state leaves its estimate unavailable. Older replay
+builds may still have XP/event graphs without direct NW or win estimates. These
+are model estimates, not Valve's curve; the supplied artifact has an unresolved
+training-label/feature-range discrepancy documented in [models/README.md](models/README.md).
+No online lookup or model training happens during parsing.
+
+Each match receives one automatic category, independent of win estimates:
+
+- **Comeback**: eventual winner trails by 10% of combined team resources for at
+  least two minutes after minute five, then wins. Takes precedence over other shapes.
+- **Stomp**: winner sustains a 7.5% lead for two minutes by minute 10 and maintains
+  dominance afterward, allowing only brief dips without a sustained recovery.
+- **Close Game**: at least 60% of the window from five minutes before the finish
+  to one minute before it stays within +/-5%. Large earlier swings are allowed.
+- **Other**: sufficient data without one of those shapes, including dominance
+  established too late for Stomp.
+- **Insufficient data / Not parsed**: distinguish unavailable evidence from graphs
+  that have not yet been extracted.
+
+Category rules use a trailing 30-second median and at least 95% resource coverage.
+They use gold first, with **XP fallback** when direct NW is unavailable; that basis
+and the qualifying interval are available in the graph readout's hover explanation.
+Use the category column/filter alongside existing text, account and league filters.
+
+Developer verification: `python scripts/smoke_graphs.py` exercises synthetic offline
+UI states and writes three screenshots under ignored `.validation/graph-ui/`.
+The Windows package smoke also runs an independent golden inference check.
 
 ## Local data and optional network access
 
@@ -121,11 +191,13 @@ unavailable matches may have no additional information.
 ## Run from source
 
 Developers need Python 3.11+ with Tkinter; the app has no third-party Python
-runtime dependencies. Windows Python includes Tkinter. Build the native helper
+runtime dependencies for browsing; install `requirements-runtime.txt` for offline
+LightGBM win estimates. Windows Python includes Tkinter. Build the native helper
 with Go 1.25+ before full parsing (or use `python scripts/bootstrap_go.py` to
 download a SHA256-verified portable Windows toolchain).
 
 ```powershell
+python -m pip install -r requirements-runtime.txt
 python scripts/build_parser.py
 python app.py
 # Optional: use an isolated database for development.
@@ -163,6 +235,20 @@ Notes and ratings update without rebuilding the metadata index. Run
 `python scripts/smoke_search.py` for synthetic search/debounce UI checks, or
 `python scripts/benchmark_search.py` for index preparation and warm query
 timings on 1,000- and 5,000-game synthetic catalogs. Neither reads user replays.
+
+While parsing, committed matches refresh in the grid without waiting for the
+queue to finish. Current filters and sorting apply to the updated metadata;
+selection, pending notes and the selected replay copy are retained where the
+match remains visible. A selected match's graph refreshes when its parse finishes.
+Cached-result bursts share one catalog refresh per UI poll, and ordinary helper
+progress ticks do not reload the catalog. Unchanged matches reuse prepared search
+documents. Browsing remains available during parsing.
+
+Normal parsing retains one-second graph samples but skips development-only
+entity property discovery. `bin/replay-parser.exe --graph-probe <replay.dem>`
+still includes that discovery for compatibility investigations. Existing cached
+results remain valid. Graph hover reuses its tooltip window and finds samples
+with a binary search to reduce work while moving the mouse.
 
 ## Package and publish a release
 

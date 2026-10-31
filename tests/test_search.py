@@ -99,6 +99,20 @@ class SearchTests(unittest.TestCase):
         self.assertEqual(filter_matches(catalog, [], search='"late comeback"', search_index=index), [])
         self.assertEqual(filter_matches(catalog, [], search="late comeback", search_index=index), catalog)
 
+    def test_refresh_reuses_unchanged_documents_and_reindexes_replaced_metadata(self):
+        index = SearchIndex(self.matches, self.accounts)
+        unchanged = self.matches[0]
+        document = index.documents[id(unchanged)]
+        replaced = {**self.matches[1], "chat": [{"text": "newly parsed greeting"}]}
+        import search
+        with patch("search.prepare_document", wraps=search.prepare_document) as prepare:
+            index.refresh([unchanged, replaced])
+        prepare.assert_called_once_with(replaced)
+        self.assertIs(index.documents[id(unchanged)], document)
+        self.assertNotIn(id(self.matches[1]), index.documents)
+        self.assertEqual(filter_matches([unchanged, replaced], self.accounts,
+                                       search="newly parsed", search_index=index), [replaced])
+
 
 if __name__ == "__main__":
     unittest.main()

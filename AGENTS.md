@@ -4,7 +4,8 @@ This independent Git repository owns the local desktop replay browser. Workspace
 orchestration and shared documentation remain in the parent repository. Do not
 delegate recursively or edit sibling projects from this area.
 
-Runtime is Python 3.11+ with Tkinter and SQLite from the standard library. Run
+Runtime is Python 3.11+ with Tkinter and SQLite, plus the offline inference
+dependencies in requirements-runtime.txt (LightGBM/NumPy). Run
 `python app.py`; `python -m unittest discover -s tests -v` checks offline logic.
 Full parsing uses the bundled native Go/Manta helper in `parser_helper/`.
 `python scripts/build_parser.py` runs Go tests, builds `bin/replay-parser.exe`
@@ -54,3 +55,17 @@ traversal, file identity/size/mtime and catalog membership before each deletion.
 Only the explicit confirmation handler may execute an approved deletion plan.
 Keep confirmation Cancel-focused, show exact paths and sizes, allow per-copy
 exclusions and report partial failures. No shell or recursive deletion is used.
+
+Graphs use bounded `graph_sample`/`graph_event` helper records and a separate
+compressed `replay_graphs` cache. Never inline raw graphs into full_parse or load
+payloads while filtering the catalog. Store summaries only in catalog rows and
+load the selected match lazily, preferring current-extractor copies. Changes to
+model/classifier versions rederive cached features during explicit parsing;
+changed replay stats require extraction. Recheck file stats after scoring and
+before committing. Model errors must preserve valid extracted graphs/metadata.
+`graphs.py` owns the strict micro19 README contract and probability-independent
+NW-first/XP-fallback shape rules; `graph_view.py` owns native canvas/panels. The
+operator selected micro19 despite documented artifact-range inconsistencies;
+do not silently reinterpret features. No pro/role inference is used. Validate
+`python scripts/smoke_graphs.py` and `python app.py --smoke-model`; packaging must
+include model files, LightGBM DLL and notices and run frozen golden inference.

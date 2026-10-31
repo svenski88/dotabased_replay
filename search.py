@@ -184,7 +184,8 @@ def prepare_document(match):
 class SearchIndex:
     """One catalog generation; reload/update rebuild metadata, edits refresh cheaply.
 
-    The UI owns a single index and replaces it when loading catalog metadata.
+    The UI owns a single index and replaces it when loading catalog metadata;
+    incremental refreshes can retain unchanged match objects and their documents.
     Call update(match) after other metadata mutations, or update_accounts after
     nickname edits. Notes/ratings/client overrides are detected automatically.
     No cache data is stored in match dictionaries or the user database.
@@ -198,6 +199,12 @@ class SearchIndex:
 
     def update(self, match):
         self.documents[id(match)] = prepare_document(match)
+
+    def refresh(self, catalog):
+        """Keep prepared documents for unchanged objects; discard removed rows."""
+        previous = self.documents
+        self.documents = {id(match): previous[id(match)] if id(match) in previous
+                          else prepare_document(match) for match in catalog}
 
     def matches(self, match, terms):
         document = self.documents.get(id(match))
