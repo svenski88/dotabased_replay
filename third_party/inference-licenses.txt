@@ -24,8 +24,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 
-numpy 2.5.4
-numpy-2.5.4.dist-info/licenses/LICENSE.txt
+numpy 2.4.6
+numpy-2.4.6.dist-info/licenses/LICENSE.txt
 Copyright (c) 2005-2025, NumPy Developers.
 All rights reserved.
 
@@ -941,7 +941,7 @@ Public License instead of this License.  But first, please read
 <https://www.gnu.org/licenses/why-not-lgpl.html>.
 
 
-numpy-2.5.4.dist-info/licenses/numpy/_core/include/numpy/libdivide/LICENSE.txt
+numpy-2.4.6.dist-info/licenses/numpy/_core/include/numpy/libdivide/LICENSE.txt
   zlib License
   ------------
 
@@ -964,7 +964,7 @@ numpy-2.5.4.dist-info/licenses/numpy/_core/include/numpy/libdivide/LICENSE.txt
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 
-numpy-2.5.4.dist-info/licenses/numpy/_core/src/common/pythoncapi-compat/COPYING
+numpy-2.4.6.dist-info/licenses/numpy/_core/src/common/pythoncapi-compat/COPYING
 BSD Zero Clause License
 
 Copyright Contributors to the pythoncapi_compat project.
@@ -980,7 +980,7 @@ LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
 OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
 PERFORMANCE OF THIS SOFTWARE.
 
-numpy-2.5.4.dist-info/licenses/numpy/_core/src/highway/LICENSE
+numpy-2.4.6.dist-info/licenses/numpy/_core/src/highway/LICENSE
 This project is primarily dual-licensed under your choice of either the Apache
 License 2.0 or the BSD 3-Clause License.
 
@@ -1352,7 +1352,7 @@ express Statement of Purpose.
  d. Affirmer understands and acknowledges that Creative Commons is not a
     party to this document and has no duty or obligation with respect to
     this CC0 or use of the Work.
-numpy-2.5.4.dist-info/licenses/numpy/_core/src/multiarray/dragon4_LICENSE.txt
+numpy-2.4.6.dist-info/licenses/numpy/_core/src/multiarray/dragon4_LICENSE.txt
 Copyright (c) 2014 Ryan Juckett
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -1381,7 +1381,7 @@ modifications specific to printing floats in numpy.
 Ryan Juckett's original code was under the Zlib license; he gave numpy
 permission to include it under the MIT license instead.
 
-numpy-2.5.4.dist-info/licenses/numpy/_core/src/npysort/x86-simd-sort/LICENSE.md
+numpy-2.4.6.dist-info/licenses/numpy/_core/src/npysort/x86-simd-sort/LICENSE.md
 BSD 3-Clause License
 
 Copyright (c) 2022, Intel. All rights reserved.
@@ -1411,7 +1411,7 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
 OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-numpy-2.5.4.dist-info/licenses/numpy/_core/src/umath/svml/LICENSE
+numpy-2.4.6.dist-info/licenses/numpy/_core/src/umath/svml/LICENSE
 Copyright (c) 2005-2021, NumPy Developers.
 All rights reserved.
 
@@ -1443,7 +1443,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-numpy-2.5.4.dist-info/licenses/numpy/fft/pocketfft/LICENSE.md
+numpy-2.4.6.dist-info/licenses/numpy/fft/pocketfft/LICENSE.md
 Copyright (C) 2010-2018 Max-Planck-Society
 All rights reserved.
 
@@ -1470,7 +1470,7 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-numpy-2.5.4.dist-info/licenses/numpy/linalg/lapack_lite/LICENSE.txt
+numpy-2.4.6.dist-info/licenses/numpy/linalg/lapack_lite/LICENSE.txt
 Copyright (c) 1992-2013 The University of Tennessee and The University
                         of Tennessee Research Foundation.  All rights
                         reserved.
@@ -1520,7 +1520,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-numpy-2.5.4.dist-info/licenses/numpy/ma/LICENSE
+numpy-2.4.6.dist-info/licenses/numpy/ma/LICENSE
 * Copyright (c) 2006, University of Georgia and Pierre G.F. Gerard-Marchant
 * All rights reserved.
 * Redistribution and use in source and binary forms, with or without
@@ -1545,7 +1545,7 @@ numpy-2.5.4.dist-info/licenses/numpy/ma/LICENSE
 * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-numpy-2.5.4.dist-info/licenses/numpy/random/LICENSE.md
+numpy-2.4.6.dist-info/licenses/numpy/random/LICENSE.md
 **This software is dual-licensed under the The University of Illinois/NCSA
 Open Source License (NCSA) and The 3-Clause BSD License**
 
@@ -1618,7 +1618,7 @@ Many parts of this module have been derived from original sources,
 often the algorithm's designer. Component licenses are located with 
 the component code.
 
-numpy-2.5.4.dist-info/licenses/numpy/random/src/distributions/LICENSE.md
+numpy-2.4.6.dist-info/licenses/numpy/random/src/distributions/LICENSE.md
 ## NumPy
 
 Copyright (c) 2005-2017, NumPy Developers.
@@ -1680,7 +1680,7 @@ NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
 LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-numpy-2.5.4.dist-info/licenses/numpy/random/src/mt19937/LICENSE.md
+numpy-2.4.6.dist-info/licenses/numpy/random/src/mt19937/LICENSE.md
 # MT19937
 
 Copyright (c) 2003-2005, Jean-Sebastien Roy (js@jeannot.org)
@@ -1742,7 +1742,7 @@ IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
 CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
 TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-numpy-2.5.4.dist-info/licenses/numpy/random/src/pcg64/LICENSE.md
+numpy-2.4.6.dist-info/licenses/numpy/random/src/pcg64/LICENSE.md
 # PCG64
 
 ## The MIT License
@@ -1766,7 +1766,7 @@ COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
 IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN 
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-numpy-2.5.4.dist-info/licenses/numpy/random/src/philox/LICENSE.md
+numpy-2.4.6.dist-info/licenses/numpy/random/src/philox/LICENSE.md
 # PHILOX
 
 Copyright 2010-2012, D. E. Shaw Research.
@@ -1799,7 +1799,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-numpy-2.5.4.dist-info/licenses/numpy/random/src/sfc64/LICENSE.md
+numpy-2.4.6.dist-info/licenses/numpy/random/src/sfc64/LICENSE.md
 # SFC64
 
 ## The MIT License
@@ -1828,7 +1828,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
-numpy-2.5.4.dist-info/licenses/numpy/random/src/splitmix64/LICENSE.md
+numpy-2.4.6.dist-info/licenses/numpy/random/src/splitmix64/LICENSE.md
 # SPLITMIX64
 
 Written in 2015 by Sebastiano Vigna (vigna@acm.org)
@@ -1960,8 +1960,8 @@ often the algorithm's designer. Component licenses are located with
 the component code.
 
 
-scipy 1.18.1
-scipy-1.18.1.dist-info/LICENSE.txt
+scipy 1.17.1
+scipy-1.17.1.dist-info/LICENSE.txt
 Copyright (c) 2001-2002 Enthought, Inc. 2003, SciPy Developers.
 All rights reserved.
 
@@ -1992,9 +1992,6 @@ DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
 THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
-----
-
 
 ----
 
@@ -2909,7 +2906,7 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
 OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-scipy/fft/_duccfft/LICENSE.md
+scipy/fft/_pocketfft/LICENSE.md
 Copyright (C) 2010-2019 Max-Planck-Society
 All rights reserved.
 
@@ -3056,8 +3053,8 @@ modified, and redistributed under the following conditions:
    they desire.
 
 
-narwhals 2.28.0
-narwhals-2.28.0.dist-info/licenses/LICENSE.md
+narwhals 2.22.1
+narwhals-2.22.1.dist-info/licenses/LICENSE.md
 MIT License
 
 Copyright (c) 2024 to present, Marco Gorelli

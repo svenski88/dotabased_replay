@@ -13,6 +13,7 @@ from branding import apply_window_icon, brand_root, set_windows_identity
 
 from library import DEFAULT_CLIENTS, Store, filter_matches, format_size, launch, note_preview, presence
 from delete_dialog import DeleteDialog
+from migration_dialog import MigrationDialog
 from deletion import delete_files, make_delete_plan
 from notes_import import DEFAULT_NOTES, import_notes
 from opendota import OpenDota
@@ -972,7 +973,7 @@ class ReplayApp:
             return
         dialog = tk.Toplevel(self.root)
         dialog.title("Libraries & clients")
-        dialog.geometry("910x560")
+        dialog.geometry("910x620")
         dialog.configure(bg=BG)
         dialog.transient(self.root)
         ttk.Label(dialog, text="Replay folders", style="Section.TLabel").pack(anchor="w", padx=18, pady=(18, 8))
@@ -1023,6 +1024,7 @@ class ReplayApp:
                     variable.set(selected)
             ttk.Button(line, text="Browse…", command=browse).pack(side="right")
         ttk.Label(dialog, text="Client selection follows the library, with an optional per-match override. Old-client compatibility still depends on the replay build.", style="Muted.TLabel", wraplength=850).pack(anchor="w", padx=18, pady=10)
+        ttk.Button(dialog, text="Long-term storage & migration rules...", command=lambda: MigrationDialog(dialog, self)).pack(anchor="w", padx=18, pady=(0, 10))
         def save():
             self.save_notes()
             self.store.set_pref("clients", {key: value.get().strip() for key, value in values.items()})

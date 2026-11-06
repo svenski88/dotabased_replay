@@ -2,7 +2,8 @@
 
 A local desktop library for Dota 2 replay files: browse matches, track players,
 save notes and ratings, recover recorded match details, inspect match graphs and
-automatic game-shape categories, and open replays in the
+automatic game-shape categories, move older recordings into long-term storage,
+and open replays in the
 right Dota client. Scanning and full parsing work offline and read replay files
 without changing them.
 
@@ -50,6 +51,35 @@ guaranteed to play every older replay, including Source 1 recordings. Keep
 different game versions in separate directories. The app follows your library
 assignment rather than detecting and installing a matching patch; close another
 Dota client before switching versions.
+
+## Move older replays into long-term storage
+
+Open **Libraries & clients > Long-term storage & migration rules...**. For each
+client (**modern** or **classic**), choose its registered downloads replay folder,
+an existing long-term storage folder, and a **Modified before (YYYY-MM-DD)** date.
+Use **Save rule** to remember these settings. The cutoff uses the file's last
+modified time, strictly before local midnight on that date; it is not the match
+date or the file creation date. Source and storage folders must not overlap.
+
+Choose **Preview migrations** to save the rule, refresh the catalog and review
+exact source/destination paths and sizes. **Cancel** leaves every replay in place.
+Only **Confirm move of previewed files** starts migration. Rules never run at
+startup, during ordinary scans, or from **Save & scan**. **Stop after current file**
+lets the active copy finish safely before stopping the batch.
+
+Moves preserve subfolders, verify copied bytes before removing originals, and
+work across drives. Existing destination files are refused and never overwritten.
+Changed files and symlink/junction paths are refused. Storage is registered as a
+replay library for the same client; notes, ratings, client overrides and compatible
+parse/graph caches follow the moved replay. Partial failures are shown with exact
+paths. If catalog updates or source removal fail, the verified storage copy is
+retained and the original is kept when possible; a rescan discovers both copies.
+If the app or machine stops during a copy, the original remains and the destination
+may be incomplete; inspect that copy before retrying, since it will not be overwritten.
+
+Developer validation: `python scripts/smoke_migration.py` uses only synthetic
+temporary replays. Add `--screenshots` for Windows captures under ignored
+`.validation/migration-ui/`.
 
 ## Recommended workflow
 
@@ -255,8 +285,8 @@ with a binary search to reduce work while moving the mouse.
 After a local folder build, create a ZIP and checksum with:
 
 ```powershell
-python scripts/package_release.py --version v1.1.0
-Get-FileHash release/DotaBasedReplay-1.1.0-windows-x64.zip -Algorithm SHA256
+python scripts/package_release.py --version v1.5
+Get-FileHash release/DotaBasedReplay-1.5-windows-x64.zip -Algorithm SHA256
 ```
 
 Packaging validates the x64 executable/helper, icons and assets, excludes personal
@@ -270,12 +300,12 @@ To publish, commit the reviewed source, create a new version tag on that commit,
 and push the branch and tag:
 
 ```powershell
-git tag -a v1.1.0 -m "DotaBased Replay 1.1.0"
+git tag -a v1.5 -m "DotaBased Replay 1.5"
 git push origin main
-git push origin v1.1.0
+git push origin v1.5
 ```
 
 Tag pushes publish a release after verified assets are uploaded through a draft;
-prerelease tags such as `v1.1.0-beta.1` produce prereleases. Use a fresh version
+prerelease tags such as `v1.5-beta.1` produce prereleases. Use a fresh version
 for every release and keep published releases unchanged. Manual workflow runs
 never publish. End users download and extract the ZIP from Releases to upgrade.
