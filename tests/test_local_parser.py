@@ -1,4 +1,5 @@
 import json
+import os
 from pathlib import Path
 import socket
 import subprocess
@@ -29,8 +30,15 @@ class ParserTests(unittest.TestCase):
         self.store.add_library(str(self.root), "classic")
 
     def catalog(self, names=("180.dem",)):
-        for name in names:
-            (self.root / name).write_bytes(b"synthetic invalid replay")
+        timestamp = time.time_ns()
+        for index, name in enumerate(names):
+            path = self.root / name
+            path.write_bytes(b"synthetic invalid replay")
+            # These fixtures represent distinct recordings, including a bad
+            # duplicate. Do not let filesystem timestamp coalescing make them
+            # eligible for unchanged-file cache recovery from one another.
+            modified = timestamp + index * 1_000_000_000
+            os.utime(path, ns=(modified, modified))
         self.store.scan()
         return self.store.catalog()
 
