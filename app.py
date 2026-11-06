@@ -842,7 +842,7 @@ class ReplayApp:
     def scan(self):
         def complete(report):
             self.last_report = report
-            self.status.set(f"Scan complete · {report['files']:,} files · {report['cached']:,} unchanged · {len(report['errors']):,} notices (Scan details)")
+            self.status.set(f"Scan complete · {report['files']:,} files · {report['cached']:,} unchanged · {report.get('recovered', 0):,} parse caches recovered · {len(report['errors']):,} notices (Scan details)")
         self.run_job("Scanning replay folders locally…", lambda: self.store.scan(lambda text: self.events.put(("progress", text)), self.cancel.is_set), complete)
 
     def parse_all(self):

@@ -92,6 +92,8 @@ jobs:
 
           Download **DotaBasedReplay-$version-windows-x64.zip**, extract the entire archive, and run **DotaBasedReplay.exe** inside the extracted folder. Keep the **_internal** folder alongside it. No Python or Go installation is needed.
 
+          Replay folder relocation: **Rescan library** now reconnects retained parsed metadata and graphs after a manual folder or drive move when file size, modification timestamp and match identity still match. Notes and ratings are preserved. The storage dialog also clarifies that existing long-term storage can be used as the source for another storage move.
+
           Includes offline replay browsing and parsing, gold/XP timelines with kill and objective markers, estimated win probabilities, and Comeback/Stomp/Close Game filters. Also includes pinned accounts, notes, ratings, manual API enrichment, and collapsible player/chat panels. Libraries & clients provides per-client long-term storage rules with a modified-before date, explicit preview and confirmation, verified copying across drives, and preservation of notes, ratings and parser caches. Preferences and notes stay in your local application-data folder and are not included in this download.
 
           The adjacent .sha256 file contains the download checksum. This build is unsigned.

@@ -90,6 +90,19 @@ class MigrationTests(unittest.TestCase):
         with self.store.connect() as db:
             self.assertEqual(db.execute("SELECT match_id FROM note_imports").fetchone()[0], new_key)
 
+    def test_storage_can_be_source_for_another_storage_move(self):
+        self.replay()
+        first = migrate(self.store, make_plan(self.store, self.rule), confirmed=True)
+        self.assertEqual(first["failed"], [])
+        second_storage = self.root / "another-drive-storage"
+        second_storage.mkdir()
+        rule = {**self.rule, "source": str(self.storage), "storage": str(second_storage)}
+        save_rule(self.store, rule)
+        result = migrate(self.store, make_plan(self.store, rule), confirmed=True)
+        self.assertEqual(result["failed"], [])
+        self.assertTrue((second_storage / "123.dem").exists())
+        self.assertFalse((self.storage / "123.dem").exists())
+
     def test_existing_destination_and_late_collision_never_overwrite(self):
         source = self.replay()
         destination = self.storage / source.name

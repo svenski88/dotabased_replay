@@ -96,7 +96,13 @@ class Store:
             db.execute("DELETE FROM libraries WHERE id=?", (library_id,))
 
     def scan(self, progress=lambda message: None, cancelled=lambda: False):
-        report = {"files": 0, "parsed": 0, "cached": 0, "errors": [], "folders": []}
+        report = {"files": 0, "parsed": 0, "cached": 0, "recovered": 0, "errors": [], "folders": []}
+        # Removed libraries retain their expensive parse caches. Index only metadata;
+        # compressed timelines stay in SQLite until an actual relocation is found.
+        with self.connect() as db:
+            parsed_by_stat = {}
+            for cached in db.execute("SELECT * FROM full_parse"):
+                parsed_by_stat.setdefault((cached["size"], cached["mtime"]), []).append(dict(cached))
         for library in self.libraries():
             if cancelled():
                 break
@@ -146,9 +152,67 @@ class Store:
                 if not walk_errors:
                     db.execute("UPDATE files SET present=0 WHERE library_id=?", (library["id"],))
                 db.executemany("INSERT OR REPLACE INTO files VALUES (?,?,?,?,?,?,?)", rows)
+                for row in rows:
+                    report["recovered"] += self._recover_relocated_cache(db, row, parsed_by_stat)
             report["errors"].extend(walk_errors)
             report["folders"].append({"path": str(root), "files": len(rows)})
         return report
+
+    def _recover_relocated_cache(self, db, row, parsed_by_stat):
+        """Reattach unchanged, identified replays after an external folder move.
+
+        Match IDs alone are insufficient: different recordings of one match must
+        never share caches. Require the same nanosecond mtime and byte size too,
+        just as ordinary cache validation does, and refuse conflicting candidates.
+        Keep original cache entries so recovery never consumes another copy's data.
+        """
+        path, _, size, mtime, metadata, _, _ = row
+        candidates = parsed_by_stat.get((size, mtime), ())
+        current = next((item for item in candidates if item["path"] == path), None)
+        if current:
+            return 0
+        match_id = json.loads(metadata).get("match_id")
+        if not match_id:
+            return 0
+        compatible = []
+        for cached in candidates:
+            try:
+                data = json.loads(cached["data"])
+                recorded_id = data.get("fields", {}).get("match_id")
+                # Older successful helpers sometimes omitted match_id. Their
+                # numeric replay filename is the same identity fallback used by
+                # the summary scanner. An explicit conflicting ID always wins.
+                identity = recorded_id or filename_match_id(cached["path"])
+                if (data.get("complete") and data.get("schema_version") == 1
+                        and str(identity) == str(match_id)):
+                    compatible.append((cached, data))
+            except (ValueError, AttributeError, TypeError):
+                continue
+        if not compatible:
+            return 0
+        cached, data = compatible[0]
+        if any(other["version"] != cached["version"] or other_data != data
+               for other, other_data in compatible[1:]):
+            return 0
+        # Equivalent caches can result from earlier in-app migrations. Retain
+        # their timestamps/versions; moving a file must not upgrade its parser.
+        source_paths = [item["path"] for item, _ in compatible]
+        graph = None
+        for source in source_paths:
+            candidate = db.execute("SELECT * FROM replay_graphs WHERE path=? AND size=? AND mtime=?",
+                                   (source, size, mtime)).fetchone()
+            if candidate:
+                if graph and any(candidate[key] != graph[key] for key in ("extractor", "summary", "payload")):
+                    return 0
+                graph = candidate
+        db.execute("INSERT OR REPLACE INTO full_parse VALUES (?,?,?,?,?,?)",
+                   (path, size, mtime, cached["version"], cached["data"], cached["updated"]))
+        if graph:
+            db.execute("INSERT OR REPLACE INTO replay_graphs VALUES (?,?,?,?,?,?,?)",
+                       (path, size, mtime, graph["extractor"], graph["summary"], graph["payload"], graph["updated"]))
+        # A successful recovered result supersedes any failed attempt at this path.
+        db.execute("DELETE FROM parse_attempts WHERE path=?", (path,))
+        return 1
 
     def catalog(self):
         with self.connect() as db:

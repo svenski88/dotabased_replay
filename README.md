@@ -55,8 +55,10 @@ Dota client before switching versions.
 ## Move older replays into long-term storage
 
 Open **Libraries & clients > Long-term storage & migration rules...**. For each
-client (**modern** or **classic**), choose its registered downloads replay folder,
-an existing long-term storage folder, and a **Modified before (YYYY-MM-DD)** date.
+client (**modern** or **classic**), choose any registered **Source replay folder**
+(downloads or existing long-term storage), an existing destination storage folder,
+and a **Modified before (YYYY-MM-DD)** date. To relocate an entire storage folder,
+select it as the source and choose a cutoff later than all its replay modification dates.
 Use **Save rule** to remember these settings. The cutoff uses the file's last
 modified time, strictly before local midnight on that date; it is not the match
 date or the file creation date. Source and storage folders must not overlap.
@@ -80,6 +82,20 @@ may be incomplete; inspect that copy before retrying, since it will not be overw
 Developer validation: `python scripts/smoke_migration.py` uses only synthetic
 temporary replays. Add `--screenshots` for Windows captures under ignored
 `.validation/migration-ui/`.
+
+If you already moved replays manually, register the new folder in **Libraries &
+clients**, then choose **Save & scan** or **Rescan library**. Scanning can recover
+retained full-parse and graph caches when the replay's size, exact last-modified
+timestamp and match identity still match. Removing an old library does not remove
+these caches. The scan status shows how many parse caches were recovered.
+Equivalent caches from earlier moves are supported; conflicting cached results
+are left untouched. Recovery preserves the original parser version.
+
+Keep replay modification timestamps when copying between drives. A changed
+timestamp or size, an unknown/conflicting identity, or an absent successful cache
+requires **Parse Selected** or **Parse All** again. Notes and ratings remain tied
+to the match ID independently. Recovery uses file statistics and identity, just
+as the ordinary cache does; it does not compare every replay byte with the old copy.
 
 ## Recommended workflow
 

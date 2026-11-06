@@ -25,7 +25,7 @@ class MigrationDialog(tk.Toplevel):
         body = ttk.Frame(self, padding=18)
         body.pack(fill="both", expand=True)
         ttk.Label(body, text="Long-term storage", style="Section.TLabel").pack(anchor="w")
-        ttk.Label(body, text="Save one rule per client. Nothing moves on startup or during scans.\nAge uses the file's last-modified date, strictly before the chosen date at local midnight.", wraplength=900).pack(anchor="w", pady=(6, 12))
+        ttk.Label(body, text="Choose any registered source folder, including existing long-term storage, and a destination.\nSave one rule per client. Nothing moves on startup or during scans. Age uses the file's last-modified date.", wraplength=900).pack(anchor="w", pady=(6, 12))
         self.client = tk.StringVar(value="modern")
         self.source = tk.StringVar()
         self.storage = tk.StringVar()
@@ -34,7 +34,7 @@ class MigrationDialog(tk.Toplevel):
         form = ttk.Frame(body)
         form.pack(fill="x")
         form.columnconfigure(1, weight=1)
-        for row, label in enumerate(("Client", "Downloads replay folder", "Long-term storage folder", "Modified before (YYYY-MM-DD)")):
+        for row, label in enumerate(("Client", "Source replay folder (downloads or storage)", "Destination storage folder", "Modified before (YYYY-MM-DD)")):
             ttk.Label(form, text=label).grid(row=row, column=0, sticky="w", padx=(0, 12), pady=5)
         client_box = ttk.Combobox(form, textvariable=self.client, values=("modern", "classic"), state="readonly", width=12)
         client_box.grid(row=0, column=1, sticky="w")
