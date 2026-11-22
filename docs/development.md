@@ -50,4 +50,12 @@ Get-FileHash release/DotaBasedReplay-1.5-windows-x64.zip -Algorithm SHA256
 
 Packaging verifies the x64 executable, helper, icons, and runtime assets. It excludes personal data and smoke-tests the extracted ZIP with an empty temporary database. The ZIP contains the app, its `_internal` folder and the project README. The Windows packaging smoke also verifies bundled model inference.
 
-In GitHub Actions, use **Windows release → Run workflow** with an artifact version for a build without publishing. The `windows-x64-release` artifact contains the ZIP and checksum. To publish, create a fresh tag on the reviewed release commit and push the tag after the commit is available on `main`. Tag-triggered builds upload verified assets through a draft before publishing. Tags such as `v1.5-beta.1` produce prereleases. Leave published release tags and assets intact.
+In GitHub Actions, use **Windows release → Run workflow** with an artifact version to test the build and attestation without publishing a release. Download the `windows-x64-release` artifact and extract its inner ZIP and checksum. Verify the inner ZIP with the [GitHub CLI](https://cli.github.com/manual/gh_attestation_verify).
+
+```powershell
+gh attestation verify DotaBasedReplay-1.5-windows-x64.zip --repo svenski88/dotabased_replay --signer-workflow svenski88/dotabased_replay/.github/workflows/release.yml --deny-self-hosted-runners
+```
+
+Replace `1.5` with the version you built. For a tagged release, add `--source-ref refs/tags/v1.5` with the corresponding tag. Attestations cover the exact ZIP built by GitHub Actions. Windows Authenticode signing is a separate step.
+
+To publish, create a fresh tag on the reviewed release commit and push it after the commit is available on `main`. The publish job checks the checksum and verifies the ZIP's provenance against that tag before creating or updating a draft. Tags such as `v1.5-beta.1` produce prereleases. Leave published release tags and assets intact.
