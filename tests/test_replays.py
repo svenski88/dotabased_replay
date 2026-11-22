@@ -1,4 +1,5 @@
 import json
+from datetime import datetime, timezone
 from pathlib import Path
 import struct
 import tempfile
@@ -7,6 +8,7 @@ from unittest.mock import patch
 
 from library import Store, filter_matches, launch, launch_command, presence
 from opendota import ApiError, OpenDota, Unavailable
+from patches import patch_at
 from replay_parser import ReplayError, STEAM_BASE, decode_summary, parse_replay, snappy
 
 
@@ -26,9 +28,11 @@ def blob(field, value):
     return vint(field << 3 | 2) + vint(len(value)) + value
 
 
-def summary(match_id=123, account=42, league=57, duration=1800):
+def summary(match_id=123, account=42, league=57, duration=1800, end_time=None):
     player = blob(1, b"npc_dota_hero_axe") + blob(2, b"Alice") + number(4, STEAM_BASE + account) + number(5, 2)
     dota = number(1, match_id) + number(2, 22) + number(3, 2) + blob(4, player) + number(5, league)
+    if end_time is not None:
+        dota += number(11, end_time)
     return vint(1 << 3 | 5) + struct.pack("<f", duration) + blob(4, blob(4, dota))
 
 
@@ -42,15 +46,45 @@ def literal_snappy(payload):
     return vint(len(payload)) + prefix + payload
 
 
-def write_replay(path, match_id=123, compressed=True, magic=b"PBDEMS2\0", duration=1800):
-    payload = summary(match_id, duration=duration)
+def write_replay(path, match_id=123, compressed=True, magic=b"PBDEMS2\0", duration=1800, end_time=None, build=None, dota_version=None):
+    header = b""
+    if build is not None:
+        payload = blob(1, magic.rstrip(b"\0")) + number(2, 48) + number(13, build)
+        if dota_version:
+            payload += blob(6, f"/srv/dota_v{dota_version}/dota".encode("ascii"))
+        if compressed:
+            payload = literal_snappy(payload)
+        header = vint(65 if compressed else 1) + vint(0) + vint(len(payload)) + payload
+    payload = summary(match_id, duration=duration, end_time=end_time)
     if compressed:
         payload = literal_snappy(payload)
     footer = vint(66 if compressed else 2) + vint(90000) + vint(len(payload)) + payload
-    path.write_bytes(magic + struct.pack("<II", 16, 16) + footer)
+    path.write_bytes(magic + struct.pack("<II", 16 + len(header), 16) + header + footer)
+
+
+def timestamp(year, month, day):
+    return int(datetime(year, month, day, tzinfo=timezone.utc).timestamp())
 
 
 class ParserTests(unittest.TestCase):
+    def test_patch_calendar_distinguishes_lettered_patches(self):
+        boundary = timestamp(2016, 10, 17)
+        self.assertEqual(patch_at(boundary - 1), "6.88e")
+        self.assertEqual(patch_at(boundary), "6.88f")
+        self.assertEqual(patch_at(timestamp(2016, 12, 15)), "7.00")
+        self.assertEqual(patch_at(timestamp(2026, 2, 1)), "7.40c")
+        for value in (None, 0, b"2016", timestamp(2010, 1, 1)):
+            self.assertIsNone(patch_at(value))
+
+    def test_optional_source_two_build(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "123.dem"
+            for compressed in (True, False):
+                write_replay(path, compressed=compressed, build=10512)
+                self.assertEqual(parse_replay(path)["replay_build"], 10512)
+            write_replay(path, magic=b"PBUFDEM\0", build=10512)
+            self.assertIsNone(parse_replay(path).get("replay_build"))
+
     def test_both_headers_and_footer_compression(self):
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / "123.dem"
@@ -108,8 +142,31 @@ class StoreTests(unittest.TestCase):
         self.store.scan()
         self.assertEqual(self.store.catalog()[0]["duration"], 0)
 
+    def test_rescan_upgrades_metadata_and_keeps_build_when_summary_is_missing(self):
+        directory = self.add("6.88f", "6.88f")
+        replay = directory / "123.dem"
+        write_replay(replay, end_time=timestamp(2016, 12, 7), build=2050)
+        self.store.scan()
+        self.store.save_match("123", notes="Playback notes", client="6.88f")
+        with self.store.connect() as db:
+            db.execute("UPDATE files SET metadata=?", (json.dumps({"match_id": "123", "players": []}),))
+        self.assertEqual(self.store.scan()["parsed"], 1)
+        match = self.store.catalog()[0]
+        self.assertEqual((match["patch"], match["copies"][0]["replay_build"]), ("6.88f", 2050))
+        self.assertEqual((match["notes"], match["client_override"]), ("Playback notes", "6.88f"))
+
+        content = replay.read_bytes()
+        footer_offset, = struct.unpack_from("<I", content, 8)
+        replay.write_bytes(content[:footer_offset])
+        self.assertEqual(len(self.store.scan()["errors"]), 1)
+        match = self.store.catalog()[0]
+        self.assertIsNone(match["patch"])
+        self.assertEqual(match["copies"][0]["replay_build"], 2050)
+        self.store.cache("matches/123", {"start_time": timestamp(2016, 12, 7)}, 100)
+        self.assertEqual(self.store.catalog()[0]["patch"], "6.88f")
+
     def test_duplicate_match_one_presence_entry_and_two_launch_copies(self):
-        first, second = self.add("modern"), self.add("classic", "classic")
+        first, second = self.add("modern"), self.add("6.88f", "6.88f")
         write_replay(first / "123.dem")
         write_replay(second / "123.dem")
         self.store.scan()
@@ -117,14 +174,14 @@ class StoreTests(unittest.TestCase):
         self.assertEqual(len(catalog), 1)
         self.assertEqual(len(catalog[0]["copies"]), 2)
         self.assertEqual(presence(catalog)[0]["fraction"], 1)
-        self.assertEqual({c["client"] for c in catalog[0]["copies"]}, {"modern", "classic"})
+        self.assertEqual({c["client"] for c in catalog[0]["copies"]}, {"modern", "6.88f"})
 
     def test_unchanged_file_not_reparsed_and_deleted_file_hidden_notes_retained(self):
         directory = self.add("library")
         path = directory / "123.dem"
         write_replay(path)
         self.store.scan()
-        self.store.save_match("123", notes="A turning point", client="classic")
+        self.store.save_match("123", notes="A turning point", client="6.88f")
         with patch("library.parse_replay", side_effect=AssertionError("should be cached")):
             self.assertEqual(self.store.scan()["cached"], 1)
         self.assertEqual(self.store.catalog()[0]["notes"], "A turning point")
@@ -133,7 +190,7 @@ class StoreTests(unittest.TestCase):
         self.assertEqual(self.store.catalog(), [])
         write_replay(path)
         self.store.scan()
-        self.assertEqual(self.store.catalog()[0]["client_override"], "classic")
+        self.assertEqual(self.store.catalog()[0]["client_override"], "6.88f")
 
     def test_malformed_file_kept_and_cache_does_not_replace_offline_summary(self):
         directory = self.add("library")
@@ -162,6 +219,19 @@ class StoreTests(unittest.TestCase):
         executable.touch()
         replay.touch()
         args = launch_command(executable, replay)
+        pinned_args = launch_command(executable, replay, pinned=True, skip_player_info=True)
+        gc_down_args = launch_command(executable, replay, pinned=True, skip_player_info=True, simulate_gc_down=True)
+        main_menu_args = launch_command(executable, pinned=True, skip_player_info=True, simulate_gc_down=True)
+        self.assertEqual(main_menu_args, gc_down_args[:-2])
+        configured = launch_command(executable, replay, console_commands="volume 0.07; fps_max 120")
+        self.assertEqual(configured[4:], ["+volume", "0.07", "+fps_max", "120", "+playdemo", args[-1]])
+        with self.assertRaisesRegex(ValueError, "without quotes or launch flags"):
+            launch_command(executable, console_commands="volume 0.07 -insecure")
+        self.assertNotIn("+dev_simulate_gcdown", args)
+        self.assertNotIn("+dev_simulate_gcdown", pinned_args)
+        self.assertEqual(gc_down_args[-4:], ["+dev_simulate_gcdown", "1", "+playdemo", args[-1]])
+        self.assertNotIn("-skip_download_player_info", args)
+        self.assertIn("-skip_download_player_info", pinned_args[:pinned_args.index("+playdemo")])
         self.assertEqual(args[1:5], ["-console", "-novid", "-gamestateintegration", "+playdemo"])
         self.assertEqual(args[5], str(replay.resolve()).replace("\\", "/"))
         with patch("library.subprocess.Popen") as popen:

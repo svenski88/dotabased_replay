@@ -30,7 +30,7 @@ def main():
         store = Store(Path(directory) / "fixture.sqlite3")
         for library in store.libraries():
             store.remove_library(library["id"])
-        store.add_library(directory, "classic")
+        store.add_library(directory, "6.88f")
         for match_id in (901, 902, 903):
             write_replay(Path(directory) / f"{match_id}.dem", match_id=match_id, duration=1800)
         store.scan()

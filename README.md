@@ -25,11 +25,11 @@ Updates are downloaded manually.
 The app's initial paths are examples from the development machine. Replace them
 with your own folders and executables before watching replays.
 
-1. Open **Libraries & clients** and use **Remove selected** for example folders you do not use; this removes their catalog entries, not replay files.
-2. Choose **modern** or **classic** in the folder dropdown, click **Add folder…**, and select a folder containing your `.dem` replays.
-3. To change an existing folder's assignment, select its row, choose **modern** or **classic**, then click **Apply client to selected**.
-4. Under **Dota client executables**, use **Browse…** beside **Modern** and **Classic** to select each installed game's actual executable.
-5. Click **Save & scan** to save executable paths and scan your libraries.
+1. Open **Libraries & clients**. In **Replay libraries**, use **Add library…** to register a folder and choose its type and playback client. Download folders and long-term storage appear in the same list.
+2. Select a folder and choose **Edit library…** to change its path, type, or client. **Remove library** removes its catalog entries and leaves the replay files on disk.
+3. In **Dota clients**, use **Add installed client…** to register an existing executable or **Configure new pinned client…** to install a build from a recipe.
+4. Select a client and choose **Edit client…** to change its executable or assign comma-separated patch routes, such as `7.20`.
+5. Click **Scan libraries** to refresh the catalog. Library and client edits save when you click **Save** in their forms.
 
 Modern Steam installations usually store replays under
 `<SteamLibrary>\steamapps\common\dota 2 beta\game\dota\replays` and run
@@ -37,7 +37,8 @@ Modern Steam installations usually store replays under
 For an old client, browse inside **your separate classic installation**: its
 executable may be named `dota.exe` or `dota2.exe`. Select the game executable,
 not a downloader or community launcher. Add its replay folder separately and
-assign it **classic**. Subfolders are scanned automatically.
+assign it **6.88f** if that is the installed build. Subfolders are scanned automatically.
+The old **classic** profile for a `Dota2_6.88f` installation migrates to **6.88f** with its saved assignments.
 
 For classic client setup, see [Dota 2 Classic](https://dota2classic.com/) and its
 [manual installation guide](https://dota2classic.com/Download/Manual). For a
@@ -48,14 +49,105 @@ version when following the guide; the site's standard download focuses on
 
 Playback compatibility depends on the replay's recorded build: 6.88f cannot be
 guaranteed to play every older replay, including Source 1 recordings. Keep
-different game versions in separate directories. The app follows your library
-assignment rather than detecting and installing a matching patch; close another
-Dota client before switching versions.
+different game versions in separate directories. **Watch Replay** uses the
+per-match override, then the patch route, then the selected copy's library
+assignment. Close a running Dota client before switching versions.
+
+### Install a client from the patch catalog
+
+In **Libraries & clients**, choose **Configure new pinned client…**. Select a
+gameplay patch or a listed series to see its exact Steam build and Dota version.
+The catalog includes the tested `7.20e` compatibility build (`3391106` / `3283`)
+and the final `7.30e` Steam build before 7.31 (`8248131` / `5175`).
+Select an existing parent folder outside Steam's libraries and the Windows x64 executable
+from the [official DepotDownloader release](https://github.com/SteamRE/DepotDownloader/releases).
+Enable Steam QR sign-in if anonymous access is unavailable. On success the app
+registers `7.20e` and the default `7.20` route covers every letter in the series.
+Use **Import recipe…** for a separate JSON file or **Create recipe…** to
+assemble a build that the catalog does not cover. DepotDownloader handles sign-in
+and fetches Valve files directly from Steam. The app stores its executable path.
+
+The same installer is available from source:
+
+```powershell
+python client_install.py --parent 'G:\Dota2Classic' --depot-downloader 'C:\Tools\DepotDownloader.exe' --qr
+```
+
+Use `--preflight` to test access to every manifest, or `--recipe path.json` to
+provide another recipe shaped like `assets/client_7.20e.json`. Keep the manifest
+IDs as strings and use one coherent Windows build. Partial downloads stay in the
+`.installing` sibling and can be resumed using the same recipe. The installer
+checks the manifests, key game files and the server version before publishing
+the folder. It creates no Steam installation record. The app starts the pinned
+executable directly and enables its console log to help diagnose launch failures.
+
+**Suppress the pinned client's update prompt** applies the Dota 2 Classic
+`steam.inf` version check to the pinned copy. The installer preserves the original
+as `game/dota/steam.inf.replay-original` and uses it to verify the pinned build.
+For a client already installed by the app, select the same recipe and parent and
+click **Install client** again to apply the setting without downloading the depots
+again. Clear the checkbox or use `--keep-update-prompt` to restore the original.
+
+`assets/patch_server_versions.json` maps recorded Dota versions to confirmed
+gameplay patches. For an additional mapping, record the exact archived server
+version and the archived game data or official build notes that establish the
+patch. The date-based fallback remains marked `~`.
+
+### Create a recipe for another Windows Source 2 build
+
+1. Identify the Steam Build ID to pin. To represent the end of a patch series, use the last public build before the next numbered release.
+2. In **Libraries & clients → Configure new pinned client… → Create recipe…**, enter the Build ID and the manifest IDs for all eight depots. **Import saved HTML…** can fill in the IDs and source links from the saved target build page and any preceding build pages that provide carry-forward manifests. **Import browser capture…** accepts an existing build capture JSON.
+3. Enter the gameplay patch and use **Read steam.inf…** to read the Dota ServerVersion from the target build.
+4. Choose **Save recipe…** to validate the fields and select the new JSON in the installer.
+
+For a build with a different depot layout, edit the recipe JSON directly.
+Use the installer's `--preflight` option to check Steam manifest access, then
+install and test with a local replay.
+
+### Maintain the bundled catalog
+
+`assets/pinned_client_catalog.json` stores the Windows build, Dota server version,
+manifest IDs, and sources for each patch. A series alias is explicit. For example,
+**7.40 series** selects 7.40c, while **7.40** selects the base patch. A missing
+letter patch does not fall back to a different letter.
+
+Add a reviewed recipe with the offline maintenance script:
+
+```powershell
+python scripts/update_client_catalog.py --add-recipe path/to/client_7.40b.json
+```
+
+To add a complete browser capture directly, provide the archived `steam.inf`
+from the target build:
+
+```powershell
+python scripts/update_client_catalog.py --add-capture path/to/capture.json --patch 7.40b --steam-inf path/to/steam.inf
+```
+
+Use `--series SERIES=PATCH` when a reviewed recipe should represent its series.
+For bulk updates, pass `--snapshot-history history.json --patch-windows windows.json`.
+Both inputs are JSON arrays. Each patch window contains `patch`, `first_build`,
+and `next_build` with numeric Steam IDs for the two verified release boundaries.
+Each history record contains `steam_build`, timezone-qualified `published_at`,
+`server_version`, a complete Windows `depots` mapping, and `sources`. The script
+also accepts records with `appinfo` containing an archived app 570 Steam PICS
+document, alongside `server_version` and `sources`. It reads the public branch's
+build, timestamp, and depot IDs from that document.
+
+The script uses the last observed public build strictly before the next
+boundary. Use a history with evidence that it covers both the boundaries and
+the last build. Snapshots can miss releases, especially when two patches land
+on the same day. Match the selected snapshot with that build's
+`game/dota/steam.inf` to get the Dota version. The catalog's newer entries use
+[archived public Steam app info](https://gitea.com/Sainan/steam-pics) and
+[archived Dota files](https://github.com/SteamTracking/GameTracking-Dota2).
+Review the catalog diff before publishing. Steam installation and replay
+compatibility are separate checks.
 
 ## Move older replays into long-term storage
 
-Open **Libraries & clients > Long-term storage & migration rules...**. For each
-client (**modern** or **classic**), choose any registered **Source replay folder**
+Open **Libraries & clients → Migration rules…**. For each
+client profile, choose any registered **Source replay folder**
 (downloads or existing long-term storage), an existing destination storage folder,
 and a **Modified before (YYYY-MM-DD)** date. To relocate an entire storage folder,
 select it as the source and choose a cutoff later than all its replay modification dates.
@@ -103,7 +195,7 @@ as the ordinary cache does; it does not compare every replay byte with the old c
 2. **Parse All** — recover as much match metadata as possible offline before making API requests; wait for it to finish or use **Stop Parsing**.
 3. **Parse details** — inspect incomplete or failed recordings and the fields recovered; missing final state can leave score, duration or outcome unknown.
 4. **Optional: Fetch selected metadata / Enrich next 20** — use OpenDota to fill remaining gaps for the focused match or up to 20 visible uncached matches with known IDs.
-5. **Watch replay** — select a match, choose its **Copy** and **Library default / modern / classic** client, then launch playback.
+5. **Watch replay** — select a match and copy, then use **Automatic** or choose a registered client before launching playback.
 
 Full parsing includes hidden unknown recordings, refreshes the catalog first,
 and caches successful results by file size, modification time and parser version.
@@ -142,6 +234,7 @@ unavailable API match may still have unknown fields after both steps.
 - **Look up account on OpenDota / Open cached avatar** — fetch a player's public profile metadata or open the cached avatar URL in your browser.
 - **OpenDota / Dotabuff** — open the focused match's page in your browser.
 - **Watch replay** — launch your configured game executable with `-console -novid -gamestateintegration` and `+playdemo` for the chosen replay; the per-match client override is saved.
+- **Patch** — click the column heading to group recordings by gameplay patch. `~6.88f` is a date-based estimate. A plain patch name comes from a verified Dota server version mapping. A dash means the available metadata could not resolve a patch. The selected copy shows its Dota version and replay build when recorded.
 - **Copy Match ID** — copy the selected replay's match ID using the button beside its detail heading. Disabled when no replay is selected or its match ID is unknown.
 - **Delete selected files…** — review exact physical copies, uncheck any to keep, then confirm permanent deletion; Cancel changes no files.
 

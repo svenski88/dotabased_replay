@@ -8,6 +8,7 @@ import tempfile
 import threading
 import tkinter as tk
 from tkinter import ttk
+from unittest.mock import patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "tests"))
@@ -40,6 +41,7 @@ def main():
         for library in store.libraries():
             store.remove_library(library["id"])
         store.add_library(source, "modern")
+        store.add_library(storage, "modern", "storage")
         store.save_match("123", notes="Synthetic migration note", rating=4)
         root = tk.Tk()
         app = ReplayApp(root, store)
@@ -78,7 +80,7 @@ def main():
             threading.Thread(target=worker, daemon=True).start()
             def poll():
                 if done.is_set():
-                    callback()
+                    later(callback)
                 else:
                     later(poll)
             later(poll)
@@ -103,8 +105,13 @@ def main():
             assert str(old) in dialog.details.get("1.0", "end")
             assert str(storage / old.name) in dialog.details.get("1.0", "end")
             dialog.close()
+            settings = next(child for child in root.winfo_children()
+                            if isinstance(child, tk.Toplevel) and child.title() == "Libraries & clients")
+            assert any(settings.libraries.item(row, "values") == (str(storage), "Long-term storage", "modern")
+                       for row in settings.libraries.get_children())
             assert old.exists(), "Cancel must not move files"
-            reopened = MigrationDialog(root, app)
+            settings.open_rules()
+            reopened = next(child for child in settings.winfo_children() if isinstance(child, MigrationDialog))
             assert reopened.storage.get() == str(storage)
             reopened.preview()
             def confirm():
@@ -126,14 +133,33 @@ def main():
             capture(dialog, "preview.png", lambda: execute(dialog))
 
         def storage_settings(settings):
-            button = next(child for child in descendants(settings) if isinstance(child, ttk.Button) and child.cget("text").startswith("Long-term storage"))
+            executable = fixture / "Dota2_7.30e" / "game" / "bin" / "win64" / "dota2.exe"
+            executable.parent.mkdir(parents=True)
+            executable.touch()
+            with patch("library_dialog.filedialog.askopenfilename", return_value=str(executable)):
+                next(child for child in descendants(settings) if isinstance(child, ttk.Button) and child.cget("text").startswith("Add installed client")).invoke()
+            editor = next(child for child in settings.winfo_children() if isinstance(child, tk.Toplevel))
+            next(child for child in descendants(editor) if isinstance(child, ttk.Button) and child.cget("text") == "Save client").invoke()
+            assert settings.clients.item("7.30e", "values") == ("7.30e", "Pinned", "", str(executable))
+            next(child for child in descendants(settings) if isinstance(child, ttk.Button) and child.cget("text").startswith("Configure new pinned client")).invoke()
+            installer = next(child for child in settings.winfo_children() if isinstance(child, tk.Toplevel))
+            patch_box = next(child for child in descendants(installer) if isinstance(child, ttk.Combobox))
+            assert "7.30e" in patch_box["values"]
+            patch_box.set("7.30")
+            assert any("8248131" in installer.getvar(child.cget("textvariable"))
+                       for child in descendants(installer) if isinstance(child, ttk.Label) and child.cget("textvariable"))
+            next(child for child in descendants(installer) if isinstance(child, ttk.Button) and child.cget("text").startswith("Create recipe")).invoke()
+            assert any(child.title() == "Create Windows Dota client recipe" for child in installer.winfo_children() if isinstance(child, tk.Toplevel))
+            installer.destroy()
+            settings.clients.selection_set("modern")
+            button = next(child for child in descendants(settings) if isinstance(child, ttk.Button) and child.cget("text").startswith("Migration rules"))
             button.invoke()
             dialog = next(child for child in settings.winfo_children() if isinstance(child, MigrationDialog))
             dialog.source.set(str(source))
             dialog.storage.set(str(storage))
             dialog.before.set("2025-01-01")
             dialog.save()
-            dialog.client.set("classic")
+            dialog.client.set("6.88f")
             dialog.load_rule()
             assert dialog.storage.get() == ""
             dialog.client.set("modern")

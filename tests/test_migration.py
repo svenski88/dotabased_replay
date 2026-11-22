@@ -42,6 +42,10 @@ class MigrationTests(unittest.TestCase):
         save_rule(self.store, self.rule)
         reloaded = Store(self.store.path)
         self.assertEqual(reloaded.get_pref("migration_rules")["modern"], self.rule)
+        stored = next(item for item in reloaded.libraries() if item["path"] == str(self.storage))
+        self.assertEqual((stored["kind"], stored["client"]), ("storage", "modern"))
+        with self.assertRaisesRegex(ValueError, "saved migration rules"):
+            reloaded.add_library(self.storage, "6.88f", "storage", library_id=stored["id"])
         plan = make_plan(reloaded, self.rule)
         self.assertEqual([entry.source.path for entry in plan.files], [str(old)])
         self.assertTrue(old.exists())
@@ -49,11 +53,21 @@ class MigrationTests(unittest.TestCase):
         self.assertTrue(migrate(self.store, plan)["cancelled"])
         self.assertTrue(old.exists())
 
+    def test_storage_reassignment_can_remove_affected_rule_without_moving_files(self):
+        save_rule(self.store, self.rule)
+        stored = next(item for item in self.store.libraries() if item["path"] == str(self.storage))
+        (self.storage / "keep.dem").touch()
+        self.store.add_library(self.storage, "6.88f", "storage", library_id=stored["id"], discard_rules=True)
+        item = next(item for item in self.store.libraries() if item["id"] == stored["id"])
+        self.assertEqual((item["kind"], item["client"]), ("storage", "6.88f"))
+        self.assertEqual(self.store.get_pref("migration_rules"), {})
+        self.assertTrue((self.storage / "keep.dem").is_file())
+
     def test_move_preserves_cache_annotations_and_nested_paths(self):
         source = self.replay("nested/123.dem")
         match = self.store.catalog()[0]
         copy = match["copies"][0]
-        self.store.save_match("123", notes="my note", client="classic", rating=4)
+        self.store.save_match("123", notes="my note", client="6.88f", rating=4)
         with self.store.connect() as db:
             db.execute("INSERT INTO full_parse VALUES (?,?,?,?,?,?)", (str(source), copy["size"], copy["mtime"], "v1", json.dumps({"complete": True, "schema_version": 1, "fields": {}}), 1))
             db.execute("INSERT INTO replay_graphs VALUES (?,?,?,?,?,?,?)", (str(source), copy["size"], copy["mtime"], "graph-v1", "{}", b"graph", 1))
@@ -65,7 +79,7 @@ class MigrationTests(unittest.TestCase):
         self.assertEqual(destination.stat().st_mtime_ns, copy["mtime"])
         self.store.scan()
         match = self.store.catalog()[0]
-        self.assertEqual((match["notes"], match["rating"], match["client_override"]), ("my note", 4, "classic"))
+        self.assertEqual((match["notes"], match["rating"], match["client_override"]), ("my note", 4, "6.88f"))
         self.assertEqual(match["copies"][0]["path"], str(destination))
         self.assertEqual(match["copies"][0]["client"], "modern")
         with self.store.connect() as db:
@@ -79,14 +93,14 @@ class MigrationTests(unittest.TestCase):
         os.utime(source, (0, 0))
         self.store.scan()
         old_key = "file:" + str(source)
-        self.store.save_match(old_key, notes="unknown note", rating=3, client="classic")
+        self.store.save_match(old_key, notes="unknown note", rating=3, client="6.88f")
         with self.store.connect() as db:
             db.execute("INSERT INTO note_imports VALUES (?,?,?,?,?,?,?)", ("fixture", "hash", old_key, "note", "line", 1, 0))
         result = migrate(self.store, make_plan(self.store, self.rule), confirmed=True)
         self.assertEqual(result["failed"], [])
         match = self.store.catalog()[0]
         new_key = "file:" + str(self.storage / "unknown.dem")
-        self.assertEqual((match["key"], match["notes"], match["rating"], match["client_override"]), (new_key, "unknown note", 3, "classic"))
+        self.assertEqual((match["key"], match["notes"], match["rating"], match["client_override"]), (new_key, "unknown note", 3, "6.88f"))
         with self.store.connect() as db:
             self.assertEqual(db.execute("SELECT match_id FROM note_imports").fetchone()[0], new_key)
 
@@ -168,7 +182,7 @@ class MigrationTests(unittest.TestCase):
         for storage in (self.source, self.root):
             with self.assertRaises(ValueError):
                 make_plan(self.store, {**self.rule, "storage": str(storage)})
-        self.store.add_library(self.storage, "classic")
+        self.store.add_library(self.storage, "6.88f")
         with self.assertRaises(ValueError):
             make_plan(self.store, self.rule)
         with self.assertRaises(ValueError):

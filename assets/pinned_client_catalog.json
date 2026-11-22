@@ -1,0 +1,1422 @@
+{
+  "version": 1,
+  "recipes": {
+    "6.84c": {
+      "patch": "6.84c",
+      "app_id": 570,
+      "steam_build": 787245,
+      "server_version": 1058,
+      "depots": {
+        "373301": "7109859563631595658",
+        "373302": "6689273800618174041",
+        "373303": "6560376006892328084",
+        "381451": "8045903454344204298",
+        "381452": "7594431738524732036",
+        "381453": "6670935330790035982",
+        "381454": "6904040863118164973",
+        "381455": "3478427655034437046"
+      },
+      "sources": [
+        "https://steamdb.info/patchnotes/787245/",
+        "https://steamdb.info/patchnotes/788939/",
+        "https://store.steampowered.com/oldnews/18555",
+        "https://steamdb.info/depot/373301/history/?changeid=M%3A7109859563631595658",
+        "https://steamdb.info/depot/373302/history/?changeid=M%3A6689273800618174041",
+        "https://steamdb.info/depot/373303/history/?changeid=M%3A6560376006892328084",
+        "https://steamdb.info/depot/381451/history/?changeid=M%3A8045903454344204298",
+        "https://steamdb.info/depot/381452/history/?changeid=M%3A7594431738524732036",
+        "https://steamdb.info/depot/381453/history/?changeid=M%3A6670935330790035982",
+        "https://steamdb.info/depot/381454/history/?changeid=M%3A6904040863118164973",
+        "https://steamdb.info/depot/381455/history/?changeid=M%3A3478427655034437046"
+      ]
+    },
+    "6.85b": {
+      "patch": "6.85b",
+      "app_id": 570,
+      "steam_build": 894148,
+      "server_version": 1192,
+      "depots": {
+        "373301": "2173181895366324411",
+        "373302": "6713107266946661417",
+        "373303": "3226113683629835953",
+        "381451": "3803323529204238617",
+        "381452": "7399995973924109283",
+        "381453": "2697680964811186459",
+        "381454": "1580626951816804583",
+        "381455": "1917595929616217399"
+      },
+      "sources": [
+        "https://steamdb.info/patchnotes/894148/",
+        "https://steamdb.info/patchnotes/902132/",
+        "https://www.dota2.com/balanceofpower",
+        "https://steamdb.info/depot/373301/history/?changeid=M%3A2173181895366324411",
+        "https://steamdb.info/depot/373302/history/?changeid=M%3A6713107266946661417",
+        "https://steamdb.info/depot/373303/history/?changeid=M%3A3226113683629835953",
+        "https://steamdb.info/depot/381451/history/?changeid=M%3A3803323529204238617",
+        "https://steamdb.info/depot/381452/history/?changeid=M%3A7399995973924109283",
+        "https://steamdb.info/depot/381453/history/?changeid=M%3A2697680964811186459",
+        "https://steamdb.info/depot/381454/history/?changeid=M%3A1580626951816804583",
+        "https://steamdb.info/depot/381455/history/?changeid=M%3A1917595929616217399"
+      ]
+    },
+    "6.86f": {
+      "patch": "6.86f",
+      "app_id": 570,
+      "steam_build": 1090085,
+      "server_version": 1381,
+      "depots": {
+        "373301": "5490944241962915871",
+        "373302": "4154151481965201551",
+        "373303": "7682622719076793451",
+        "381451": "7657420289808706253",
+        "381452": "1525441556169430291",
+        "381453": "2390512784311684141",
+        "381454": "5828253003120642674",
+        "381455": "1925090317966042673"
+      },
+      "sources": [
+        "https://steamdb.info/patchnotes/1090085/",
+        "https://steamdb.info/patchnotes/1094257/",
+        "https://www.dota2.com/687",
+        "https://steamdb.info/depot/373301/history/?changeid=M%3A5490944241962915871",
+        "https://steamdb.info/depot/373302/history/?changeid=M%3A4154151481965201551",
+        "https://steamdb.info/depot/373303/history/?changeid=M%3A7682622719076793451",
+        "https://steamdb.info/depot/381451/history/?changeid=M%3A7657420289808706253",
+        "https://steamdb.info/depot/381452/history/?changeid=M%3A1525441556169430291",
+        "https://steamdb.info/depot/381453/history/?changeid=M%3A2390512784311684141",
+        "https://steamdb.info/depot/381454/history/?changeid=M%3A5828253003120642674",
+        "https://steamdb.info/depot/381455/history/?changeid=M%3A1925090317966042673"
+      ]
+    },
+    "6.87d": {
+      "patch": "6.87d",
+      "app_id": 570,
+      "steam_build": 1175561,
+      "server_version": 1489,
+      "depots": {
+        "373301": "1300118100616193551",
+        "373302": "3754034795355636070",
+        "373303": "2119833639159254138",
+        "381451": "8705313824062712689",
+        "381452": "2325280093387675151",
+        "381453": "6401996029966876887",
+        "381454": "22385711393217810",
+        "381455": "3631864803527148381"
+      },
+      "sources": [
+        "https://steamdb.info/patchnotes/1175561/",
+        "https://steamdb.info/patchnotes/1177581/",
+        "https://store.steampowered.com/oldnews/22385",
+        "https://steamdb.info/depot/373301/history/?changeid=M%3A1300118100616193551",
+        "https://steamdb.info/depot/373302/history/?changeid=M%3A3754034795355636070",
+        "https://steamdb.info/depot/373303/history/?changeid=M%3A2119833639159254138",
+        "https://steamdb.info/depot/381451/history/?changeid=M%3A8705313824062712689",
+        "https://steamdb.info/depot/381452/history/?changeid=M%3A2325280093387675151",
+        "https://steamdb.info/depot/381453/history/?changeid=M%3A6401996029966876887",
+        "https://steamdb.info/depot/381454/history/?changeid=M%3A22385711393217810",
+        "https://steamdb.info/depot/381455/history/?changeid=M%3A3631864803527148381"
+      ]
+    },
+    "6.88f": {
+      "patch": "6.88f",
+      "app_id": 570,
+      "steam_build": 1504893,
+      "server_version": 1805,
+      "depots": {
+        "373301": "6583592615927321343",
+        "373302": "4207250472562245046",
+        "373303": "5687961025981896965",
+        "381451": "1164593604345069641",
+        "381452": "6608625692772888057",
+        "381453": "4543056467534577605",
+        "381454": "8363743735196262460",
+        "381455": "9205520134704853582"
+      },
+      "sources": [
+        "https://steamdb.info/patchnotes/1504893/",
+        "https://steamdb.info/patchnotes/1514733/",
+        "https://www.dota2.com/700/eng",
+        "https://steamdb.info/depot/373301/history/?changeid=M%3A6583592615927321343",
+        "https://steamdb.info/depot/373302/history/?changeid=M%3A4207250472562245046",
+        "https://steamdb.info/depot/373303/history/?changeid=M%3A5687961025981896965",
+        "https://steamdb.info/depot/381451/history/?changeid=M%3A1164593604345069641",
+        "https://steamdb.info/depot/381452/history/?changeid=M%3A6608625692772888057",
+        "https://steamdb.info/depot/381453/history/?changeid=M%3A4543056467534577605",
+        "https://steamdb.info/depot/381454/history/?changeid=M%3A8363743735196262460",
+        "https://steamdb.info/depot/381455/history/?changeid=M%3A9205520134704853582"
+      ]
+    },
+    "7.00": {
+      "patch": "7.00",
+      "app_id": 570,
+      "steam_build": 1531424,
+      "server_version": 1842,
+      "depots": {
+        "373301": "7180785162958721433",
+        "373302": "6649376780136392307",
+        "373303": "6807130804890037396",
+        "381451": "5186719936242102168",
+        "381452": "8553284647048679900",
+        "381453": "4164711861746165100",
+        "381454": "4549413562703596533",
+        "381455": "1576322548422985402"
+      },
+      "sources": [
+        "https://steamdb.info/patchnotes/1531424/",
+        "https://steamdb.info/patchnotes/1532815/",
+        "https://store.steampowered.com/oldnews/26467",
+        "https://github.com/SteamTracking/GameTracking-Dota2/commit/1a9f3fea592a9c7c8c78adbae07eafd1c191cae3",
+        "https://steamdb.info/depot/373301/history/?changeid=M%3A7180785162958721433",
+        "https://steamdb.info/depot/373302/history/?changeid=M%3A6649376780136392307",
+        "https://steamdb.info/depot/373303/history/?changeid=M%3A6807130804890037396",
+        "https://steamdb.info/depot/381451/history/?changeid=M%3A5186719936242102168",
+        "https://steamdb.info/depot/381452/history/?changeid=M%3A8553284647048679900",
+        "https://steamdb.info/depot/381453/history/?changeid=M%3A4164711861746165100",
+        "https://steamdb.info/depot/381454/history/?changeid=M%3A4549413562703596533",
+        "https://steamdb.info/depot/381455/history/?changeid=M%3A1576322548422985402",
+        "https://raw.githubusercontent.com/SteamTracking/GameTracking-Dota2/61ebc046bc28ea0415f8f33cbe18b9287005b089/game/dota/steam.inf"
+      ]
+    },
+    "7.01": {
+      "patch": "7.01",
+      "app_id": 570,
+      "steam_build": 1613375,
+      "server_version": 1913,
+      "depots": {
+        "373301": "5175620447932238307",
+        "373302": "3261060351047497399",
+        "373303": "2939551273652950931",
+        "381451": "6076481171816996525",
+        "381452": "7989960243497324547",
+        "381453": "3948102147801388132",
+        "381454": "7126954918096543425",
+        "381455": "7238590937622015613"
+      },
+      "sources": [
+        "https://steamdb.info/patchnotes/1613375/",
+        "https://steamdb.info/patchnotes/1619465/",
+        "https://store.steampowered.com/oldnews/27381",
+        "https://steamdb.info/depot/373301/history/?changeid=M%3A5175620447932238307",
+        "https://steamdb.info/depot/373302/history/?changeid=M%3A3261060351047497399",
+        "https://steamdb.info/depot/373303/history/?changeid=M%3A2939551273652950931",
+        "https://steamdb.info/depot/381451/history/?changeid=M%3A6076481171816996525",
+        "https://steamdb.info/depot/381452/history/?changeid=M%3A7989960243497324547",
+        "https://steamdb.info/depot/381453/history/?changeid=M%3A3948102147801388132",
+        "https://steamdb.info/depot/381454/history/?changeid=M%3A7126954918096543425",
+        "https://steamdb.info/depot/381455/history/?changeid=M%3A7238590937622015613",
+        "https://raw.githubusercontent.com/SteamTracking/GameTracking-Dota2/4df394fa44b5aa51615e31272158d06b9c0d0ce0/game/dota/steam.inf"
+      ]
+    },
+    "7.02": {
+      "patch": "7.02",
+      "app_id": 570,
+      "steam_build": 1690464,
+      "server_version": 1961,
+      "depots": {
+        "373301": "5837287191317303112",
+        "373302": "7849015416896659200",
+        "373303": "7943213799943922625",
+        "381451": "1338284501554626012",
+        "381452": "2659647246480391085",
+        "381453": "5799232694393312588",
+        "381454": "2872887487748126908",
+        "381455": "4896090566281353056"
+      },
+      "sources": [
+        "https://steamdb.info/patchnotes/1690464/",
+        "https://steamdb.info/patchnotes/1693635/",
+        "https://www.dota2.com/bladeformlegacy",
+        "https://steamdb.info/depot/373301/history/?changeid=M%3A5837287191317303112",
+        "https://steamdb.info/depot/373302/history/?changeid=M%3A7849015416896659200",
+        "https://steamdb.info/depot/373303/history/?changeid=M%3A7943213799943922625",
+        "https://steamdb.info/depot/381451/history/?changeid=M%3A1338284501554626012",
+        "https://steamdb.info/depot/381452/history/?changeid=M%3A2659647246480391085",
+        "https://steamdb.info/depot/381453/history/?changeid=M%3A5799232694393312588",
+        "https://steamdb.info/depot/381454/history/?changeid=M%3A2872887487748126908",
+        "https://steamdb.info/depot/381455/history/?changeid=M%3A4896090566281353056",
+        "https://raw.githubusercontent.com/SteamTracking/GameTracking-Dota2/9a7bf203e62315cf17eb4668c3cb6eada8a762d2/game/dota/steam.inf"
+      ]
+    },
+    "7.03": {
+      "patch": "7.03",
+      "app_id": 570,
+      "steam_build": 1708688,
+      "server_version": 2001,
+      "depots": {
+        "373301": "5986356266203003098",
+        "373302": "5140748855267612393",
+        "373303": "4640220054553372370",
+        "381451": "2912663069162673467",
+        "381452": "2023676167406080830",
+        "381453": "6304633808162119853",
+        "381454": "4150786412561844932",
+        "381455": "3489800129652214975"
+      },
+      "sources": [
+        "https://steamdb.info/patchnotes/1708688/",
+        "https://steamdb.info/patchnotes/1710820/",
+        "https://store.steampowered.com/oldnews/28351",
+        "https://github.com/SteamTracking/GameTracking-Dota2/commit/94d6bab6bcaee9beffa6b378c86088717296f964",
+        "https://steamdb.info/depot/373301/history/?changeid=M%3A5986356266203003098",
+        "https://steamdb.info/depot/373302/history/?changeid=M%3A5140748855267612393",
+        "https://steamdb.info/depot/373303/history/?changeid=M%3A4640220054553372370",
+        "https://steamdb.info/depot/381451/history/?changeid=M%3A2912663069162673467",
+        "https://steamdb.info/depot/381452/history/?changeid=M%3A2023676167406080830",
+        "https://steamdb.info/depot/381453/history/?changeid=M%3A6304633808162119853",
+        "https://steamdb.info/depot/381454/history/?changeid=M%3A4150786412561844932",
+        "https://steamdb.info/depot/381455/history/?changeid=M%3A3489800129652214975",
+        "https://raw.githubusercontent.com/SteamTracking/GameTracking-Dota2/f60274f98108155da14170c49d983ff6ad97323b/game/dota/steam.inf"
+      ]
+    },
+    "7.04": {
+      "patch": "7.04",
+      "app_id": 570,
+      "steam_build": 1737842,
+      "server_version": 2017,
+      "depots": {
+        "373301": "1442909978296677843",
+        "373302": "8516099818209601160",
+        "373303": "876072924709896802",
+        "381451": "2134853959376109258",
+        "381452": "8487626024835453392",
+        "381453": "789615050668949193",
+        "381454": "8179801403627211858",
+        "381455": "6771083814097839465"
+      },
+      "sources": [
+        "https://steamdb.info/patchnotes/1737842/",
+        "https://steamdb.info/patchnotes/1744804/",
+        "https://store.steampowered.com/oldnews/28757",
+        "https://github.com/SteamTracking/GameTracking-Dota2/commit/2f48467c4e262f95faf9f7023575e952c5ac2d07",
+        "https://steamdb.info/depot/373301/history/?changeid=M%3A1442909978296677843",
+        "https://steamdb.info/depot/373302/history/?changeid=M%3A8516099818209601160",
+        "https://steamdb.info/depot/373303/history/?changeid=M%3A876072924709896802",
+        "https://steamdb.info/depot/381451/history/?changeid=M%3A2134853959376109258",
+        "https://steamdb.info/depot/381452/history/?changeid=M%3A8487626024835453392",
+        "https://steamdb.info/depot/381453/history/?changeid=M%3A789615050668949193",
+        "https://steamdb.info/depot/381454/history/?changeid=M%3A8179801403627211858",
+        "https://steamdb.info/depot/381455/history/?changeid=M%3A6771083814097839465",
+        "https://raw.githubusercontent.com/SteamTracking/GameTracking-Dota2/24a248fb74d841244c8218344e518164bf88f72d/game/dota/steam.inf"
+      ]
+    },
+    "7.05": {
+      "patch": "7.05",
+      "app_id": 570,
+      "steam_build": 1819079,
+      "server_version": 2109,
+      "depots": {
+        "373301": "5393245088543308827",
+        "373302": "2604082325114969072",
+        "373303": "7886525223855527244",
+        "381451": "8910929595421094696",
+        "381452": "8913943488615475616",
+        "381453": "7416568307908675535",
+        "381454": "8688284988933125316",
+        "381455": "9000626975715072372"
+      },
+      "sources": [
+        "https://steamdb.info/patchnotes/1819079/",
+        "https://steamdb.info/patchnotes/1822478/",
+        "https://github.com/SteamTracking/GameTracking-Dota2/commit/7e824535a2b6dbd0a4a2da64709090ac0fabc78e",
+        "https://steamdb.info/depot/373301/history/?changeid=M%3A5393245088543308827",
+        "https://steamdb.info/depot/373302/history/?changeid=M%3A2604082325114969072",
+        "https://steamdb.info/depot/373303/history/?changeid=M%3A7886525223855527244",
+        "https://steamdb.info/depot/381451/history/?changeid=M%3A8910929595421094696",
+        "https://steamdb.info/depot/381452/history/?changeid=M%3A8913943488615475616",
+        "https://steamdb.info/depot/381453/history/?changeid=M%3A7416568307908675535",
+        "https://steamdb.info/depot/381454/history/?changeid=M%3A8688284988933125316",
+        "https://steamdb.info/depot/381455/history/?changeid=M%3A9000626975715072372",
+        "https://raw.githubusercontent.com/SteamTracking/GameTracking-Dota2/265c24c6287ab60a86dcfbdf51f358b8283ade8a/game/dota/steam.inf"
+      ]
+    },
+    "7.06f": {
+      "patch": "7.06f",
+      "app_id": 570,
+      "steam_build": 2234465,
+      "server_version": 2455,
+      "depots": {
+        "373301": "606078301800937086",
+        "373302": "1851634791739833779",
+        "373303": "3359390466020180845",
+        "381451": "359437161713151598",
+        "381452": "7840429771555091660",
+        "381453": "743963840765732977",
+        "381454": "2522752685000682766",
+        "381455": "3184924867750238828"
+      },
+      "sources": [
+        "https://steamdb.info/patchnotes/2234465/",
+        "https://steamdb.info/patchnotes/2246740/",
+        "https://www.dota2.com/duelingfates",
+        "https://raw.githubusercontent.com/SteamTracking/GameTracking-Dota2/efc7bea3ec1c099c9c60bca99770eb2be525105b/game/dota/pak01_dir.txt",
+        "https://steamdb.info/depot/373301/history/?changeid=M%3A606078301800937086",
+        "https://steamdb.info/depot/373302/history/?changeid=M%3A1851634791739833779",
+        "https://steamdb.info/depot/373303/history/?changeid=M%3A3359390466020180845",
+        "https://steamdb.info/depot/381451/history/?changeid=M%3A359437161713151598",
+        "https://steamdb.info/depot/381452/history/?changeid=M%3A7840429771555091660",
+        "https://steamdb.info/depot/381453/history/?changeid=M%3A743963840765732977",
+        "https://steamdb.info/depot/381454/history/?changeid=M%3A2522752685000682766",
+        "https://steamdb.info/depot/381455/history/?changeid=M%3A3184924867750238828",
+        "https://raw.githubusercontent.com/SteamTracking/GameTracking-Dota2/6e40ce5f5b20394b05dd114527029464d880cb2e/game/dota/steam.inf"
+      ]
+    },
+    "7.07d": {
+      "patch": "7.07d",
+      "app_id": 570,
+      "steam_build": 2462419,
+      "server_version": 2666,
+      "depots": {
+        "373301": "7206457532732098854",
+        "373302": "308447645500951756",
+        "373303": "819529769306603918",
+        "381451": "4492051361179721856",
+        "381452": "8585014173951272674",
+        "381453": "3696867042970979468",
+        "381454": "9143872592421870042",
+        "381455": "5408902477297347128"
+      },
+      "sources": [
+        "https://steamdb.info/patchnotes/2462419/",
+        "https://steamdb.info/patchnotes/2489451/",
+        "https://steamdb.info/depot/373301/history/?changeid=M%3A7206457532732098854",
+        "https://steamdb.info/depot/373302/history/?changeid=M%3A308447645500951756",
+        "https://steamdb.info/depot/373303/history/?changeid=M%3A819529769306603918",
+        "https://steamdb.info/depot/381451/history/?changeid=M%3A4492051361179721856",
+        "https://steamdb.info/depot/381452/history/?changeid=M%3A8585014173951272674",
+        "https://steamdb.info/depot/381453/history/?changeid=M%3A3696867042970979468",
+        "https://steamdb.info/depot/381454/history/?changeid=M%3A9143872592421870042",
+        "https://steamdb.info/depot/381455/history/?changeid=M%3A5408902477297347128",
+        "https://raw.githubusercontent.com/SteamTracking/GameTracking-Dota2/34a177790a0ec6b4ab42c1ba545f32dc4cbd03ff/game/dota/steam.inf"
+      ]
+    },
+    "7.08": {
+      "patch": "7.08",
+      "app_id": 570,
+      "steam_build": 2526032,
+      "server_version": 2685,
+      "depots": {
+        "373301": "7199229750250722576",
+        "373302": "1062205716084300655",
+        "373303": "6922316501545049226",
+        "381451": "561408866343353721",
+        "381452": "370820208175745406",
+        "381453": "6113834620512500272",
+        "381454": "8266370777754034173",
+        "381455": "3307989234333052129"
+      },
+      "sources": [
+        "https://steamdb.info/patchnotes/2526032/",
+        "https://steamdb.info/patchnotes/2529688/",
+        "https://steamdb.info/depot/373301/history/?changeid=M%3A7199229750250722576",
+        "https://steamdb.info/depot/373302/history/?changeid=M%3A1062205716084300655",
+        "https://steamdb.info/depot/373303/history/?changeid=M%3A6922316501545049226",
+        "https://steamdb.info/depot/381451/history/?changeid=M%3A561408866343353721",
+        "https://steamdb.info/depot/381452/history/?changeid=M%3A370820208175745406",
+        "https://steamdb.info/depot/381453/history/?changeid=M%3A6113834620512500272",
+        "https://steamdb.info/depot/381454/history/?changeid=M%3A8266370777754034173",
+        "https://steamdb.info/depot/381455/history/?changeid=M%3A3307989234333052129",
+        "https://raw.githubusercontent.com/SteamTracking/GameTracking-Dota2/bc59b48261136f40b44dc29969b75e96adc755c4/game/dota/steam.inf"
+      ]
+    },
+    "7.09": {
+      "patch": "7.09",
+      "app_id": 570,
+      "steam_build": 2561601,
+      "server_version": 2694,
+      "depots": {
+        "373301": "4716306894660648497",
+        "373302": "6530443357278418796",
+        "373303": "1945593747175069333",
+        "381451": "3500460885070052184",
+        "381452": "7842779080492867879",
+        "381453": "6113834620512500272",
+        "381454": "215580208146915687",
+        "381455": "3627813718382942882"
+      },
+      "sources": [
+        "https://steamdb.info/patchnotes/2561601/",
+        "https://steamdb.info/patchnotes/2568573/",
+        "https://steamdb.info/depot/373301/history/?changeid=M%3A4716306894660648497",
+        "https://steamdb.info/depot/373302/history/?changeid=M%3A6530443357278418796",
+        "https://steamdb.info/depot/373303/history/?changeid=M%3A1945593747175069333",
+        "https://steamdb.info/depot/381451/history/?changeid=M%3A3500460885070052184",
+        "https://steamdb.info/depot/381452/history/?changeid=M%3A7842779080492867879",
+        "https://steamdb.info/depot/381453/history/?changeid=M%3A6113834620512500272",
+        "https://steamdb.info/depot/381454/history/?changeid=M%3A215580208146915687",
+        "https://steamdb.info/depot/381455/history/?changeid=M%3A3627813718382942882",
+        "https://raw.githubusercontent.com/SteamTracking/GameTracking-Dota2/409b2754373f9ea391a1fd1fca165321b0cebbe8/game/dota/steam.inf"
+      ]
+    },
+    "7.10": {
+      "patch": "7.10",
+      "app_id": 570,
+      "steam_build": 2604788,
+      "server_version": 2749,
+      "depots": {
+        "373301": "5580342254096538044",
+        "373302": "7512782378085920105",
+        "373303": "5131483263640125789",
+        "381451": "6040604626428653783",
+        "381452": "771590673518103772",
+        "381453": "6825867292225823751",
+        "381454": "7603911351700695823",
+        "381455": "1504318358893649643"
+      },
+      "sources": [
+        "https://steamdb.info/patchnotes/2604788/",
+        "https://steamdb.info/patchnotes/2606768/",
+        "https://steamdb.info/depot/373301/history/?changeid=M%3A5580342254096538044",
+        "https://steamdb.info/depot/373302/history/?changeid=M%3A7512782378085920105",
+        "https://steamdb.info/depot/373303/history/?changeid=M%3A5131483263640125789",
+        "https://steamdb.info/depot/381451/history/?changeid=M%3A6040604626428653783",
+        "https://steamdb.info/depot/381452/history/?changeid=M%3A771590673518103772",
+        "https://steamdb.info/depot/381453/history/?changeid=M%3A6825867292225823751",
+        "https://steamdb.info/depot/381454/history/?changeid=M%3A7603911351700695823",
+        "https://steamdb.info/depot/381455/history/?changeid=M%3A1504318358893649643",
+        "https://raw.githubusercontent.com/SteamTracking/GameTracking-Dota2/3c0fd5ba3abb05003cf3157c9a1df71ab1edbafd/game/dota/steam.inf"
+      ]
+    },
+    "7.11": {
+      "patch": "7.11",
+      "app_id": 570,
+      "steam_build": 2643485,
+      "server_version": 2779,
+      "depots": {
+        "373301": "5052588997683107359",
+        "373302": "4803848141474964329",
+        "373303": "6302781979535486511",
+        "381451": "925194986181708856",
+        "381452": "564240380827592240",
+        "381453": "4487142068937132147",
+        "381454": "1058655158230116544",
+        "381455": "982235791341678199"
+      },
+      "sources": [
+        "https://steamdb.info/patchnotes/2643485/",
+        "https://steamdb.info/patchnotes/2645048/",
+        "https://steamdb.info/depot/373301/history/?changeid=M%3A5052588997683107359",
+        "https://steamdb.info/depot/373302/history/?changeid=M%3A4803848141474964329",
+        "https://steamdb.info/depot/373303/history/?changeid=M%3A6302781979535486511",
+        "https://steamdb.info/depot/381451/history/?changeid=M%3A925194986181708856",
+        "https://steamdb.info/depot/381452/history/?changeid=M%3A564240380827592240",
+        "https://steamdb.info/depot/381453/history/?changeid=M%3A4487142068937132147",
+        "https://steamdb.info/depot/381454/history/?changeid=M%3A1058655158230116544",
+        "https://steamdb.info/depot/381455/history/?changeid=M%3A982235791341678199",
+        "https://raw.githubusercontent.com/SteamTracking/GameTracking-Dota2/95d7c038bd2002162825ceaf2ee7030b2f11d3f3/game/dota/steam.inf"
+      ]
+    },
+    "7.12": {
+      "patch": "7.12",
+      "app_id": 570,
+      "steam_build": 2667855,
+      "server_version": 2817,
+      "depots": {
+        "373301": "2072863366938932648",
+        "373302": "1921670065589491496",
+        "373303": "510805869851336258",
+        "381451": "4467944734904713076",
+        "381452": "4703153249931576100",
+        "381453": "8172032391331532816",
+        "381454": "1058655158230116544",
+        "381455": "5838883622116459193"
+      },
+      "sources": [
+        "https://steamdb.info/patchnotes/2667855/",
+        "https://steamdb.info/patchnotes/2682707/",
+        "https://steamdb.info/depot/373301/history/?changeid=M%3A2072863366938932648",
+        "https://steamdb.info/depot/373302/history/?changeid=M%3A1921670065589491496",
+        "https://steamdb.info/depot/373303/history/?changeid=M%3A510805869851336258",
+        "https://steamdb.info/depot/381451/history/?changeid=M%3A4467944734904713076",
+        "https://steamdb.info/depot/381452/history/?changeid=M%3A4703153249931576100",
+        "https://steamdb.info/depot/381453/history/?changeid=M%3A8172032391331532816",
+        "https://steamdb.info/depot/381454/history/?changeid=M%3A1058655158230116544",
+        "https://steamdb.info/depot/381455/history/?changeid=M%3A5838883622116459193",
+        "https://raw.githubusercontent.com/SteamTracking/GameTracking-Dota2/0d8102573faa4feda77c0e9a899e33130195d4d7/game/dota/steam.inf"
+      ]
+    },
+    "7.13b": {
+      "patch": "7.13b",
+      "app_id": 570,
+      "steam_build": 2717698,
+      "server_version": 2830,
+      "depots": {
+        "373301": "7250679724696513729",
+        "373302": "5648292238618474651",
+        "373303": "3738403955432916971",
+        "381451": "2435733133116414753",
+        "381452": "1109747640309587512",
+        "381453": "1755190654361966518",
+        "381454": "1058655158230116544",
+        "381455": "6907032163820526816"
+      },
+      "sources": [
+        "https://steamdb.info/patchnotes/2717698/",
+        "https://steamdb.info/patchnotes/2724014/",
+        "https://store.steampowered.com/oldnews/39548",
+        "https://steamdb.info/depot/373301/history/?changeid=M%3A7250679724696513729",
+        "https://steamdb.info/depot/373302/history/?changeid=M%3A5648292238618474651",
+        "https://steamdb.info/depot/373303/history/?changeid=M%3A3738403955432916971",
+        "https://steamdb.info/depot/381451/history/?changeid=M%3A2435733133116414753",
+        "https://steamdb.info/depot/381452/history/?changeid=M%3A1109747640309587512",
+        "https://steamdb.info/depot/381453/history/?changeid=M%3A1755190654361966518",
+        "https://steamdb.info/depot/381454/history/?changeid=M%3A1058655158230116544",
+        "https://steamdb.info/depot/381455/history/?changeid=M%3A6907032163820526816",
+        "https://raw.githubusercontent.com/SteamTracking/GameTracking-Dota2/58cc0f330919cabf06d1fe89e9d2efd6720517fa/game/dota/steam.inf"
+      ]
+    },
+    "7.14": {
+      "patch": "7.14",
+      "app_id": 570,
+      "steam_build": 2760478,
+      "server_version": 2886,
+      "depots": {
+        "373301": "214849384135625760",
+        "373302": "6933051690393067143",
+        "373303": "5221171782093600398",
+        "381451": "2990265318376226503",
+        "381452": "6415554641240556055",
+        "381453": "6198394455868064903",
+        "381454": "4255194212272452902",
+        "381455": "4552994968275723608"
+      },
+      "sources": [
+        "https://steamdb.info/patchnotes/2760478/",
+        "https://steamdb.info/patchnotes/2762339/",
+        "https://steamdb.info/depot/373301/history/?changeid=M%3A214849384135625760",
+        "https://steamdb.info/depot/373302/history/?changeid=M%3A6933051690393067143",
+        "https://steamdb.info/depot/373303/history/?changeid=M%3A5221171782093600398",
+        "https://steamdb.info/depot/381451/history/?changeid=M%3A2990265318376226503",
+        "https://steamdb.info/depot/381452/history/?changeid=M%3A6415554641240556055",
+        "https://steamdb.info/depot/381453/history/?changeid=M%3A6198394455868064903",
+        "https://steamdb.info/depot/381454/history/?changeid=M%3A4255194212272452902",
+        "https://steamdb.info/depot/381455/history/?changeid=M%3A4552994968275723608",
+        "https://raw.githubusercontent.com/SteamTracking/GameTracking-Dota2/459c9a313076d6147a7d018d570e0023c13519cd/game/dota/steam.inf"
+      ]
+    },
+    "7.15": {
+      "patch": "7.15",
+      "app_id": 570,
+      "steam_build": 2807894,
+      "server_version": 2915,
+      "depots": {
+        "373301": "8123796126914191056",
+        "373302": "5455644271617372159",
+        "373303": "8170965064754173164",
+        "381451": "5401439095447268477",
+        "381452": "7518090199738722213",
+        "381453": "2724542962102626249",
+        "381454": "2257574384494385499",
+        "381455": "8684501596574666336"
+      },
+      "sources": [
+        "https://steamdb.info/patchnotes/2807894/",
+        "https://steamdb.info/patchnotes/2810703/",
+        "https://steamdb.info/depot/373301/history/?changeid=M%3A8123796126914191056",
+        "https://steamdb.info/depot/373302/history/?changeid=M%3A5455644271617372159",
+        "https://steamdb.info/depot/373303/history/?changeid=M%3A8170965064754173164",
+        "https://steamdb.info/depot/381451/history/?changeid=M%3A5401439095447268477",
+        "https://steamdb.info/depot/381452/history/?changeid=M%3A7518090199738722213",
+        "https://steamdb.info/depot/381453/history/?changeid=M%3A2724542962102626249",
+        "https://steamdb.info/depot/381454/history/?changeid=M%3A2257574384494385499",
+        "https://steamdb.info/depot/381455/history/?changeid=M%3A8684501596574666336",
+        "https://raw.githubusercontent.com/SteamTracking/GameTracking-Dota2/d3e7dec70bfb555e02f2f2eb6030af939ec741e1/game/dota/steam.inf"
+      ]
+    },
+    "7.16": {
+      "patch": "7.16",
+      "app_id": 570,
+      "steam_build": 2843904,
+      "server_version": 2947,
+      "depots": {
+        "373301": "4211851850849463953",
+        "373302": "698267191751470331",
+        "373303": "3782688887312363411",
+        "381451": "6984541794104259526",
+        "381452": "8785795576705299207",
+        "381453": "6878143993063907778",
+        "381454": "7824447308675043012",
+        "381455": "2320109659117639581"
+      },
+      "sources": [
+        "https://steamdb.info/patchnotes/2843904/",
+        "https://steamdb.info/patchnotes/2849709/",
+        "https://steamdb.info/depot/373301/history/?changeid=M%3A4211851850849463953",
+        "https://steamdb.info/depot/373302/history/?changeid=M%3A698267191751470331",
+        "https://steamdb.info/depot/373303/history/?changeid=M%3A3782688887312363411",
+        "https://steamdb.info/depot/381451/history/?changeid=M%3A6984541794104259526",
+        "https://steamdb.info/depot/381452/history/?changeid=M%3A8785795576705299207",
+        "https://steamdb.info/depot/381453/history/?changeid=M%3A6878143993063907778",
+        "https://steamdb.info/depot/381454/history/?changeid=M%3A7824447308675043012",
+        "https://steamdb.info/depot/381455/history/?changeid=M%3A2320109659117639581",
+        "https://raw.githubusercontent.com/SteamTracking/GameTracking-Dota2/824cfe48ba3ab21252289df4629ba8d0b231a3a3/game/dota/steam.inf"
+      ]
+    },
+    "7.17": {
+      "patch": "7.17",
+      "app_id": 570,
+      "steam_build": 2888716,
+      "server_version": 2986,
+      "depots": {
+        "373301": "5222852486685909071",
+        "373302": "6951869518703003770",
+        "373303": "6082829361469384581",
+        "381451": "1838476036247397614",
+        "381452": "2930685852946750085",
+        "381453": "746190543481663583",
+        "381454": "4133476191148633634",
+        "381455": "6891984307874974136"
+      },
+      "sources": [
+        "https://steamdb.info/patchnotes/2888716/",
+        "https://steamdb.info/patchnotes/2894132/",
+        "https://www.dota2.com/patches/7.18",
+        "https://steamdb.info/depot/373301/history/?changeid=M%3A5222852486685909071",
+        "https://steamdb.info/depot/373302/history/?changeid=M%3A6951869518703003770",
+        "https://steamdb.info/depot/373303/history/?changeid=M%3A6082829361469384581",
+        "https://steamdb.info/depot/381451/history/?changeid=M%3A1838476036247397614",
+        "https://steamdb.info/depot/381452/history/?changeid=M%3A2930685852946750085",
+        "https://steamdb.info/depot/381453/history/?changeid=M%3A746190543481663583",
+        "https://steamdb.info/depot/381454/history/?changeid=M%3A4133476191148633634",
+        "https://steamdb.info/depot/381455/history/?changeid=M%3A6891984307874974136",
+        "https://raw.githubusercontent.com/SteamTracking/GameTracking-Dota2/40f93d2c1fd50e469804128f84f8989110ef98dd/game/dota/steam.inf"
+      ]
+    },
+    "7.18": {
+      "patch": "7.18",
+      "app_id": 570,
+      "steam_build": 2980535,
+      "server_version": 3058,
+      "depots": {
+        "373301": "8836872410943342305",
+        "373302": "6156683240044136498",
+        "373303": "1973285257760076834",
+        "381451": "4697183276827297941",
+        "381452": "54744532345947669",
+        "381453": "662719837509291924",
+        "381454": "5374537155489050308",
+        "381455": "7856427206622598720"
+      },
+      "sources": [
+        "https://steamdb.info/patchnotes/2980535/",
+        "https://steamdb.info/patchnotes/2987543/",
+        "https://www.dota2.com/patches/7.19",
+        "https://steamdb.info/depot/373301/history/?changeid=M%3A8836872410943342305",
+        "https://steamdb.info/depot/373302/history/?changeid=M%3A6156683240044136498",
+        "https://steamdb.info/depot/373303/history/?changeid=M%3A1973285257760076834",
+        "https://steamdb.info/depot/381451/history/?changeid=M%3A4697183276827297941",
+        "https://steamdb.info/depot/381452/history/?changeid=M%3A54744532345947669",
+        "https://steamdb.info/depot/381453/history/?changeid=M%3A662719837509291924",
+        "https://steamdb.info/depot/381454/history/?changeid=M%3A5374537155489050308",
+        "https://steamdb.info/depot/381455/history/?changeid=M%3A7856427206622598720",
+        "https://raw.githubusercontent.com/SteamTracking/GameTracking-Dota2/c6053baed07d6c935c1f30d0404a9946961db9b6/game/dota/steam.inf"
+      ]
+    },
+    "7.19d": {
+      "patch": "7.19d",
+      "app_id": 570,
+      "steam_build": 3315977,
+      "server_version": 3209,
+      "depots": {
+        "373301": "3685396779039657308",
+        "373302": "4226755329388286218",
+        "373303": "252643125366981995",
+        "381451": "1508665344621442114",
+        "381452": "6847966227825170943",
+        "381453": "2435730474089227410",
+        "381454": "3188089485941181488",
+        "381455": "450771838794326627"
+      },
+      "sources": [
+        "https://steamdb.info/patchnotes/3315977/",
+        "https://steamdb.info/patchnotes/3320919/",
+        "https://www.dota2.com/720",
+        "https://steamdb.info/depot/373301/history/?changeid=M%3A3685396779039657308",
+        "https://steamdb.info/depot/373302/history/?changeid=M%3A4226755329388286218",
+        "https://steamdb.info/depot/373303/history/?changeid=M%3A252643125366981995",
+        "https://steamdb.info/depot/381451/history/?changeid=M%3A1508665344621442114",
+        "https://steamdb.info/depot/381452/history/?changeid=M%3A6847966227825170943",
+        "https://steamdb.info/depot/381453/history/?changeid=M%3A2435730474089227410",
+        "https://steamdb.info/depot/381454/history/?changeid=M%3A3188089485941181488",
+        "https://steamdb.info/depot/381455/history/?changeid=M%3A450771838794326627",
+        "https://raw.githubusercontent.com/SteamTracking/GameTracking-Dota2/644473916b12b3b9df84d2464e31378d1100ea62/game/dota/steam.inf"
+      ]
+    },
+    "7.20e": {
+      "patch": "7.20e",
+      "app_id": 570,
+      "steam_build": 3391106,
+      "server_version": 3283,
+      "depots": {
+        "373301": "6457218620224748465",
+        "381451": "3543303884463574175",
+        "381452": "8312735821725238778",
+        "381453": "5537746787706909562",
+        "381454": "7916660070273523151",
+        "381455": "5642884482946332465",
+        "373302": "3508718755206429842",
+        "373303": "6829735811046262001"
+      },
+      "sources": [
+        "https://web.archive.org/web/20201124111805id_/https://steamdb.info/patchnotes/3374634/",
+        "https://web.archive.org/web/20220817195831id_/https://steamdb.info/patchnotes/3379378/",
+        "https://web.archive.org/web/20191017090316id_/https://steamdb.info/patchnotes/3381488/",
+        "https://web.archive.org/web/20191017091605id_/https://steamdb.info/patchnotes/3384624/",
+        "https://web.archive.org/web/20191017080641id_/https://steamdb.info/patchnotes/3391106/"
+      ]
+    },
+    "7.21d": {
+      "patch": "7.21d",
+      "app_id": 570,
+      "steam_build": 3856028,
+      "server_version": 3500,
+      "depots": {
+        "373301": "62682699427014792",
+        "373302": "5080840836945828605",
+        "373303": "5990502766518824969",
+        "381451": "5010285481780167812",
+        "381452": "3545668375457864172",
+        "381453": "1366728692544931752",
+        "381454": "4417103778867182198",
+        "381455": "3112160666124225066"
+      },
+      "sources": [
+        "https://steamdb.info/patchnotes/3856028/",
+        "https://steamdb.info/patchnotes/3857105/",
+        "https://steamdb.info/depot/373301/history/?changeid=M%3A62682699427014792",
+        "https://steamdb.info/depot/373302/history/?changeid=M%3A5080840836945828605",
+        "https://steamdb.info/depot/373303/history/?changeid=M%3A5990502766518824969",
+        "https://steamdb.info/depot/381451/history/?changeid=M%3A5010285481780167812",
+        "https://steamdb.info/depot/381452/history/?changeid=M%3A3545668375457864172",
+        "https://steamdb.info/depot/381453/history/?changeid=M%3A1366728692544931752",
+        "https://steamdb.info/depot/381454/history/?changeid=M%3A4417103778867182198",
+        "https://steamdb.info/depot/381455/history/?changeid=M%3A3112160666124225066",
+        "https://raw.githubusercontent.com/SteamTracking/GameTracking-Dota2/c5ca4a1bd35f3350f5f5410a87c9b55fe3d0d68b/game/dota/steam.inf"
+      ]
+    },
+    "7.22h": {
+      "patch": "7.22h",
+      "app_id": 570,
+      "steam_build": 4406615,
+      "server_version": 3839,
+      "depots": {
+        "373301": "3382525852295931473",
+        "373302": "3688356433120974730",
+        "373303": "4311570908880376783",
+        "381451": "5488573816696640861",
+        "381452": "1050899834706719085",
+        "381453": "5012083958777030771",
+        "381454": "5498906008369966069",
+        "381455": "6699900747388303101"
+      },
+      "sources": [
+        "https://steamdb.info/patchnotes/4406615/",
+        "https://steamdb.info/patchnotes/4428376/",
+        "https://steamdb.info/depot/373301/history/?changeid=M%3A3382525852295931473",
+        "https://steamdb.info/depot/373302/history/?changeid=M%3A3688356433120974730",
+        "https://steamdb.info/depot/373303/history/?changeid=M%3A4311570908880376783",
+        "https://steamdb.info/depot/381451/history/?changeid=M%3A5488573816696640861",
+        "https://steamdb.info/depot/381452/history/?changeid=M%3A1050899834706719085",
+        "https://steamdb.info/depot/381453/history/?changeid=M%3A5012083958777030771",
+        "https://steamdb.info/depot/381454/history/?changeid=M%3A5498906008369966069",
+        "https://steamdb.info/depot/381455/history/?changeid=M%3A6699900747388303101",
+        "https://raw.githubusercontent.com/SteamTracking/GameTracking-Dota2/19538b0926a651b5daef812f7a5ff58fe769dd92/game/dota/steam.inf"
+      ]
+    },
+    "7.23f": {
+      "patch": "7.23f",
+      "app_id": 570,
+      "steam_build": 4606838,
+      "server_version": 3947,
+      "depots": {
+        "373301": "3336573574250216305",
+        "373302": "8246298273208163570",
+        "373303": "4568956756183001179",
+        "381451": "8769811603494084493",
+        "381452": "4361116579509319972",
+        "381453": "3938448040358984963",
+        "381454": "8846407263817635930",
+        "381455": "4433455717090984944"
+      },
+      "sources": [
+        "https://steamdb.info/patchnotes/4606838/",
+        "https://steamdb.info/patchnotes/4610052/",
+        "https://steamdb.info/depot/373301/history/?changeid=M%3A3336573574250216305",
+        "https://steamdb.info/depot/373302/history/?changeid=M%3A8246298273208163570",
+        "https://steamdb.info/depot/373303/history/?changeid=M%3A4568956756183001179",
+        "https://steamdb.info/depot/381451/history/?changeid=M%3A8769811603494084493",
+        "https://steamdb.info/depot/381452/history/?changeid=M%3A4361116579509319972",
+        "https://steamdb.info/depot/381453/history/?changeid=M%3A3938448040358984963",
+        "https://steamdb.info/depot/381454/history/?changeid=M%3A8846407263817635930",
+        "https://steamdb.info/depot/381455/history/?changeid=M%3A4433455717090984944",
+        "https://raw.githubusercontent.com/SteamTracking/GameTracking-Dota2/9b207aa318810c14874713690e5a3b49754a7bc6/game/dota/steam.inf"
+      ]
+    },
+    "7.24b": {
+      "patch": "7.24b",
+      "app_id": 570,
+      "steam_build": 4786139,
+      "server_version": 4031,
+      "depots": {
+        "373301": "7192721278245254813",
+        "373302": "6959985316169733734",
+        "373303": "3733156516635678222",
+        "381451": "6711979569677119662",
+        "381452": "8173547641943194217",
+        "381453": "5989525788727458087",
+        "381454": "3408789382397085924",
+        "381455": "5250756557901345655"
+      },
+      "sources": [
+        "https://steamdb.info/patchnotes/4786139/",
+        "https://steamdb.info/patchnotes/4788262/",
+        "https://www.dota2.com/patches/7.25",
+        "https://steamdb.info/depot/373301/history/?changeid=M%3A7192721278245254813",
+        "https://steamdb.info/depot/373302/history/?changeid=M%3A6959985316169733734",
+        "https://steamdb.info/depot/373303/history/?changeid=M%3A3733156516635678222",
+        "https://steamdb.info/depot/381451/history/?changeid=M%3A6711979569677119662",
+        "https://steamdb.info/depot/381452/history/?changeid=M%3A8173547641943194217",
+        "https://steamdb.info/depot/381453/history/?changeid=M%3A5989525788727458087",
+        "https://steamdb.info/depot/381454/history/?changeid=M%3A3408789382397085924",
+        "https://steamdb.info/depot/381455/history/?changeid=M%3A5250756557901345655",
+        "https://raw.githubusercontent.com/SteamTracking/GameTracking-Dota2/1d5aac8afca9fc6cc05ced2840a24e0ff29fc413/game/dota/steam.inf"
+      ]
+    },
+    "7.25c": {
+      "patch": "7.25c",
+      "app_id": 570,
+      "steam_build": 4907483,
+      "server_version": 4099,
+      "depots": {
+        "373301": "2163371687844761786",
+        "373302": "5263600388424388839",
+        "373303": "4472346439340117952",
+        "381451": "6463511261291628176",
+        "381452": "1750367261271732680",
+        "381453": "4012015015220252502",
+        "381454": "5105315937856550535",
+        "381455": "7121129084955846923"
+      },
+      "sources": [
+        "https://steamdb.info/patchnotes/4907483/",
+        "https://steamdb.info/patchnotes/4911563/",
+        "https://steamdb.info/depot/373301/history/?changeid=M%3A2163371687844761786",
+        "https://steamdb.info/depot/373302/history/?changeid=M%3A5263600388424388839",
+        "https://steamdb.info/depot/373303/history/?changeid=M%3A4472346439340117952",
+        "https://steamdb.info/depot/381451/history/?changeid=M%3A6463511261291628176",
+        "https://steamdb.info/depot/381452/history/?changeid=M%3A1750367261271732680",
+        "https://steamdb.info/depot/381453/history/?changeid=M%3A4012015015220252502",
+        "https://steamdb.info/depot/381454/history/?changeid=M%3A5105315937856550535",
+        "https://steamdb.info/depot/381455/history/?changeid=M%3A7121129084955846923",
+        "https://raw.githubusercontent.com/SteamTracking/GameTracking-Dota2/0c48412813f7b5519ca32adaf9a6e0773905498c/game/dota/steam.inf"
+      ]
+    },
+    "7.26c": {
+      "patch": "7.26c",
+      "app_id": 570,
+      "steam_build": 5222216,
+      "server_version": 4312,
+      "depots": {
+        "373301": "336960675962317854",
+        "373302": "1682154252281736679",
+        "373303": "1040396446180069101",
+        "381451": "7191919432369946982",
+        "381452": "1379669522533081368",
+        "381453": "514127008670674637",
+        "381454": "4942101931235750965",
+        "381455": "3042491455450128820"
+      },
+      "sources": [
+        "https://steamdb.info/patchnotes/5222216/",
+        "https://steamdb.info/patchnotes/5226294/",
+        "https://steamdb.info/app/570/history/?changeid=8811505",
+        "https://steamdb.info/app/570/history/?changeid=8811660",
+        "https://steamdb.info/app/570/history/?changeid=8811713",
+        "https://steamdb.info/patchnotes/5226375/",
+        "https://raw.githubusercontent.com/SteamTracking/GameTracking-Dota2/bb027f15b3bd67267ff59ff686edb707b861d56b/game/dota/pak01_dir/scripts/npc/items.txt",
+        "https://raw.githubusercontent.com/SteamTracking/GameTracking-Dota2/9637aafdbd8bc42cd6a92d6e0ed98ebf54906c4a/game/dota/pak01_dir/scripts/npc/items.txt",
+        "https://steamdb.info/depot/373301/history/?changeid=M%3A336960675962317854",
+        "https://steamdb.info/depot/373302/history/?changeid=M%3A1682154252281736679",
+        "https://steamdb.info/depot/373303/history/?changeid=M%3A1040396446180069101",
+        "https://steamdb.info/depot/381451/history/?changeid=M%3A7191919432369946982",
+        "https://steamdb.info/depot/381452/history/?changeid=M%3A1379669522533081368",
+        "https://steamdb.info/depot/381453/history/?changeid=M%3A514127008670674637",
+        "https://steamdb.info/depot/381454/history/?changeid=M%3A4942101931235750965",
+        "https://steamdb.info/depot/381455/history/?changeid=M%3A3042491455450128820",
+        "https://raw.githubusercontent.com/SteamTracking/GameTracking-Dota2/bb027f15b3bd67267ff59ff686edb707b861d56b/game/dota/steam.inf"
+      ]
+    },
+    "7.27d": {
+      "patch": "7.27d",
+      "app_id": 570,
+      "steam_build": 5935439,
+      "server_version": 4553,
+      "depots": {
+        "373301": "5496829452951367066",
+        "373302": "7590014023468080510",
+        "373303": "7983372528464181127",
+        "381451": "6839507254080308613",
+        "381452": "6274671538008958147",
+        "381453": "894706618245047225",
+        "381454": "8050821838531470448",
+        "381455": "5446161712808358756"
+      },
+      "sources": [
+        "https://steamdb.info/patchnotes/5935439/",
+        "https://steamdb.info/patchnotes/5984251/",
+        "https://steamdb.info/depot/373301/history/?changeid=M%3A5496829452951367066",
+        "https://steamdb.info/depot/373302/history/?changeid=M%3A7590014023468080510",
+        "https://steamdb.info/depot/373303/history/?changeid=M%3A7983372528464181127",
+        "https://steamdb.info/depot/381451/history/?changeid=M%3A6839507254080308613",
+        "https://steamdb.info/depot/381452/history/?changeid=M%3A6274671538008958147",
+        "https://steamdb.info/depot/381453/history/?changeid=M%3A894706618245047225",
+        "https://steamdb.info/depot/381454/history/?changeid=M%3A8050821838531470448",
+        "https://steamdb.info/depot/381455/history/?changeid=M%3A5446161712808358756",
+        "https://raw.githubusercontent.com/SteamTracking/GameTracking-Dota2/201142b6ff1a6ce990490544c1082ccc4c13adcf/game/dota/steam.inf"
+      ]
+    },
+    "7.28c": {
+      "patch": "7.28c",
+      "app_id": 570,
+      "steam_build": 6503851,
+      "server_version": 4788,
+      "depots": {
+        "373301": "4131151655847610449",
+        "373302": "9172374228201923003",
+        "373303": "7584793772064153924",
+        "381451": "3300648697490339909",
+        "381452": "3795094030586356677",
+        "381453": "2876172205676580329",
+        "381454": "4797919305240459226",
+        "381455": "5281478226315545833"
+      },
+      "sources": [
+        "https://steamdb.info/patchnotes/6503851/",
+        "https://steamdb.info/patchnotes/6517216/",
+        "https://steamdb.info/depot/373301/history/?changeid=M%3A4131151655847610449",
+        "https://steamdb.info/depot/373302/history/?changeid=M%3A9172374228201923003",
+        "https://steamdb.info/depot/373303/history/?changeid=M%3A7584793772064153924",
+        "https://steamdb.info/depot/381451/history/?changeid=M%3A3300648697490339909",
+        "https://steamdb.info/depot/381452/history/?changeid=M%3A3795094030586356677",
+        "https://steamdb.info/depot/381453/history/?changeid=M%3A2876172205676580329",
+        "https://steamdb.info/depot/381454/history/?changeid=M%3A4797919305240459226",
+        "https://steamdb.info/depot/381455/history/?changeid=M%3A5281478226315545833",
+        "https://raw.githubusercontent.com/SteamTracking/GameTracking-Dota2/1513a562f779d80981a156aabd3c910e09d17e0f/game/dota/steam.inf"
+      ]
+    },
+    "7.29d": {
+      "patch": "7.29d",
+      "app_id": 570,
+      "steam_build": 7198695,
+      "server_version": 4970,
+      "depots": {
+        "373301": "2837650417867896405",
+        "373302": "7452449624499662827",
+        "373303": "1421848391295321238",
+        "381451": "2533642614644038588",
+        "381452": "8960790633130893983",
+        "381453": "6982758207121212149",
+        "381454": "733904688968792032",
+        "381455": "5318575436393557533"
+      },
+      "sources": [
+        "https://steamdb.info/patchnotes/7198695/",
+        "https://steamdb.info/patchnotes/7206228/",
+        "https://steamdb.info/depot/373301/history/?changeid=M%3A2837650417867896405",
+        "https://steamdb.info/depot/373302/history/?changeid=M%3A7452449624499662827",
+        "https://steamdb.info/depot/373303/history/?changeid=M%3A1421848391295321238",
+        "https://steamdb.info/depot/381451/history/?changeid=M%3A2533642614644038588",
+        "https://steamdb.info/depot/381452/history/?changeid=M%3A8960790633130893983",
+        "https://steamdb.info/depot/381453/history/?changeid=M%3A6982758207121212149",
+        "https://steamdb.info/depot/381454/history/?changeid=M%3A733904688968792032",
+        "https://steamdb.info/depot/381455/history/?changeid=M%3A5318575436393557533",
+        "https://raw.githubusercontent.com/SteamTracking/GameTracking-Dota2/005bc0cc98369f93e7912b0a486fe627f0516747/game/dota/steam.inf"
+      ]
+    },
+    "7.30e": {
+      "patch": "7.30e",
+      "app_id": 570,
+      "steam_build": 8248131,
+      "server_version": 5175,
+      "depots": {
+        "373301": "4610272678383200771",
+        "381451": "1415697118059170458",
+        "381452": "8964267298631518061",
+        "381453": "2147063539945323849",
+        "381454": "7647068797861452834",
+        "381455": "2582212233490214413",
+        "373302": "2013352026999781476",
+        "373303": "6727996641337436304"
+      },
+      "sources": [
+        "https://steamdb.info/patchnotes/8248131/",
+        "https://steamdb.info/patchnotes/8217472/",
+        "https://web.archive.org/web/20220519175739id_/https://steamdb.info/depot/381452/",
+        "https://web.archive.org/web/20240223134708id_/https://steamdb.info/patchnotes/8143112/",
+        "https://web.archive.org/web/20220525092003id_/https://steamdb.info/depot/381454/",
+        "https://web.archive.org/web/20211216232748id_/https://steamdb.info/depot/373302/"
+      ]
+    },
+    "7.31d": {
+      "patch": "7.31d",
+      "app_id": 570,
+      "steam_build": 9335939,
+      "server_version": 5382,
+      "depots": {
+        "373301": "7839326895652872826",
+        "381451": "8738175041845681155",
+        "381452": "7510795838983924454",
+        "381453": "5480592121225679531",
+        "381454": "787755787303673325",
+        "381455": "1553943315450027590",
+        "373302": "1248254969179815201",
+        "373303": "5324590954347902934"
+      },
+      "sources": [
+        "https://web.archive.org/web/20250115033840id_/https://steamdb.info/patchnotes/9335939/",
+        "https://web.archive.org/web/20220824144830id_/https://steamdb.info/app/570/patchnotes/",
+        "https://raw.githubusercontent.com/SteamTracking/GameTracking-Dota2/eca58b88615c3306422f2978277335258987b08e/game/dota/steam.inf",
+        "https://steamdb.info/patchnotes/9039255/",
+        "https://steamdb.info/patchnotes/9122938/",
+        "https://steamdb.info/patchnotes/8981906/",
+        "https://steamdb.info/patchnotes/9087197/",
+        "https://steamdb.info/patchnotes/8899448/"
+      ]
+    },
+    "7.32e": {
+      "patch": "7.32e",
+      "app_id": 570,
+      "steam_build": 10978579,
+      "server_version": 5677,
+      "depots": {
+        "373301": "5448278071576747048",
+        "381452": "7830601986028834272",
+        "381454": "705823384123408349",
+        "381455": "9022419368508906227",
+        "373303": "1126669909654823528",
+        "381451": "9210695072374057360",
+        "381453": "8462417059274354447",
+        "373302": "4280586295239367878"
+      },
+      "sources": [
+        "https://steamdb.info/patchnotes/10978579/",
+        "https://steamdb.info/patchnotes/10958491/",
+        "https://steamdb.info/patchnotes/10749512/",
+        "https://steamdb.info/patchnotes/10711926/",
+        "https://steamdb.info/patchnotes/10704995/",
+        "https://raw.githubusercontent.com/SteamTracking/GameTracking-Dota2/40d6b6c46ba51137c9da14381c29fb9cafa11167/game/dota/steam.inf"
+      ]
+    },
+    "7.33e": {
+      "patch": "7.33e",
+      "app_id": 570,
+      "steam_build": 11887689,
+      "server_version": 5771,
+      "depots": {
+        "373301": "4816376207788229455",
+        "373302": "340479237629451506",
+        "373303": "7791131084160315312",
+        "381451": "2529843488730230091",
+        "381452": "6149511370966456883",
+        "381453": "3211458091481932848",
+        "381454": "5699334089757928560",
+        "381455": "8244589665913762928"
+      },
+      "sources": [
+        "https://steamdb.info/patchnotes/11887689/",
+        "https://steamdb.info/patchnotes/11896549/",
+        "https://steamdb.info/depot/373301/history/?changeid=M%3A4816376207788229455",
+        "https://steamdb.info/depot/373302/history/?changeid=M%3A340479237629451506",
+        "https://steamdb.info/depot/373303/history/?changeid=M%3A7791131084160315312",
+        "https://steamdb.info/depot/381451/history/?changeid=M%3A2529843488730230091",
+        "https://steamdb.info/depot/381452/history/?changeid=M%3A6149511370966456883",
+        "https://steamdb.info/depot/381453/history/?changeid=M%3A3211458091481932848",
+        "https://steamdb.info/depot/381454/history/?changeid=M%3A5699334089757928560",
+        "https://steamdb.info/depot/381455/history/?changeid=M%3A8244589665913762928",
+        "https://raw.githubusercontent.com/SteamTracking/GameTracking-Dota2/d939d83a8ba9e6e958878a023fe1bd8f67958441/game/dota/steam.inf"
+      ]
+    },
+    "7.34e": {
+      "patch": "7.34e",
+      "app_id": 570,
+      "steam_build": 12894231,
+      "server_version": 5938,
+      "depots": {
+        "373301": "6857292397732650940",
+        "373302": "8795372752530775476",
+        "373303": "1402552645009102369",
+        "381451": "4655036238103513086",
+        "381452": "3267582078777842909",
+        "381453": "5953365659748057095",
+        "381454": "5297697076786798060",
+        "381455": "9042744809554156396"
+      },
+      "sources": [
+        "https://steamdb.info/patchnotes/12894231/",
+        "https://steamdb.info/patchnotes/12966865/",
+        "https://www.dota2.com/frostivus2023",
+        "https://steamdb.info/depot/373301/history/?changeid=M%3A6857292397732650940",
+        "https://steamdb.info/depot/373302/history/?changeid=M%3A8795372752530775476",
+        "https://steamdb.info/depot/373303/history/?changeid=M%3A1402552645009102369",
+        "https://steamdb.info/depot/381451/history/?changeid=M%3A4655036238103513086",
+        "https://steamdb.info/depot/381452/history/?changeid=M%3A3267582078777842909",
+        "https://steamdb.info/depot/381453/history/?changeid=M%3A5953365659748057095",
+        "https://steamdb.info/depot/381454/history/?changeid=M%3A5297697076786798060",
+        "https://steamdb.info/depot/381455/history/?changeid=M%3A9042744809554156396",
+        "https://raw.githubusercontent.com/SteamTracking/GameTracking-Dota2/192b1ce6d3fd73c678fd0567e7488e3b7453c0d6/game/dota/steam.inf"
+      ]
+    },
+    "7.35d": {
+      "patch": "7.35d",
+      "app_id": 570,
+      "steam_build": 14448040,
+      "server_version": 6061,
+      "depots": {
+        "373301": "7611435127655154825",
+        "373302": "2605968719318653564",
+        "373303": "5368571051594083924",
+        "381451": "4160781658357354821",
+        "381452": "925750504079703334",
+        "381453": "2704118242337151326",
+        "381454": "8788483403344922626",
+        "381455": "3950088660390388309"
+      },
+      "sources": [
+        "https://steamdb.info/patchnotes/14448040/",
+        "https://steamdb.info/patchnotes/14461833/",
+        "https://steamdb.info/depot/373301/history/?changeid=M%3A7611435127655154825",
+        "https://steamdb.info/depot/373302/history/?changeid=M%3A2605968719318653564",
+        "https://steamdb.info/depot/373303/history/?changeid=M%3A5368571051594083924",
+        "https://steamdb.info/depot/381451/history/?changeid=M%3A4160781658357354821",
+        "https://steamdb.info/depot/381452/history/?changeid=M%3A925750504079703334",
+        "https://steamdb.info/depot/381453/history/?changeid=M%3A2704118242337151326",
+        "https://steamdb.info/depot/381454/history/?changeid=M%3A8788483403344922626",
+        "https://steamdb.info/depot/381455/history/?changeid=M%3A3950088660390388309",
+        "https://raw.githubusercontent.com/SteamTracking/GameTracking-Dota2/4cda43a049a604c92971d7beb4e07e0601e6e057/game/dota/steam.inf"
+      ]
+    },
+    "7.36c": {
+      "patch": "7.36c",
+      "app_id": 570,
+      "steam_build": 15192472,
+      "server_version": 6134,
+      "depots": {
+        "373301": "2446410842288337458",
+        "373302": "5846404077126382464",
+        "373303": "8026276014050377448",
+        "381451": "4200311504838659404",
+        "381452": "4010438331104919956",
+        "381453": "6188924590361252019",
+        "381454": "8788483403344922626",
+        "381455": "6961470532001943447"
+      },
+      "sources": [
+        "https://steamdb.info/patchnotes/15192472/",
+        "https://steamdb.info/patchnotes/15219244/",
+        "https://steamdb.info/depot/373301/history/?changeid=M%3A2446410842288337458",
+        "https://steamdb.info/depot/373302/history/?changeid=M%3A5846404077126382464",
+        "https://steamdb.info/depot/373303/history/?changeid=M%3A8026276014050377448",
+        "https://steamdb.info/depot/381451/history/?changeid=M%3A4200311504838659404",
+        "https://steamdb.info/depot/381452/history/?changeid=M%3A4010438331104919956",
+        "https://steamdb.info/depot/381453/history/?changeid=M%3A6188924590361252019",
+        "https://steamdb.info/depot/381454/history/?changeid=M%3A8788483403344922626",
+        "https://steamdb.info/depot/381455/history/?changeid=M%3A6961470532001943447",
+        "https://raw.githubusercontent.com/SteamTracking/GameTracking-Dota2/10a30e8bcd8dd9f9e090da4c47c0600461afb92d/game/dota/steam.inf"
+      ]
+    },
+    "7.37e": {
+      "patch": "7.37e",
+      "app_id": 570,
+      "steam_build": 17314470,
+      "server_version": 6312,
+      "depots": {
+        "373301": "6116430179128484659",
+        "373302": "4166885550734689006",
+        "373303": "7830855713944782995",
+        "381451": "1242350594374880984",
+        "381452": "5559429930528020871",
+        "381453": "6188924590361252019",
+        "381454": "8788483403344922626",
+        "381455": "7252155885467389704"
+      },
+      "sources": [
+        "https://steamdb.info/patchnotes/17314470/",
+        "https://steamdb.info/patchnotes/17415045/",
+        "https://steamdb.info/depot/373301/history/?changeid=M%3A6116430179128484659",
+        "https://steamdb.info/depot/373302/history/?changeid=M%3A4166885550734689006",
+        "https://steamdb.info/depot/373303/history/?changeid=M%3A7830855713944782995",
+        "https://steamdb.info/depot/381451/history/?changeid=M%3A1242350594374880984",
+        "https://steamdb.info/depot/381452/history/?changeid=M%3A5559429930528020871",
+        "https://steamdb.info/depot/381453/history/?changeid=M%3A6188924590361252019",
+        "https://steamdb.info/depot/381454/history/?changeid=M%3A8788483403344922626",
+        "https://steamdb.info/depot/381455/history/?changeid=M%3A7252155885467389704",
+        "https://raw.githubusercontent.com/SteamTracking/GameTracking-Dota2/e352988c7b4b846053d1dccd5cf6248ff07aa2a8/game/dota/steam.inf"
+      ]
+    },
+    "7.38c": {
+      "patch": "7.38c",
+      "app_id": 570,
+      "steam_build": 18497749,
+      "server_version": 6408,
+      "depots": {
+        "373301": "6443852440789926398",
+        "373302": "8222388039082672118",
+        "373303": "599790904529509177",
+        "381451": "1242350594374880984",
+        "381452": "5559429930528020871",
+        "381453": "6188924590361252019",
+        "381454": "8788483403344922626",
+        "381455": "3567060770305817591"
+      },
+      "sources": [
+        "https://steamdb.info/patchnotes/18497749/",
+        "https://steamdb.info/patchnotes/18572659/",
+        "https://www.dota2.com/patches/7.39",
+        "https://steamdb.info/depot/373301/history/?changeid=M%3A6443852440789926398",
+        "https://steamdb.info/depot/373302/history/?changeid=M%3A8222388039082672118",
+        "https://steamdb.info/depot/373303/history/?changeid=M%3A599790904529509177",
+        "https://steamdb.info/depot/381451/history/?changeid=M%3A1242350594374880984",
+        "https://steamdb.info/depot/381452/history/?changeid=M%3A5559429930528020871",
+        "https://steamdb.info/depot/381453/history/?changeid=M%3A6188924590361252019",
+        "https://steamdb.info/depot/381454/history/?changeid=M%3A8788483403344922626",
+        "https://steamdb.info/depot/381455/history/?changeid=M%3A3567060770305817591",
+        "https://raw.githubusercontent.com/SteamTracking/GameTracking-Dota2/7ba5ae1c718a5c354355fc830c37e0c770003c95/game/dota/steam.inf"
+      ]
+    },
+    "7.39e": {
+      "patch": "7.39e",
+      "app_id": 570,
+      "steam_build": 21169217,
+      "server_version": 6640,
+      "depots": {
+        "373301": "4463101909708776466",
+        "381451": "1644205904362630105",
+        "381452": "8636594691162496216",
+        "381453": "5723651394550524659",
+        "381454": "3653281149075627225",
+        "381455": "2202225951336716437",
+        "373302": "4501404154655885948",
+        "373303": "1837131684667709467"
+      },
+      "sources": [
+        "https://gitea.com/Sainan/steam-pics/raw/commit/53ec300d16ae7e6861be23725dced01101aa90b9/appinfo/570.json",
+        "https://raw.githubusercontent.com/SteamTracking/GameTracking-Dota2/15b0a3fc4d94160010aab42c17f4f38a68b67f51/game/dota/steam.inf",
+        "https://www.dota2.com/patches/7.40"
+      ]
+    },
+    "7.40": {
+      "patch": "7.40",
+      "app_id": 570,
+      "steam_build": 21272529,
+      "server_version": 6659,
+      "depots": {
+        "373301": "6307142019925458251",
+        "381451": "1644205904362630105",
+        "381452": "8636594691162496216",
+        "381453": "5723651394550524659",
+        "381454": "3653281149075627225",
+        "381455": "1294934802177158849",
+        "373302": "4367212976802765722",
+        "373303": "3763856114777482075"
+      },
+      "sources": [
+        "https://gitea.com/Sainan/steam-pics/raw/commit/224cae9c25b7710a357e47dd9f76b3e1d80e8659/appinfo/570.json",
+        "https://raw.githubusercontent.com/SteamTracking/GameTracking-Dota2/49cbc75e3a29/game/dota/steam.inf",
+        "https://www.dota2.com/patches/7.40b"
+      ]
+    },
+    "7.40c": {
+      "patch": "7.40c",
+      "app_id": 570,
+      "steam_build": 22472058,
+      "server_version": 6726,
+      "depots": {
+        "373301": "1723030181327397552",
+        "381451": "1644205904362630105",
+        "381452": "1790151512922507464",
+        "381453": "5723651394550524659",
+        "381454": "3653281149075627225",
+        "381455": "1938948394254568249",
+        "373302": "4367212976802765722",
+        "373303": "4594168330626799877"
+      },
+      "sources": [
+        "https://gitea.com/Sainan/steam-pics/raw/commit/8388de43042a9d21c9e0189e9fab590d210ef48e/appinfo/570.json",
+        "https://raw.githubusercontent.com/SteamTracking/GameTracking-Dota2/7bcfcea189af22a098dcfaffb5d7efadbfe1b81a/game/dota/steam.inf",
+        "https://www.dota2.com/patches/7.41"
+      ]
+    },
+    "7.41f": {
+      "patch": "7.41f",
+      "app_id": 570,
+      "steam_build": 26718111,
+      "server_version": 6976,
+      "depots": {
+        "373301": "5601365306534899232",
+        "373303": "8190523112907812082",
+        "381455": "4747817024257436017",
+        "381452": "7525722591861114529",
+        "381453": "704842853377528959",
+        "381454": "4468347514726866344",
+        "373302": "4238575922933450716",
+        "381451": "5232075504352746697"
+      },
+      "sources": [
+        "https://steamdb.info/patchnotes/26718111/",
+        "https://steamdb.info/patchnotes/26632873/",
+        "https://steamdb.info/patchnotes/26602578/",
+        "https://steamdb.info/patchnotes/25817774/",
+        "https://steamdb.info/patchnotes/25765021/",
+        "https://raw.githubusercontent.com/SteamTracking/GameTracking-Dota2/ab523510b09908cedec32e7b0cce6333c27e5af2/game/dota/steam.inf"
+      ]
+    }
+  },
+  "series": {
+    "6.84": "6.84c",
+    "6.85": "6.85b",
+    "6.86": "6.86f",
+    "6.87": "6.87d",
+    "6.88": "6.88f",
+    "7.00": "7.00",
+    "7.01": "7.01",
+    "7.02": "7.02",
+    "7.03": "7.03",
+    "7.04": "7.04",
+    "7.05": "7.05",
+    "7.06": "7.06f",
+    "7.07": "7.07d",
+    "7.08": "7.08",
+    "7.09": "7.09",
+    "7.10": "7.10",
+    "7.11": "7.11",
+    "7.12": "7.12",
+    "7.13": "7.13b",
+    "7.14": "7.14",
+    "7.15": "7.15",
+    "7.16": "7.16",
+    "7.17": "7.17",
+    "7.18": "7.18",
+    "7.19": "7.19d",
+    "7.20": "7.20e",
+    "7.21": "7.21d",
+    "7.22": "7.22h",
+    "7.23": "7.23f",
+    "7.24": "7.24b",
+    "7.25": "7.25c",
+    "7.26": "7.26c",
+    "7.27": "7.27d",
+    "7.28": "7.28c",
+    "7.29": "7.29d",
+    "7.30": "7.30e",
+    "7.31": "7.31d",
+    "7.32": "7.32e",
+    "7.33": "7.33e",
+    "7.34": "7.34e",
+    "7.35": "7.35d",
+    "7.36": "7.36c",
+    "7.37": "7.37e",
+    "7.38": "7.38c",
+    "7.39": "7.39e",
+    "7.40": "7.40c",
+    "7.41": "7.41f"
+  }
+}

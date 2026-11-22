@@ -9,7 +9,7 @@ from migration import make_plan, migrate, save_rule
 
 
 class MigrationDialog(tk.Toplevel):
-    def __init__(self, parent, app):
+    def __init__(self, parent, app, *, client="modern"):
         super().__init__(parent)
         self.app, self.store = app, app.store
         self.plan = None
@@ -26,7 +26,7 @@ class MigrationDialog(tk.Toplevel):
         body.pack(fill="both", expand=True)
         ttk.Label(body, text="Long-term storage", style="Section.TLabel").pack(anchor="w")
         ttk.Label(body, text="Choose any registered source folder, including existing long-term storage, and a destination.\nSave one rule per client. Nothing moves on startup or during scans. Age uses the file's last-modified date.", wraplength=900).pack(anchor="w", pady=(6, 12))
-        self.client = tk.StringVar(value="modern")
+        self.client = tk.StringVar(value=client)
         self.source = tk.StringVar()
         self.storage = tk.StringVar()
         self.before = tk.StringVar(value=date.today().isoformat())
@@ -36,7 +36,7 @@ class MigrationDialog(tk.Toplevel):
         form.columnconfigure(1, weight=1)
         for row, label in enumerate(("Client", "Source replay folder (downloads or storage)", "Destination storage folder", "Modified before (YYYY-MM-DD)")):
             ttk.Label(form, text=label).grid(row=row, column=0, sticky="w", padx=(0, 12), pady=5)
-        client_box = ttk.Combobox(form, textvariable=self.client, values=("modern", "classic"), state="readonly", width=12)
+        client_box = ttk.Combobox(form, textvariable=self.client, values=tuple(self.store.client_paths()), state="readonly", width=18)
         client_box.grid(row=0, column=1, sticky="w")
         self.sources = ttk.Combobox(form, textvariable=self.source, state="readonly")
         self.sources.grid(row=1, column=1, sticky="ew")

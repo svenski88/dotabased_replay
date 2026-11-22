@@ -26,8 +26,8 @@ def directory(path):
 
 
 def validate_rule(store, rule):
-    if rule.get("client") not in ("modern", "classic"):
-        raise ValueError("Choose modern or classic")
+    if rule.get("client") not in store.client_paths():
+        raise ValueError("Choose a configured replay client")
     cutoff = date.fromisoformat(rule["before"])
     source, storage = directory(rule["source"]), directory(rule["storage"])
     if source.is_relative_to(storage) or storage.is_relative_to(source):
@@ -45,9 +45,7 @@ def validate_rule(store, rule):
 
 def save_rule(store, rule):
     rule = validate_rule(store, rule)
-    rules = store.get_pref("migration_rules", {})
-    rules[rule["client"]] = rule
-    store.set_pref("migration_rules", rules)
+    store.save_migration_rule(rule)
     return rule
 
 
@@ -156,7 +154,7 @@ def migrate(store, plan, confirmed=False, cancelled=lambda: False, progress=lamb
     if not confirmed:
         return report
     validate_rule(store, {"client": plan.client, "source": plan.source, "storage": plan.storage, "before": plan.before})
-    store.add_library(plan.storage, plan.client)
+    store.add_library(plan.storage, plan.client, "storage")
     for index, target in enumerate(plan.files):
         if cancelled():
             report["cancelled"] = True

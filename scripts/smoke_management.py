@@ -31,7 +31,7 @@ def main():
         for library in store.libraries():
             store.remove_library(library["id"])
         files = []
-        for client in ("modern", "classic"):
+        for client in ("modern", "6.88f"):
             folder = fixture_root / client
             folder.mkdir()
             store.add_library(folder, client)

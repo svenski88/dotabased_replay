@@ -1,0 +1,23 @@
+{
+  "patch": "7.20e",
+  "app_id": 570,
+  "steam_build": 3391106,
+  "server_version": 3283,
+  "depots": {
+    "373301": "6457218620224748465",
+    "381451": "3543303884463574175",
+    "381452": "8312735821725238778",
+    "381453": "5537746787706909562",
+    "381454": "7916660070273523151",
+    "381455": "5642884482946332465",
+    "373302": "3508718755206429842",
+    "373303": "6829735811046262001"
+  },
+  "sources": [
+    "https://web.archive.org/web/20201124111805id_/https://steamdb.info/patchnotes/3374634/",
+    "https://web.archive.org/web/20220817195831id_/https://steamdb.info/patchnotes/3379378/",
+    "https://web.archive.org/web/20191017090316id_/https://steamdb.info/patchnotes/3381488/",
+    "https://web.archive.org/web/20191017091605id_/https://steamdb.info/patchnotes/3384624/",
+    "https://web.archive.org/web/20191017080641id_/https://steamdb.info/patchnotes/3391106/"
+  ]
+}

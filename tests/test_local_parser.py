@@ -27,7 +27,7 @@ class ParserTests(unittest.TestCase):
         self.store = Store(self.root / "test.sqlite3")
         with self.store.connect() as db:
             db.execute("DELETE FROM libraries")
-        self.store.add_library(str(self.root), "classic")
+        self.store.add_library(str(self.root), "6.88f")
 
     def catalog(self, names=("180.dem",)):
         timestamp = time.time_ns()

@@ -1,0 +1,25 @@
+{
+  "patch": "7.30e",
+  "app_id": 570,
+  "steam_build": 7620787,
+  "server_version": 5072,
+  "depots": {
+    "373301": "1070167885756987064",
+    "381451": "4199135070688691591",
+    "381452": "8445441270854320901",
+    "381453": "8400033716673604689",
+    "381454": "7647068797861452834",
+    "381455": "9077310198118012527",
+    "373302": "3053177974963358283",
+    "373303": "2018048621183605969"
+  },
+  "sources": [
+    "https://web.archive.org/web/20260225151956id_/https://steamdb.info/patchnotes/7620787/",
+    "https://raw.githubusercontent.com/SteamTracking/GameTracking-Dota2/b879e035d809b18819f856330874fabc910e2e5c/game/dota/steam.inf",
+    "https://web.archive.org/web/20211203135707id_/https://steamdb.info/depot/381451/manifests/",
+    "https://web.archive.org/web/20211020115511id_/https://steamdb.info/depot/381453/",
+    "https://web.archive.org/web/20211106055127id_/https://steamdb.info/app/570/patchnotes/",
+    "https://steamdb.info/patchnotes/7596798/",
+    "https://web.archive.org/web/20220525092003id_/https://steamdb.info/depot/381454/"
+  ]
+}

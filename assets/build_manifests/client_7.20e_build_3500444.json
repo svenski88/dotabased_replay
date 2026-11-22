@@ -1,0 +1,29 @@
+{
+  "patch": "7.20e",
+  "app_id": 570,
+  "steam_build": 3500444,
+  "server_version": 3323,
+  "depots": {
+    "373301": "2910555868859715831",
+    "373302": "2420985307985835196",
+    "373303": "799929324564732132",
+    "381451": "7082812837918837089",
+    "381452": "8106666439189687780",
+    "381453": "7394826946927108516",
+    "381454": "836447121459783959",
+    "381455": "8114655642179147376"
+  },
+  "sources": [
+    "https://steamdb.info/patchnotes/3500444/",
+    "https://steamdb.info/patchnotes/3513099/",
+    "https://steamdb.info/depot/373301/history/?changeid=M%3A2910555868859715831",
+    "https://steamdb.info/depot/373302/history/?changeid=M%3A2420985307985835196",
+    "https://steamdb.info/depot/373303/history/?changeid=M%3A799929324564732132",
+    "https://steamdb.info/depot/381451/history/?changeid=M%3A7082812837918837089",
+    "https://steamdb.info/depot/381452/history/?changeid=M%3A8106666439189687780",
+    "https://steamdb.info/depot/381453/history/?changeid=M%3A7394826946927108516",
+    "https://steamdb.info/depot/381454/history/?changeid=M%3A836447121459783959",
+    "https://steamdb.info/depot/381455/history/?changeid=M%3A8114655642179147376",
+    "https://raw.githubusercontent.com/SteamTracking/GameTracking-Dota2/b7b668e4b1b6da1a768b1196d28ab48b25fd0e53/game/dota/steam.inf"
+  ]
+}

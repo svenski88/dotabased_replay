@@ -1,25 +1,50 @@
 """Durable catalog. Scanning/parsing is read-only; deletion is separately confirmed."""
 from collections import Counter
 from contextlib import contextmanager
-from pathlib import Path
+from pathlib import Path, PureWindowsPath
 import json
 import os
+import re
 import sqlite3
 import subprocess
 import time
 import zlib
 
-from replay_parser import parse_replay, filename_match_id
+from client_install import EXECUTABLE, RECEIPT
+from patches import patch_at, patch_for_version
+from replay_parser import SUMMARY_VERSION, ReplayError, parse_replay, filename_match_id
 from search import SearchIndex, compile_terms, query_terms
 
 DEFAULT_LIBRARIES = [
     {"path": r"G:\STEAM\steamapps\common\dota 2 beta\game\dota\replays", "client": "modern"},
-    {"path": r"G:\Dota2Classic\Dota2_6.88f\game\dota\replays", "client": "classic"},
+    {"path": r"G:\Dota2Classic\Dota2_6.88f\game\dota\replays", "client": "6.88f"},
 ]
 DEFAULT_CLIENTS = {
     "modern": r"G:\STEAM\steamapps\common\dota 2 beta\game\bin\win64\dota2.exe",
-    "classic": r"G:\Dota2Classic\Dota2_6.88f\game\bin\win64\dota2.exe",
+    "6.88f": r"G:\Dota2Classic\Dota2_6.88f\game\bin\win64\dota2.exe",
 }
+COMPATIBILITY_CLIENT = "7.20e"
+DEFAULT_ROUTES = {"7.20": COMPATIBILITY_CLIENT}
+LIBRARY_TYPES = {"replays": "Replay folder", "storage": "Long-term storage"}
+
+
+class LibraryInMigrationRule(ValueError):
+    pass
+
+
+def read_pref(db, key, default):
+    row = db.execute("SELECT value FROM preferences WHERE key=?", (key,)).fetchone()
+    return json.loads(row[0]) if row else default
+
+
+def write_pref(db, key, value):
+    db.execute("INSERT OR REPLACE INTO preferences VALUES (?,?)", (key, json.dumps(value)))
+
+
+def client_for_replay(match, copy, routes):
+    patch = patch_for_version(copy.get("dota_version")) or match.get("patch") or ""
+    series = patch.rstrip("abcdefghijklmnopqrstuvwxyz")
+    return match.get("client_override") or routes.get(series) or copy["client"]
 
 
 def data_directory():
@@ -51,14 +76,44 @@ class Store:
             CREATE TABLE IF NOT EXISTS parse_attempts (path TEXT PRIMARY KEY, size INTEGER, mtime INTEGER,
               version TEXT, status TEXT, error TEXT, updated REAL);
             """)
+            db.execute("BEGIN IMMEDIATE")
             columns = {row["name"] for row in db.execute("PRAGMA table_info(matches)")}
             if "rating" not in columns:
                 db.execute("ALTER TABLE matches ADD COLUMN rating INTEGER NOT NULL DEFAULT 0 CHECK(rating BETWEEN 0 AND 5)")
-        if not self.get_pref("initialized", False):
-            for item in DEFAULT_LIBRARIES:
-                self.add_library(item["path"], item["client"])
-            self.set_pref("clients", DEFAULT_CLIENTS)
-            self.set_pref("initialized", True)
+            columns = {row["name"] for row in db.execute("PRAGMA table_info(libraries)")}
+            if "kind" not in columns:
+                db.execute("ALTER TABLE libraries ADD COLUMN kind TEXT NOT NULL DEFAULT 'replays'")
+            if not read_pref(db, "initialized", False):
+                for item in DEFAULT_LIBRARIES:
+                    db.execute("INSERT OR IGNORE INTO libraries(path,client) VALUES (?,?)",
+                               (str(Path(item["path"]).resolve()), item["client"]))
+                write_pref(db, "initialized", True)
+            if not read_pref(db, "library_management_initialized", False):
+                self.migrate_library_management(db)
+
+    def migrate_library_management(self, db):
+        clients = read_pref(db, "clients", {})
+        routes = read_pref(db, "client_routes", DEFAULT_ROUTES.copy())
+        rules = read_pref(db, "migration_rules", {})
+        legacy = clients.get("classic")
+        if legacy and "dota2_6.88f" in {part.casefold() for part in PureWindowsPath(legacy).parts}:
+            existing = clients.get("6.88f")
+            if not existing or PureWindowsPath(existing) == PureWindowsPath(legacy):
+                clients["6.88f"] = clients.pop("classic")
+                db.execute("UPDATE libraries SET client='6.88f' WHERE client='classic'")
+                db.execute("UPDATE matches SET client='6.88f' WHERE client='classic'")
+                routes = {series: "6.88f" if client == "classic" else client for series, client in routes.items()}
+                old_rule = rules.pop("classic", None)
+                if old_rule:
+                    rules.setdefault("6.88f", {**old_rule, "client": "6.88f"})
+        for rule in rules.values():
+            db.execute("""INSERT INTO libraries(path,client,kind) VALUES (?,?,'storage') ON CONFLICT(path)
+                          DO UPDATE SET kind='storage' WHERE client=excluded.client""",
+                       (rule["storage"], rule["client"]))
+        write_pref(db, "clients", {**DEFAULT_CLIENTS, COMPATIBILITY_CLIENT: "", **clients})
+        write_pref(db, "client_routes", routes)
+        write_pref(db, "migration_rules", rules)
+        write_pref(db, "library_management_initialized", True)
 
     @contextmanager
     def connect(self):
@@ -72,28 +127,131 @@ class Store:
 
     def get_pref(self, key, default=None):
         with self.connect() as db:
-            row = db.execute("SELECT value FROM preferences WHERE key=?", (key,)).fetchone()
-        return json.loads(row[0]) if row else default
+            return read_pref(db, key, default)
 
     def set_pref(self, key, value):
         with self.connect() as db:
-            db.execute("INSERT OR REPLACE INTO preferences VALUES (?,?)", (key, json.dumps(value)))
+            write_pref(db, key, value)
 
     def libraries(self):
         with self.connect() as db:
             return [dict(row) for row in db.execute("SELECT * FROM libraries ORDER BY id")]
 
-    def add_library(self, path, client):
-        if client not in DEFAULT_CLIENTS:
-            raise ValueError("Client must be modern or classic")
+    def client_paths(self):
+        clients = self.get_pref("clients", {})
+        parent = self.pinned_client_parent(clients)
+        install = parent / f"Dota2_{COMPATIBILITY_CLIENT}"
+        if clients.get(COMPATIBILITY_CLIENT) == "" and (install / RECEIPT).is_file() and (install / EXECUTABLE).is_file():
+            clients[COMPATIBILITY_CLIENT] = str(install / EXECUTABLE)
+        return clients
+
+    def pinned_client_parent(self, clients=None):
+        configured = self.get_pref("pinned_client_parent", "")
+        if configured:
+            return Path(configured)
+        profiles = clients if clients is not None else self.get_pref("clients", DEFAULT_CLIENTS)
+        classic = profiles.get("6.88f") or profiles.get("classic")
+        if classic:
+            for path in Path(classic).parents:
+                if path.name.casefold() == "dota2_6.88f" and path.is_dir():
+                    return path.parent
+        return self.path.parent
+
+    def client_routes(self):
+        return self.get_pref("client_routes", DEFAULT_ROUTES)
+
+    def save_client(self, name, path, series):
+        if any(not re.fullmatch(r"[0-9]+\.[0-9]{2}", item) for item in series):
+            raise ValueError("Use patch series such as 7.20, separated by commas.")
+        with self.connect() as db:
+            db.execute("BEGIN IMMEDIATE")
+            clients = read_pref(db, "clients", {})
+            routes = read_pref(db, "client_routes", {})
+            clients[name] = str(path)
+            routes = {key: value for key, value in routes.items() if value != name}
+            routes.update(dict.fromkeys(series, name))
+            write_pref(db, "clients", clients)
+            write_pref(db, "client_routes", routes)
+
+    def remove_client(self, name):
+        if name == "modern":
+            raise ValueError("The modern client is built in.")
+        with self.connect() as db:
+            db.execute("BEGIN IMMEDIATE")
+            assigned = db.execute("SELECT 1 FROM libraries WHERE client=? UNION ALL SELECT 1 FROM matches WHERE client=? LIMIT 1",
+                                  (name, name)).fetchone()
+            if assigned or name in read_pref(db, "migration_rules", {}):
+                raise ValueError("Reassign this client's libraries and replay overrides and remove its migration rule before removing the client.")
+            clients = read_pref(db, "clients", {})
+            clients.pop(name, None)
+            write_pref(db, "clients", clients)
+            routes = read_pref(db, "client_routes", {})
+            write_pref(db, "client_routes", {key: value for key, value in routes.items() if value != name})
+
+    def add_library(self, path, client, kind=None, *, library_id=None, discard_rules=False):
+        if client not in self.client_paths():
+            raise ValueError("Choose a configured replay client")
+        if kind is not None and kind not in LIBRARY_TYPES:
+            raise ValueError("Choose a library type")
         path = str(Path(path).expanduser().resolve())
         with self.connect() as db:
-            db.execute("INSERT INTO libraries(path, client) VALUES (?,?) ON CONFLICT(path) DO UPDATE SET client=excluded.client", (path, client))
+            db.execute("BEGIN IMMEDIATE")
+            old = (db.execute("SELECT * FROM libraries WHERE id=?", (library_id,)).fetchone() if library_id is not None
+                   else db.execute("SELECT * FROM libraries WHERE path=?", (path,)).fetchone())
+            if old:
+                kind = kind or old["kind"]
+                if old["path"] != path and db.execute("SELECT 1 FROM libraries WHERE path=?", (path,)).fetchone():
+                    raise ValueError("That folder is already registered.")
+                if (old["path"], old["client"], old["kind"]) != (path, client, kind):
+                    self.update_library_rules(db, old, path, client, kind, discard_rules=discard_rules)
+                    if old["path"] != path:
+                        db.execute("DELETE FROM files WHERE library_id=?", (old["id"],))
+                    db.execute("UPDATE libraries SET path=?,client=?,kind=? WHERE id=?", (path, client, kind, old["id"]))
+                return old["id"]
+            if library_id is not None:
+                raise ValueError("That library is no longer registered.")
+            return db.execute("INSERT INTO libraries(path,client,kind) VALUES (?,?,?)",
+                              (path, client, kind or "replays")).lastrowid
 
-    def remove_library(self, library_id):
+    @staticmethod
+    def update_library_rules(db, old, path=None, client=None, kind=None, *, discard_rules=False):
+        rules = read_pref(db, "migration_rules", {})
+        affected = []
+        for name, rule in rules.items():
+            source = Path(rule["source"]) == Path(old["path"])
+            storage = Path(rule["storage"]) == Path(old["path"])
+            if (source or storage) and (old["path"] != path or old["client"] != client or (storage and kind != "storage")):
+                affected.append(name)
+        if not affected:
+            return
+        if not discard_rules:
+            raise LibraryInMigrationRule("This change would remove the saved migration rules for " + ", ".join(affected) + ".")
+        for name in affected:
+            del rules[name]
+        write_pref(db, "migration_rules", rules)
+
+    def remove_library(self, library_id, *, discard_rules=False):
         with self.connect() as db:
+            db.execute("BEGIN IMMEDIATE")
+            old = db.execute("SELECT * FROM libraries WHERE id=?", (library_id,)).fetchone()
+            if old:
+                self.update_library_rules(db, old, discard_rules=discard_rules)
             db.execute("DELETE FROM files WHERE library_id=?", (library_id,))
             db.execute("DELETE FROM libraries WHERE id=?", (library_id,))
+
+    def save_migration_rule(self, rule):
+        with self.connect() as db:
+            db.execute("BEGIN IMMEDIATE")
+            for key in ("source", "storage"):
+                item = db.execute("SELECT client FROM libraries WHERE path=?", (rule[key],)).fetchone()
+                if (key == "source" and not item) or (item and item["client"] != rule["client"]):
+                    raise ValueError("The folder assignment changed. Review the migration rule and try again.")
+            rules = read_pref(db, "migration_rules", {})
+            rules[rule["client"]] = rule
+            db.execute("""INSERT INTO libraries(path,client,kind) VALUES (?,?,'storage') ON CONFLICT(path)
+                          DO UPDATE SET kind='storage' WHERE client=excluded.client""",
+                       (rule["storage"], rule["client"]))
+            write_pref(db, "migration_rules", rules)
 
     def scan(self, progress=lambda message: None, cancelled=lambda: False):
         report = {"files": 0, "parsed": 0, "cached": 0, "recovered": 0, "errors": [], "folders": []}
@@ -131,17 +289,21 @@ class Store:
                     try:
                         stat = path.stat()
                         old = known.get(key)
-                        if old and old["size"] == stat.st_size and old["mtime"] == stat.st_mtime_ns:
+                        if (old and old["size"] == stat.st_size and old["mtime"] == stat.st_mtime_ns
+                                and json.loads(old["metadata"]).get("summary_version") == SUMMARY_VERSION):
                             metadata, error = old["metadata"], old["error"]
                             report["cached"] += 1
                         else:
                             try:
-                                metadata = json.dumps(parse_replay(path))
+                                metadata = {**parse_replay(path), "summary_version": SUMMARY_VERSION}
                                 error = None
                                 report["parsed"] += 1
                             except (ValueError, OSError, TypeError) as exc:
-                                metadata = json.dumps({"match_id": filename_match_id(path), "players": []})
+                                header = exc.metadata if isinstance(exc, ReplayError) else {}
+                                metadata = {**header, "match_id": filename_match_id(path), "players": [],
+                                            "summary_version": SUMMARY_VERSION}
                                 error = str(exc)
+                            metadata = json.dumps(metadata)
                         rows.append((key, library["id"], stat.st_size, stat.st_mtime_ns, metadata, error, 1))
                         if error:
                             report["errors"].append(f"{path.name}: {error}")
@@ -244,7 +406,8 @@ class Store:
             match = grouped[key]
             if not match.get("players") and local.get("players"):
                 match.update(local)
-            match["copies"].append({"path": row["path"], "client": row["client"], "library_id": row["library_id"], "library_path": row["library_path"], "size": row["size"], "mtime": row["mtime"]})
+            match["copies"].append({"path": row["path"], "client": row["client"], "library_id": row["library_id"], "library_path": row["library_path"], "size": row["size"], "mtime": row["mtime"],
+                                    "replay_build": local.get("replay_build"), "dota_version": local.get("dota_version"), "end_time": local.get("end_time")})
             match.setdefault("local_results", [])
             match.setdefault("parse_attempts", [])
             cached_graph = graphs.get(row["path"])
@@ -299,6 +462,11 @@ class Store:
                         match[field] = value
                         match["provenance"][field] = full.get("provenance", {}).get(field, "Complete local parser")
             match["local_complete"] = bool(match["local_results"])
+            verified = {patch for copy in match["copies"] if (patch := patch_for_version(copy["dota_version"]))}
+            match["patch_verified"] = len(verified) == 1
+            match["patch"] = (verified.pop() if match["patch_verified"] else
+                              patch_at(match.get("start_time")) or patch_at(match.get("end_time"))
+                              or next((patch for copy in match["copies"] if (patch := patch_at(copy["end_time"]))), None))
             graph_summaries = match.get("graph_summaries", [])
             if graph_summaries:
                 match["graph_summary"] = max(graph_summaries, key=lambda g: (g.get("extractor_version") == PARSER_VERSION and g.get("schema_version") == 1, g.get("complete", False), g.get("sample_count", 0), g["updated"]))
@@ -447,19 +615,45 @@ def filter_matches(catalog, accounts, enabled=False, search="", league_only=Fals
             and (not terms or index.matches(m, terms))]
 
 
-def launch_command(executable, replay):
-    executable, replay = Path(executable), Path(replay)
+def startup_console_args(commands):
+    args = []
+    for command in commands.split(";"):
+        words = command.split()
+        if not words:
+            continue
+        if not re.fullmatch(r"[a-zA-Z_][a-zA-Z0-9_]*", words[0]):
+            raise ValueError(f"Enter a console command without a + or - prefix: {words[0]}")
+        if any(token.startswith(("+", "-")) or any(char in token for char in '"\x00') for token in words[1:]):
+            raise ValueError(f"Use plain arguments without quotes or launch flags for {words[0]}.")
+        args.extend(("+" + words[0], *words[1:]))
+    return args
+
+
+def launch_command(executable, replay=None, *, pinned=False, skip_player_info=False, simulate_gc_down=False,
+                   console_commands=""):
+    executable = Path(executable)
     if not executable.is_file() or executable.suffix.lower() != ".exe":
         raise ValueError("Select an existing Dota client .exe in Libraries & clients first")
+    flags = ["-insecure", "-condebug"] if pinned else []
+    if skip_player_info:
+        flags.append("-skip_download_player_info")
+    if simulate_gc_down:
+        flags.extend(("+dev_simulate_gcdown", "1"))
+    args = [str(executable.resolve()), "-console", "-novid", "-gamestateintegration", *flags,
+            *startup_console_args(console_commands)]
+    if replay is None:
+        return args
+    replay = Path(replay)
     if not replay.is_file() or replay.suffix.lower() != ".dem":
         raise ValueError("Replay file is no longer available")
     # +playdemo enters the engine command parser, so reject its control characters.
     if any(character in str(replay) for character in ('"', ';', '\n', '\r')):
         raise ValueError("Replay path contains an engine command separator")
-    return [str(executable.resolve()), "-console", "-novid", "-gamestateintegration",
-            "+playdemo", str(replay.resolve()).replace("\\", "/")]
+    return [*args, "+playdemo", str(replay.resolve()).replace("\\", "/")]
 
 
-def launch(executable, replay):
-    args = launch_command(executable, replay)
+def launch(executable, replay=None, *, pinned=False, skip_player_info=False, simulate_gc_down=False,
+           console_commands=""):
+    args = launch_command(executable, replay, pinned=pinned, skip_player_info=skip_player_info,
+                          simulate_gc_down=simulate_gc_down, console_commands=console_commands)
     return subprocess.Popen(args, cwd=str(Path(executable).parent), shell=False)

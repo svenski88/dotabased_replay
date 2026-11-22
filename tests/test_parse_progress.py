@@ -42,7 +42,7 @@ class ProgressTests(unittest.TestCase):
             store = Store(Path(directory) / "test.sqlite3")
             for library in store.libraries():
                 store.remove_library(library["id"])
-            store.add_library(directory, "classic")
+            store.add_library(directory, "6.88f")
             for match_id in (180, 181, 182):
                 write_replay(Path(directory) / f"{match_id}.dem", match_id=match_id)
             store.scan()
@@ -121,7 +121,7 @@ class PresentationTests(unittest.TestCase):
             store = Store(Path(directory) / "test.sqlite3")
             for library in store.libraries():
                 store.remove_library(library["id"])
-            store.add_library(directory, "classic")
+            store.add_library(directory, "6.88f")
             for match_id in (180, 181, 182):
                 write_replay(Path(directory) / f"{match_id}.dem", match_id=match_id)
             store.scan()

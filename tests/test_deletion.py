@@ -59,7 +59,7 @@ class DeleteFixtureTests(unittest.TestCase):
         self.first.mkdir()
         self.second.mkdir()
         self.store.add_library(self.first, "modern")
-        self.store.add_library(self.second, "classic")
+        self.store.add_library(self.second, "6.88f")
         self.paths = [self.first / "123.dem", self.second / "123.dem"]
         for path in self.paths:
             write_replay(path)

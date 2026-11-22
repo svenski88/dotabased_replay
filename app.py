@@ -5,15 +5,20 @@ import json
 import math
 from pathlib import Path
 import queue
+import shutil
 import threading
 import tkinter as tk
 from tkinter import filedialog, messagebox, simpledialog, ttk
 import webbrowser
 from branding import apply_window_icon, brand_root, set_windows_identity
 
-from library import DEFAULT_CLIENTS, Store, filter_matches, format_size, launch, note_preview, presence
+from client_catalog import load_catalog, recipe_for_patch
+from client_install import install_client, load_recipe
+from client_recipe_dialog import create_recipe_dialog
+from library import (COMPATIBILITY_CLIENT, Store, client_for_replay, filter_matches, format_size,
+                     launch, note_preview, presence)
 from delete_dialog import DeleteDialog
-from migration_dialog import MigrationDialog
+from library_dialog import LibraryDialog
 from deletion import delete_files, make_delete_plan
 from notes_import import DEFAULT_NOTES, import_notes
 from opendota import OpenDota
@@ -21,6 +26,7 @@ from replay_grid import ReplayGrid
 from local_parser import LocalParser
 from parse_progress import ParseProgress, ParseProgressWindow
 from search import SearchIndex
+from startup_commands_dialog import commands_for_client, open_startup_commands
 from chat import chat_lines
 from graph_view import CollapsiblePanel, ReplayGraph
 from ui_helpers import HorizontalToolbar, HoverTip
@@ -31,6 +37,7 @@ PANEL = "#18212c"
 FG = "#e6edf5"
 MUTED = "#96a7ba"
 ACCENT = "#58d1bc"
+AUTOMATIC_CLIENT = "Automatic"
 LOBBIES = {0: "Normal", 1: "Practice", 2: "Tournament", 3: "Tutorial", 4: "Co-op bots", 5: "Ranked team", 6: "Ranked solo", 7: "Ranked", 8: "Solo mid", 9: "Battle Cup", 10: "Local bots"}
 MODES = {1: "All Pick", 2: "Captains Mode", 3: "Random Draft", 4: "Single Draft", 5: "All Random", 16: "Captains Draft", 18: "Ability Draft", 22: "Ranked All Pick", 23: "Turbo"}
 
@@ -283,9 +290,9 @@ class ReplayApp:
         panes.pack(fill="both", expand=True)
         list_frame = ttk.Frame(panes)
         panes.add(list_frame, weight=3)
-        columns = ("match", "rating", "date", "duration", "radiant", "dire", "winner", "size", "score", "lobby", "tracked", "notes", "league", "category")
+        columns = ("match", "rating", "date", "patch", "duration", "radiant", "dire", "winner", "size", "score", "lobby", "tracked", "notes", "league", "category")
         self.match_tree = ReplayGrid(list_frame, columns=columns)
-        for column, title, width in zip(columns, ("MATCH / FILE", "RATING", "DATE", "DURATION", "RADIANT HEROES", "DIRE HEROES", "WINNER", "SIZE TOTAL", "R : D", "LOBBY", "PINNED PLAYERS", "NOTES", "LEAGUE", "CATEGORY"), (100, 95, 85, 78, 158, 140, 65, 85, 65, 80, 110, 140, 110, 110)):
+        for column, title, width in zip(columns, ("MATCH / FILE", "RATING", "DATE", "PATCH", "DURATION", "RADIANT HEROES", "DIRE HEROES", "WINNER", "SIZE TOTAL", "R : D", "LOBBY", "PINNED PLAYERS", "NOTES", "LEAGUE", "CATEGORY"), (100, 95, 85, 68, 78, 158, 140, 65, 85, 65, 80, 110, 140, 110, 110)):
             self.match_tree.heading(column, text=title, command=lambda key=column: self.sort(key))
             self.match_tree.column(column, width=width)
         self.match_tree.restore_widths(self.store.get_pref("column_widths", {}))
@@ -330,11 +337,11 @@ class ReplayApp:
         self.copy_choice.pack(side="left", padx=(5, 4))
         self.copy_choice.bind("<<ComboboxSelected>>", self.copy_changed)
         HoverTip(self.copy_choice, "Replay copy to watch")
-        self.client_choice = tk.StringVar(value="Library default")
-        self.client_combo = ttk.Combobox(match_controls, textvariable=self.client_choice, values=("Library default", "modern", "classic"), state="readonly", width=12)
+        self.client_choice = tk.StringVar(value=AUTOMATIC_CLIENT)
+        self.client_combo = ttk.Combobox(match_controls, textvariable=self.client_choice, values=(AUTOMATIC_CLIENT, *self.store.client_paths()), state="readonly", width=12)
         self.client_combo.pack(side="left", padx=(0, 4))
         self.client_combo.bind("<<ComboboxSelected>>", self.override_client)
-        HoverTip(self.client_combo, "Dota client: use the library default or override for this match.")
+        HoverTip(self.client_combo, "Automatic routing uses the patch and then the folder's client. Select a client here to override it.")
         self.copy_size = tk.StringVar()
         self.match_tools = ttk.Menubutton(match_controls, text="Match tools", style="Compact.TMenubutton")
         self.match_tools.pack(side="left", padx=4)
@@ -342,9 +349,31 @@ class ReplayApp:
         self.match_tools.configure(menu=self.match_tools_menu)
         self.match_tools_menu.add_command(label="Stop network batch", command=self.cancel.set)
         self.watch_button = ttk.Button(detail_header, text="Watch Replay", style="CompactAccent.TButton", command=self.watch)
-        self.watch_button.grid(row=0, column=1, sticky="ne", padx=(5, 0))
+        self.watch_button.grid(row=0, column=2, sticky="ne", padx=(3, 0))
+        self.launch_options = {}
+        self.simulate_gc_down = tk.BooleanVar(master=self.root)
+        self.skip_player_info = tk.BooleanVar(master=self.root)
+        self.launch_options_button = ttk.Menubutton(detail_header, text="Launch options", style="Compact.TMenubutton")
+        self.launch_options_button.grid(row=0, column=1, sticky="ne", padx=(5, 0))
+        self.launch_options_menu = tk.Menu(self.launch_options_button, tearoff=False, bg=PANEL, fg=FG,
+                                           activebackground="#36516a", activeforeground=FG,
+                                           postcommand=self.prepare_launch_menu)
+        self.launch_options_button.configure(menu=self.launch_options_menu)
+        self.launch_options_menu.add_checkbutton(label="Simulate Game Coordinator outage", variable=self.simulate_gc_down,
+                                                 command=self.save_launch_options)
+        self.launch_options_menu.add_checkbutton(label="Skip pro player info download", variable=self.skip_player_info,
+                                                 command=self.save_launch_options)
+        self.launch_options_menu.add_separator()
+        self.launch_options_menu.add_command(label="Launch client to main menu",
+                                             command=lambda: self.watch(main_menu=True))
+        self.launch_options_menu.add_command(label="Startup console commands\u2026",
+                                             command=self.edit_startup_commands)
         self.detail_meta = tk.StringVar()
-        ttk.Label(details, textvariable=self.detail_meta, style="Muted.TLabel", width=1).pack(fill="x", pady=(2, 3))
+        self.copy_build = tk.StringVar()
+        metadata = ttk.Frame(details)
+        metadata.pack(fill="x", pady=(2, 3))
+        ttk.Label(metadata, textvariable=self.copy_build, style="Muted.TLabel").pack(side="right", padx=(8, 0))
+        ttk.Label(metadata, textvariable=self.detail_meta, style="Muted.TLabel", width=1).pack(side="left", fill="x", expand=True)
         lower = ttk.Frame(details)
         lower.pack(fill="both", expand=True)
         lower.columnconfigure(0, weight=1)
@@ -476,7 +505,8 @@ class ReplayApp:
     def match_values(self, match):
         pinned = pinned_teams(match, self.account_labels)
         heroes = {team: ", ".join(hero_name(p.get("hero")) for p in match.get("players", []) if p.get("team") == team) for team in (2, 3)}
-        return (match.get("match_id") or Path(match["copies"][0]["path"]).name, match.get("rating", 0), when(match), duration(match), heroes[2], heroes[3], winner(match), format_size(match["total_size"]), score(match),
+        patch = ("" if match.get("patch_verified") else "~") + match["patch"] if match.get("patch") else "—"
+        return (match.get("match_id") or Path(match["copies"][0]["path"]).name, match.get("rating", 0), when(match), patch, duration(match), heroes[2], heroes[3], winner(match), format_size(match["total_size"]), score(match),
                 LOBBIES.get(match.get("lobby_type"), "Unknown"), pinned, note_preview(match.get("notes", "")),
                 match.get("league_name") or (f"League {match['league_id']}" if match.get("league_id") else "—"), match.get("category", "Not parsed"))
 
@@ -507,6 +537,10 @@ class ReplayApp:
             return str(self.match_values(match)[index]).casefold()
         if self.sort_column == "duration":
             self.visible = sort_durations(self.visible, reverse=self.sort_reverse)
+        elif self.sort_column == "patch":
+            known = [match for match in self.visible if match.get("patch")]
+            self.visible = sorted(known, key=lambda match: match["patch"], reverse=self.sort_reverse) + [
+                match for match in self.visible if not match.get("patch")]
         else:
             self.visible.sort(key=sort_value, reverse=self.sort_reverse)
         selected = self.match_tree.selection()
@@ -590,7 +624,7 @@ class ReplayApp:
         self.copy_choice["values"] = [f"{copy['client']} · {Path(copy['path']).name} · {format_size(copy['size'])} [{index + 1}]" for index, copy in enumerate(self.copy_options)]
         self.copy_choice.current(0)
         self.copy_changed()
-        self.client_choice.set(match.get("client_override") or "Library default")
+        self.client_choice.set(match.get("client_override") or AUTOMATIC_CLIENT)
 
     def clear_match(self):
         for button in self.link_buttons.values():
@@ -612,13 +646,21 @@ class ReplayApp:
         self.graph_view.set_graph(None)
         self.copy_choice.set("")
         self.copy_size.set("")
+        self.copy_build.set("")
 
     def copy_changed(self, event=None):
         index = self.copy_choice.current()
-        self.copy_size.set(f"Selected: {format_size(self.copy_options[index]['size'])}" if 0 <= index < len(self.copy_options) else "")
+        copy = self.copy_options[index] if 0 <= index < len(self.copy_options) else None
+        self.copy_size.set(f"Selected: {format_size(copy['size'])}" if copy else "")
+        versions = []
+        if copy and copy.get("dota_version"):
+            versions.append(f"Dota v{copy['dota_version']}")
+        if copy and copy.get("replay_build"):
+            versions.append(f"Replay build {copy['replay_build']}")
+        self.copy_build.set("  ·  ".join(versions))
         match = self.current_match()
         if match:
-            path = self.copy_options[index]["path"] if 0 <= index < len(self.copy_options) else None
+            path = copy["path"] if copy else None
             summary = match.get("graph_summary", {})
             selection = (match["key"], path, summary.get("updated"))
             if selection != self.graph_selection:
@@ -689,8 +731,9 @@ class ReplayApp:
     def override_client(self, event=None):
         if self.current_key:
             value = self.client_choice.get()
-            self.store.save_match(self.current_key, client="" if value == "Library default" else value)
-            self.current_match()["client_override"] = "" if value == "Library default" else value
+            override = "" if value == AUTOMATIC_CLIENT else value
+            self.store.save_match(self.current_key, client=override)
+            self.current_match()["client_override"] = override
 
     def account_click(self, event):
         if self.account_tree.identify_column(event.x) == "#1":
@@ -953,85 +996,206 @@ class ReplayApp:
         if url.startswith(("https://", "http://")):
             webbrowser.open(url)
 
-    def watch(self):
+    def selected_replay_client(self):
         match = self.current_match()
         index = self.copy_choice.current()
-        if not match or index < 0:
-            self.status.set("Select a replay copy to watch.")
+        if match and 0 <= index < len(self.copy_options):
+            copy = self.copy_options[index]
+            return client_for_replay(match, copy, self.store.client_routes()), copy
+        return None
+
+    def options_for_client(self, client):
+        return self.launch_options.get(client, (client != "modern", client in ("7.31d", "7.32e")))
+
+    def prepare_launch_menu(self):
+        selected = self.selected_replay_client()
+        for index in (0, 1, 3, 4):
+            self.launch_options_menu.entryconfigure(index, state="normal" if selected else "disabled")
+        simulate_gc_down, skip_player_info = self.options_for_client(selected[0]) if selected else (False, False)
+        self.simulate_gc_down.set(simulate_gc_down)
+        self.skip_player_info.set(skip_player_info)
+
+    def save_launch_options(self):
+        selected = self.selected_replay_client()
+        if selected:
+            self.launch_options[selected[0]] = self.simulate_gc_down.get(), self.skip_player_info.get()
+
+    def edit_startup_commands(self):
+        selected = self.selected_replay_client()
+        if not selected:
             return
-        copy = self.copy_options[index]
-        client = match.get("client_override") or copy["client"]
+        client, _ = selected
+        open_startup_commands(self.root, self.store, client)
+
+    def watch(self, *, main_menu=False):
+        selected = self.selected_replay_client()
+        if not selected:
+            self.status.set("Select a replay copy to choose a client." if main_menu else "Select a replay copy to watch.")
+            return
+        client, copy = selected
         try:
-            launch(self.store.get_pref("clients", DEFAULT_CLIENTS).get(client, ""), copy["path"])
-            self.status.set(f"Started {client} client for {Path(copy['path']).name}.")
+            executable = self.store.client_paths().get(client)
+            if not executable or not Path(executable).is_file():
+                raise ValueError(f"Configure the {client} executable in Libraries & clients, or select a different client for this match.")
+            previous = getattr(self, "replay_process", None)
+            if previous is not None and previous.poll() is None:
+                raise ValueError("Close the running replay client before launching another client.")
+            simulate_gc_down, skip_player_info = self.options_for_client(client)
+            self.replay_process = launch(executable, None if main_menu else copy["path"],
+                                         pinned=client not in ("modern", "classic", "6.88f"),
+                                         skip_player_info=skip_player_info, simulate_gc_down=simulate_gc_down,
+                                         console_commands=commands_for_client(self.store, client))
+            if main_menu:
+                self.status.set(f"Started {client} client at the main menu.")
+            else:
+                self.status.set(f"Started {client} client for {Path(copy['path']).name}.")
+            self.root.after(4000, self.check_replay_start, self.replay_process, client, main_menu)
         except (ValueError, OSError) as exc:
-            messagebox.showerror("Cannot launch replay", str(exc), parent=self.root)
+            messagebox.showerror("Cannot launch client" if main_menu else "Cannot launch replay", str(exc), parent=self.root)
+
+    def check_replay_start(self, process, client, main_menu=False):
+        code = process.poll()
+        if self.replay_process is process and code is not None:
+            startup = "startup" if main_menu else "replay startup"
+            self.status.set(f"{client} exited during {startup} (exit code {code}). Check the client console log.")
 
     def settings(self):
         if self.busy:
-            self.status.set("Wait for the current operation before changing library folders.")
+            self.status.set("Wait for the current operation before changing libraries or clients.")
             return
-        dialog = tk.Toplevel(self.root)
-        dialog.title("Libraries & clients")
-        dialog.geometry("910x620")
-        dialog.configure(bg=BG)
-        dialog.transient(self.root)
-        ttk.Label(dialog, text="Replay folders", style="Section.TLabel").pack(anchor="w", padx=18, pady=(18, 8))
-        ttk.Label(dialog, text="Each folder chooses its client. Scanning is read-only; deleting files requires a separate confirmation.", style="Muted.TLabel").pack(anchor="w", padx=18, pady=(0, 8))
-        frame = ttk.Frame(dialog, padding=(18, 0))
+        LibraryDialog(self)
+
+    def install_client_dialog(self, parent, on_installed):
+        dialog = tk.Toplevel(parent)
+        dialog.title("Install pinned Dota client")
+        dialog.transient(parent)
+        dialog.grab_set()
+        frame = ttk.Frame(dialog, padding=18)
         frame.pack(fill="both", expand=True)
-        tree = self.small_tree(frame, ("path", "client"), ("Folder", "Client"), (700, 100), height=8)
-        def refresh():
-            tree.delete(*tree.get_children())
-            for item in self.store.libraries():
-                tree.insert("", "end", iid=str(item["id"]), values=(item["path"], item["client"]))
-        refresh()
-        row = ttk.Frame(dialog, padding=(18, 8))
-        row.pack(fill="x")
-        mode = tk.StringVar(value="modern")
-        ttk.Combobox(row, textvariable=mode, values=("modern", "classic"), state="readonly", width=12).pack(side="left")
-        def add():
-            path = filedialog.askdirectory(title="Select replay folder", parent=dialog)
+        frame.columnconfigure(1, weight=1)
+        try:
+            catalog = load_catalog()
+            catalog_error = ""
+        except (OSError, ValueError) as exc:
+            catalog = {"recipes": {}, "series": {}}
+            catalog_error = f"Catalog unavailable. Import or create a recipe. {exc}"
+        versions = (*sorted(catalog["recipes"], reverse=True), *(f"{key} series" for key in sorted(catalog["series"], reverse=True)))
+        patch = tk.StringVar(value="7.20e" if "7.20e" in versions else (versions[0] if versions else ""))
+        recipe_info = tk.StringVar()
+        custom = None
+        ttk.Label(frame, text="Gameplay patch").grid(row=0, column=0, sticky="w")
+        patch_box = ttk.Combobox(frame, textvariable=patch, values=versions, width=18)
+        patch_box.grid(row=0, column=1, sticky="w", padx=7)
+        ttk.Label(frame, textvariable=recipe_info, wraplength=520).grid(row=1, column=0, columnspan=3, sticky="w", pady=(6, 8))
+
+        def describe(recipe):
+            recipe_info.set(f"{recipe['patch']} · Steam build {recipe.get('steam_build', 'unspecified')} · Dota version {recipe['server_version']}")
+
+        def select_patch(*args):
+            nonlocal custom
+            custom = None
+            recipe = recipe_for_patch(catalog, patch.get())
+            if recipe:
+                describe(recipe)
+            else:
+                recipe_info.set(catalog_error or "No catalog entry for that patch. Import or create a recipe.")
+
+        patch.trace_add("write", select_patch)
+        select_patch()
+
+        def select_file(path):
+            nonlocal custom
+            try:
+                recipe = load_recipe(path)
+            except (OSError, ValueError) as exc:
+                patch.set("")
+                recipe_info.set(str(exc))
+                return
+            patch.set(recipe["patch"])
+            custom = recipe
+            describe(recipe)
+
+        def import_recipe():
+            path = filedialog.askopenfilename(parent=dialog, filetypes=[("JSON recipe", "*.json")])
             if path:
-                self.store.add_library(path, mode.get())
-                refresh()
-        def update():
-            if tree.selection():
-                path = tree.item(tree.selection()[0], "values")[0]
-                self.store.add_library(path, mode.get())
-                refresh()
-        def remove():
-            if tree.selection():
-                self.store.remove_library(int(tree.selection()[0]))
-                refresh()
-                self.reload()
-        ttk.Button(row, text="Add folder…", command=add).pack(side="left", padx=7)
-        ttk.Button(row, text="Apply client to selected", command=update).pack(side="left")
-        ttk.Button(row, text="Remove selected", command=remove).pack(side="left", padx=7)
-        ttk.Label(dialog, text="Dota client executables", style="Section.TLabel").pack(anchor="w", padx=18, pady=(10, 7))
-        values = {}
-        clients = self.store.get_pref("clients", DEFAULT_CLIENTS)
-        for client in ("modern", "classic"):
-            line = ttk.Frame(dialog, padding=(18, 4))
-            line.pack(fill="x")
-            ttk.Label(line, text=client.title(), width=9).pack(side="left")
-            value = tk.StringVar(value=clients.get(client, ""))
-            values[client] = value
-            ttk.Entry(line, textvariable=value).pack(side="left", fill="x", expand=True, padx=7)
-            def browse(variable=value):
-                selected = filedialog.askopenfilename(parent=dialog, title="Select Dota executable", filetypes=[("Executable", "*.exe")])
+                select_file(path)
+
+        import_button = ttk.Button(frame, text="Import recipe…", command=import_recipe)
+        import_button.grid(row=0, column=2, sticky="e")
+        location = tk.StringVar(value=str(self.store.pinned_client_parent()))
+        downloader = tk.StringVar(value=self.store.get_pref("depot_downloader", "") or shutil.which("DepotDownloader") or "")
+        qr = tk.BooleanVar(value=False)
+        suppress_prompt = tk.BooleanVar(value=True)
+        for row, (label, variable, filetypes) in enumerate((
+                ("Install parent folder", location, None),
+                ("DepotDownloader executable", downloader, [("Executable", "*.exe")])), 2):
+            ttk.Label(frame, text=label).grid(row=row, column=0, sticky="w", pady=5)
+            ttk.Entry(frame, textvariable=variable, width=55).grid(row=row, column=1, sticky="ew", padx=7)
+
+            def choose(value=variable, kinds=filetypes):
+                selected = (filedialog.askopenfilename(parent=dialog, filetypes=kinds) if kinds else
+                            filedialog.askdirectory(parent=dialog, initialdir=value.get()))
                 if selected:
-                    variable.set(selected)
-            ttk.Button(line, text="Browse…", command=browse).pack(side="right")
-        ttk.Label(dialog, text="Client selection follows the library, with an optional per-match override. Old-client compatibility still depends on the replay build.", style="Muted.TLabel", wraplength=850).pack(anchor="w", padx=18, pady=10)
-        ttk.Button(dialog, text="Long-term storage & migration rules...", command=lambda: MigrationDialog(dialog, self)).pack(anchor="w", padx=18, pady=(0, 10))
-        def save():
-            self.save_notes()
-            self.store.set_pref("clients", {key: value.get().strip() for key, value in values.items()})
+                    value.set(selected)
+
+            ttk.Button(frame, text="Browse…", command=choose).grid(row=row, column=2)
+        ttk.Checkbutton(frame, text="Sign in to Steam with QR code", variable=qr).grid(row=4, column=1, sticky="w")
+        create_button = ttk.Button(frame, text="Create recipe…", command=lambda: create_recipe_dialog(dialog, select_file))
+        create_button.grid(row=4, column=0, sticky="w")
+        ttk.Button(frame, text="Get DepotDownloader", command=lambda: webbrowser.open("https://github.com/SteamRE/DepotDownloader/releases")).grid(row=4, column=2, sticky="e")
+        ttk.Checkbutton(frame, text="Suppress the pinned client's update prompt", variable=suppress_prompt).grid(row=5, column=1, sticky="w")
+        status = tk.StringVar(value="The recipe installs into its own versioned subfolder. The download may take several minutes.")
+        ttk.Label(frame, textvariable=status, wraplength=520).grid(row=6, column=0, columnspan=3, sticky="w", pady=10)
+        results = queue.Queue()
+        running = False
+
+        def finish():
+            nonlocal running
+            try:
+                path, error = results.get_nowait()
+            except queue.Empty:
+                dialog.after(200, finish)
+                return
+            running = False
+            if error:
+                status.set(error)
+                set_running(False)
+                return
+            self.store.set_pref("pinned_client_parent", str(path.parents[4]))
+            on_installed(path)
             dialog.destroy()
-            self.reload()
-            self.scan()
-        ttk.Button(dialog, text="Save & scan", style="Accent.TButton", command=save).pack(anchor="e", padx=18, pady=(0, 16))
+
+        def set_running(value):
+            nonlocal running
+            running = value
+            for control in (button, patch_box, import_button, create_button):
+                control.configure(state="disabled" if value else "normal")
+
+        def start():
+            recipe = custom or recipe_for_patch(catalog, patch.get())
+            values = (location.get().strip(), downloader.get().strip())
+            if not recipe or not all(values):
+                status.set("Choose a recipe, install folder and DepotDownloader executable.")
+                return
+            use_qr = qr.get()
+            hide_prompt = suppress_prompt.get()
+            self.store.set_pref("depot_downloader", str(Path(values[1]).resolve()))
+            set_running(True)
+            status.set("Downloading pinned client…" + (" Scan the QR code in the Steam console." if use_qr else ""))
+
+            def worker():
+                try:
+                    results.put((install_client(recipe, *values, qr=use_qr, suppress_update_prompt=hide_prompt), None))
+                except (OSError, ValueError) as exc:
+                    results.put((None, str(exc)))
+
+            threading.Thread(target=worker).start()
+            dialog.after(200, finish)
+
+        dialog.protocol("WM_DELETE_WINDOW", lambda: None if running else dialog.destroy())
+        button = ttk.Button(frame, text="Install client", style="Accent.TButton", command=start)
+        button.grid(row=7, column=2, sticky="e")
+        return dialog
 
     def close(self):
         self.cancel_search_timer()

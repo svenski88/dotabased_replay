@@ -54,3 +54,14 @@ do not fetch icons or send any match/account data until clicked.
 - Dotabuff source: https://www.dotabuff.com/favicon.ico
 
 These identify links to their respective services; they are not app branding.
+
+# Gameplay patch dates
+
+`patch_dates.json` contains UTC Unix timestamps used for offline patch estimates.
+For 7.08 onward, it uses Valve's [patch notes feed](https://www.dota2.com/datafeed/patchnoteslist?language=english),
+retrieved November 20, 2026. Earlier entries use known Dota 2 release dates from
+the [Dota 2 patch archive](https://liquipedia.net/dota2/Archive:Patches) and
+[version history](https://liquipedia.net/dota2/Game_Versions/6.70_to_6.88f), entered
+at midnight UTC. The most recent entry applies until its successor is added.
+Release-day matches and events played on a different version can fall outside
+these estimates.
