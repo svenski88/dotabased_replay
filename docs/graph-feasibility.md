@@ -1,7 +1,7 @@
 # Replay graph feasibility study
 
-Historical study preceding the production graph integration. See the repository
-README for the implemented classifier, XP fallback, UI and current parser behavior;
+Historical study preceding the production graph integration. See the [replay guide](replay-guide.md#read-graphs-and-categories)
+for the implemented classifier, XP fallback, and graph controls;
 the recommendations and development-only scope below describe this earlier stage.
 
 Reviewed on 2026-10-30. **Offline graph extraction is feasible, with build-dependent
