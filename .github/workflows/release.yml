@@ -54,7 +54,7 @@ jobs:
       - name: Offline regression tests
         run: python -m unittest discover -s tests -v
       - name: Build native parser and desktop application
-        run: ./build.ps1
+        run: ./build.ps1 -Version "$env:RELEASE_VERSION"
       - name: Validate extracted release and package ZIP with checksum
         run: python scripts/package_release.py --version "$env:RELEASE_VERSION"
       - name: Attest the packaged Windows ZIP
@@ -112,6 +112,8 @@ jobs:
           The adjacent .sha256 file contains the download checksum. The executables are unsigned. To verify that this ZIP came from the tagged Windows release workflow, run this command with the GitHub CLI:
 
               gh attestation verify DotaBasedReplay-$version-windows-x64.zip --repo $env:GH_REPO --signer-workflow $env:GH_REPO/.github/workflows/release.yml --source-ref refs/tags/$env:RELEASE_TAG --deny-self-hosted-runners
+
+          Dota 2 hero artwork © Valve Corporation. DotaBASED Replay is an independent community project with no Valve affiliation or endorsement. Credits and third-party notices are available under About in the app and in the download.
           "@ | Set-Content -LiteralPath release-notes.md -Encoding utf8
           $existing = gh release view "$env:RELEASE_TAG" --json isDraft 2>$null
           if ($LASTEXITCODE -eq 0) {

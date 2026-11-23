@@ -47,11 +47,14 @@ Search prepares an index per catalog reload and debounces typing by 150 ms. Pars
 Build the folder distribution first, then create the ZIP and SHA256 checksum. Use the version you intend to ship.
 
 ```powershell
+powershell -ExecutionPolicy Bypass -File build.ps1 -Version v2.0.0
 python scripts/package_release.py --version v2.0.0
 Get-FileHash release/DotaBasedReplay-2.0.0-windows-x64.zip -Algorithm SHA256
 ```
 
-Packaging verifies the x64 executable, helper, icons, and runtime assets. It excludes personal data and smoke-tests the extracted ZIP with an empty temporary database. The ZIP contains the app, its `_internal` folder and the project README. The Windows packaging smoke also verifies bundled model inference.
+Packaging verifies the x64 executable, helper, icons, notices, and runtime assets. It requires the embedded build version to match the requested ZIP version. The ZIP contains the app, its `_internal` folder, README, and third-party notices. The extracted-package smoke uses an empty temporary database and checks startup, About, and bundled inference.
+
+The [distribution notices](../third_party/distribution-notices.txt) identify the rights holders separately from the app source. The Valve PNGs come from the Steam CDN and are used for non-commercial replay visualization. The [Steam Subscriber Agreement, sections 2.D–G](https://store.steampowered.com/subscriber_agreement/#2) describes fan art and redistribution restrictions. Review whether the basis for use covers distributing the PNGs in the public repo and ZIP before publishing. The attribution itself grants no permission.
 
 In GitHub Actions, use **Windows release → Run workflow** with an artifact version such as `2.0.0-test` to test the build and attestation without publishing a release. Download the `windows-x64-release` artifact and extract its inner ZIP and checksum. Verify the inner ZIP with the [GitHub CLI](https://cli.github.com/manual/gh_attestation_verify).
 

@@ -11,6 +11,7 @@ import tkinter as tk
 from tkinter import filedialog, messagebox, simpledialog, ttk
 import webbrowser
 from replay_app.ui.branding import apply_window_icon, brand_root, set_windows_identity
+from replay_app.ui.about_dialog import show_about
 
 from replay_app.client_catalog import load_catalog, recipe_for_patch
 from replay_app.client_install import install_client, load_recipe
@@ -177,6 +178,9 @@ class ReplayApp:
         self.brand_mark = tk.PhotoImage(master=self.root, file=str(brand_root() / "replay-mark-48.png"))
         ttk.Label(header, image=self.brand_mark).pack(side="left", padx=(0, 10))
         ttk.Label(header, text="DotaBased / Replay", style="Brand.TLabel").pack(side="left")
+        self.about_window = None
+        self.about_button = ttk.Button(header, text="About…", command=self.open_about)
+        self.about_button.pack(side="right", padx=(8, 0))
         ttk.Button(header, text="Libraries & clients", command=self.settings).pack(side="right", padx=(8, 0))
         self.scan_button = ttk.Button(header, text="Rescan library", style="Accent.TButton", command=self.scan)
         self.scan_button.pack(side="right")
@@ -323,13 +327,10 @@ class ReplayApp:
         self.copy_match_id_button = ttk.Button(match_controls, text="Copy ID", command=self.copy_match_id, state="disabled", style="Compact.TButton")
         self.copy_match_id_button.pack(side="left", padx=(4, 2))
         HoverTip(self.copy_match_id_button, "Copy Match ID")
-        self.link_images = {}
         self.link_buttons = {}
         for service, title in (("opendota", "OpenDota"), ("dotabuff", "Dotabuff")):
-            image = tk.PhotoImage(master=self.root, file=str(brand_root().parent / "links" / f"{service}.png"))
-            self.link_images[service] = image
-            button = ttk.Button(match_controls, image=image, command=lambda name=service: self.match_link(name),
-                                style="Compact.TButton", width=1, state="disabled")
+            button = ttk.Button(match_controls, text=title, command=lambda name=service: self.match_link(name),
+                                style="Compact.TButton", state="disabled")
             button.pack(side="left", padx=2)
             self.link_buttons[service] = button
             HoverTip(button, f"Open this match on {title}")
@@ -1197,6 +1198,13 @@ class ReplayApp:
         button.grid(row=7, column=2, sticky="e")
         return dialog
 
+    def open_about(self):
+        if self.about_window is None or not self.about_window.winfo_exists():
+            self.about_window = show_about(self.root)
+        else:
+            self.about_window.lift()
+        return self.about_window
+
     def close(self):
         self.cancel_search_timer()
         self.save_notes()
@@ -1223,6 +1231,9 @@ def main():
     root = tk.Tk()
     app = ReplayApp(root, Store(args.database))
     if args.smoke:
+        about = app.open_about()
+        root.update_idletasks()
+        about.destroy()
         root.after(5000, app.close)
     root.mainloop()
 

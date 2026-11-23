@@ -69,7 +69,7 @@ class HeroIcons:
         self.by_id = {str(value["id"]): name for name, value in self.metadata.items()}
         for name in self.metadata:
             try:
-                source = tk.PhotoImage(master=master, file=str(asset_root() / "heroes" / f"{name}.png"))
+                source = tk.PhotoImage(master=master, file=str(asset_root() / "valve" / "heroes" / f"{name}.png"))
                 self.images[name] = source.zoom(3).subsample(4)  # Steam's 32px icons -> 24px.
             except (tk.TclError, OSError):
                 continue

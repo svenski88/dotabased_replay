@@ -1,8 +1,9 @@
 # Offline win-probability model
 
-`micro19/model.txt` and `model_meta.json` are copied from the workspace's
-`other/dotaprediction/micro19` bundle at the operator's request. The app reads
-these bundled files only; no sibling project or online service is needed at runtime.
+The app includes TheWonderCow's micro19 model and its metadata with permission.
+The model was obtained from [TheWonderCow's Patreon](https://www.patreon.com/TheWonderCow)
+and integrated from the workspace micro19 bundle. Inference uses the bundled
+files offline.
 
 Inputs follow that project's README: ten stable player-slot net-worth values
 (Radiant 0–4, Dire 5–9), both team totals, Radiant-minus-Dire NW, cumulative tower

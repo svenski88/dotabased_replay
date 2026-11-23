@@ -1,7 +1,8 @@
 # Hero icons
 
-These 127 PNG icons are public Valve/Dota 2 game assets downloaded from the
-official Steam CDN for offline display in the replay grid. The icon files total
+The 127 PNG icons in [`valve/heroes/`](valve/heroes/) are Valve/Dota 2 game assets
+from the official Steam CDN for offline replay visualization. See the
+[artwork notice](valve/heroes/LICENSE.txt). The icon files total
 666,851 bytes. `heroes.json` records each icon's URL, SHA-256 hash, localized name
 and numeric hero ID. No replay, match or account identifiers are used to request
 them.
@@ -43,17 +44,6 @@ This developer-only script uses Node, Microsoft Edge and Playwright. It defaults
 to the existing workspace `../dotabased/node_modules/playwright`; pass
 `--playwright C:/path/to/node_modules/playwright` to use another installed copy.
 No browser, Node, renderer or Python image package is required by app recipients.
-
-# Match service icons
-
-`links/opendota.png` and `links/dotabuff.png` are offline 20-pixel PNG versions
-of the services' public website icons, fetched 2026-10-30. Runtime link buttons
-do not fetch icons or send any match/account data until clicked.
-
-- OpenDota source: https://www.opendota.com/assets/images/logo.png
-- Dotabuff source: https://www.dotabuff.com/favicon.ico
-
-These identify links to their respective services; they are not app branding.
 
 # Gameplay patch dates
 

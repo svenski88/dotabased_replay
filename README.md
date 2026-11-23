@@ -33,6 +33,10 @@ Windows stores settings, notes, ratings, tracked accounts, and caches in `%LOCAL
 
 Startup, scans, and parsing work offline. Optional OpenDota lookups send the requested match or account IDs. Browser links open external sites, and DepotDownloader contacts Steam for pinned-client installs. Replay files stay local.
 
+## Credits and licensing
+
+**About** shows the build version, project links, and offline third-party notices. The source is publicly viewable and has no project open-source license. Dota 2 hero artwork © Valve Corporation. DotaBased Replay is an independent community project with no Valve affiliation or endorsement. TheWonderCow’s micro19 model is included with permission. The Windows ZIP includes `THIRD-PARTY-NOTICES.txt`. [Distribution notices in the source tree](third_party/distribution-notices.txt)
+
 ## Documentation
 
 - [Pinned clients and catalog maintenance](docs/pinned-clients.md)

@@ -13,6 +13,59 @@ from replay_app.library import Store
 
 
 class AppearanceTests(unittest.TestCase):
+    def test_about_shows_version_links_and_offline_notices_at_minimum_size(self):
+        try:
+            root = tk.Tk()
+        except tk.TclError as exc:
+            self.skipTest(str(exc))
+        self.addCleanup(root.destroy)
+        with (tempfile.TemporaryDirectory() as directory, patch.object(ReplayApp, "scan"),
+              patch("replay_app.ui.about_dialog.display_version", return_value="2.0.0-test"),
+              patch("replay_app.ui.about_dialog.webbrowser.open") as browse):
+            app = ReplayApp(root, Store(Path(directory) / "about.sqlite3"))
+            def cancel_pending_callbacks():
+                for callback in root.tk.splitlist(root.tk.call("after", "info")):
+                    root.tk.call("after", "cancel", callback)
+
+            self.addCleanup(cancel_pending_callbacks)
+            width, height = root.minsize()
+            root.geometry(f"{width}x{height}")
+            app.about_button.invoke()
+            about = app.about_window
+            root.update_idletasks()
+            self.assertLessEqual(about.winfo_reqwidth(), width)
+            self.assertLessEqual(about.winfo_reqheight(), height)
+            self.assertIs(app.open_about(), about)
+            self.assertIsNotNone(app.match_tree.icons.image("axe"))
+
+            frame = about.winfo_children()[0]
+            build, links, actions = [child for child in frame.winfo_children() if isinstance(child, ttk.Frame)]
+            version, copy = build.winfo_children()
+            self.assertEqual(version.cget("text"), "2.0.0-test")
+            copy.invoke()
+            self.assertEqual(root.clipboard_get(), "2.0.0-test")
+            link_buttons = [child for child in links.winfo_children() if isinstance(child, ttk.Button)]
+            self.assertEqual([button.cget("text") for button in link_buttons[:2]], ["Source repository", "DotaBASED"])
+            for button in link_buttons[:3]:
+                button.invoke()
+            self.assertEqual([call.args[0] for call in browse.call_args_list], [
+                "https://github.com/svenski88/dotabased_replay", "https://dotabased.com/", "https://www.patreon.com/TheWonderCow",
+            ])
+            browse.reset_mock()
+            notices_button, close = actions.winfo_children()
+            notices_button.invoke()
+            notice_window = next(child for child in about.winfo_children() if isinstance(child, tk.Toplevel))
+            tabs = next(child for child in notice_window.winfo_children()[0].winfo_children() if isinstance(child, ttk.Notebook))
+            self.assertEqual(len(tabs.tabs()), 4)
+            first_panel = root.nametowidget(tabs.tabs()[0])
+            text = next(child for child in first_panel.winfo_children() if isinstance(child, tk.Text))
+            self.assertIn("TheWonderCow", text.get("1.0", "end"))
+            self.assertIn("Valve Corporation", text.get("1.0", "end"))
+            browse.assert_not_called()
+            self.assertTrue(about.bind("<Escape>"))
+            close.invoke()
+            self.assertFalse(about.winfo_exists())
+
     def test_scrollbar_palette_for_full_active_and_pressed_states_and_icons(self):
         try:
             root = tk.Tk()
