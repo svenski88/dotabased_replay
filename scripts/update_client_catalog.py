@@ -6,9 +6,9 @@ from pathlib import Path
 import sys
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from client_catalog import BUILTIN_CATALOG, load_catalog, validate_catalog, validate_catalog_recipe
-from client_install import load_recipe, write_atomically
-from client_recipe import WINDOWS_DEPOTS, import_browser_capture, read_server_version
+from replay_app.client_catalog import BUILTIN_CATALOG, load_catalog, validate_catalog, validate_catalog_recipe
+from replay_app.client_install import load_recipe, write_atomically
+from replay_app.client_recipe import WINDOWS_DEPOTS, import_browser_capture, read_server_version
 
 
 def read_json(path):

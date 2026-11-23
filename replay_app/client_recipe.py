@@ -8,7 +8,7 @@ from pathlib import Path
 import re
 from urllib.parse import unquote
 
-from client_install import validate_recipe
+from replay_app.client_install import validate_recipe
 
 
 WINDOWS_DEPOTS = {

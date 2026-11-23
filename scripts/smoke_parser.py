@@ -13,8 +13,8 @@ from unittest.mock import patch
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "tests"))
 from app import ReplayApp
-from library import Store
-from local_parser import ParseError, PARSER_VERSION
+from replay_app.library import Store
+from replay_app.local_parser import ParseError, PARSER_VERSION
 from test_local_parser import result
 from smoke_ui import screenshot
 from test_replays import write_replay
@@ -68,7 +68,8 @@ def main():
                 root.after(50, start)
                 return
             try:
-                assert "Radiant:" in app.match_values(app.catalog[0])[10]
+                tracked_index = app.match_tree["columns"].index("tracked")
+                assert "Radiant:" in app.match_values(app.catalog[0])[tracked_index]
                 assert len(app.match_tree.body.find_withtag("pinned_team")) >= 2
                 app.parse_button.invoke()
                 root.after(500, capture)

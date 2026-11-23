@@ -6,10 +6,11 @@ consistent with the account lists and existing application workflows.
 """
 import json
 import math
-from pathlib import Path
 import sys
 import tkinter as tk
 from tkinter import font as tkfont, ttk
+
+from replay_app.resources import ASSETS
 
 BG = "#18212c"
 FG = "#e6edf5"
@@ -54,7 +55,7 @@ def selection_click(order, selected, anchor, key, control=False, shift=False):
 
 
 def asset_root():
-    return Path(getattr(sys, "_MEIPASS", Path(__file__).resolve().parent)) / "assets"
+    return ASSETS
 
 
 class HeroIcons:

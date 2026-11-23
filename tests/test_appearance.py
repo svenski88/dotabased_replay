@@ -8,8 +8,8 @@ import unittest
 from unittest.mock import patch
 
 from app import BG, ReplayApp
-from branding import brand_root
-from library import Store
+from replay_app.ui.branding import brand_root
+from replay_app.library import Store
 
 
 class AppearanceTests(unittest.TestCase):

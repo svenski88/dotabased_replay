@@ -8,10 +8,10 @@ import unittest
 from unittest.mock import patch
 
 from app import ReplayApp
-from chat import chat_lines
-from library import Store
-from local_parser import LocalParser, PARSER_VERSION, ParseError
-from search import SearchIndex, compile_terms, query_terms
+from replay_app.chat import chat_lines
+from replay_app.library import Store
+from replay_app.local_parser import LocalParser, PARSER_VERSION, ParseError
+from replay_app.search import SearchIndex, compile_terms, query_terms
 from test_local_parser import result
 
 
@@ -41,7 +41,7 @@ class ChatTests(unittest.TestCase):
         fixture.write_text("\n".join(json.dumps(record) for record in records) + "\n", encoding="utf-8")
         original = subprocess.Popen
         script = "import pathlib,sys; sys.stdout.buffer.write(pathlib.Path(sys.argv[1]).read_bytes())"
-        with patch("local_parser.subprocess.Popen", side_effect=lambda *args, **kwargs: original([sys.executable, "-c", script, str(fixture)], **kwargs)):
+        with patch("replay_app.local_parser.subprocess.Popen", side_effect=lambda *args, **kwargs: original([sys.executable, "-c", script, str(fixture)], **kwargs)):
             return LocalParser().parse_file("unused")
 
     def test_streamed_large_log_and_protocol_validation(self):
@@ -56,7 +56,7 @@ class ChatTests(unittest.TestCase):
             self.parse_records([{"event": "chat", "entry": entry(tick=-1)}, finished])
         with self.assertRaisesRegex(ParseError, "Invalid chat time"):
             self.parse_records([{"event": "chat", "entry": entry(time=float("nan"))}, finished])
-        with patch("local_parser.MAX_CHAT_BYTES", 1), self.assertRaisesRegex(ParseError, "safety limit"):
+        with patch("replay_app.local_parser.MAX_CHAT_BYTES", 1), self.assertRaisesRegex(ParseError, "safety limit"):
             self.parse_records(records[:1] + [finished])
 
     def test_cache_upgrade_duplicates_changed_files_notes_and_search(self):

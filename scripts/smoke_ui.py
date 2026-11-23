@@ -13,8 +13,8 @@ import tkinter as tk
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from app import ReplayApp
-from library import Store, is_unknown
-from notes_import import DEFAULT_NOTES, import_notes
+from replay_app.library import Store, is_unknown
+from replay_app.notes_import import DEFAULT_NOTES, import_notes
 
 
 def screenshot(hwnd, target):

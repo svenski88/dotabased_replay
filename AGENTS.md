@@ -11,7 +11,7 @@ Full parsing uses the bundled native Go/Manta helper in `parser_helper/`.
 `python scripts/build_parser.py` runs Go tests, builds `bin/replay-parser.exe`
 and collects third-party licenses; `build.ps1` includes both in the app bundle.
 Source builds need Go 1.25+ (or `scripts/bootstrap_go.py`); end users do not.
-`local_parser.py` serializes helper processes, enforces a ten minute file timeout,
+`replay_app/local_parser.py` serializes helper processes, enforces a ten minute file timeout,
 and kills the active helper on Stop/close. Clear cancellation before launching
 the worker, never inside its entry point. Default Parse All refreshes the catalog
 first, includes hidden recordings, caches complete results by file size/mtime
@@ -24,7 +24,7 @@ match and path, with explicit cached/completed/error outcomes. Update it from
 the main UI event queue, never by rereading SQLite on every progress tick.
 Use `scripts/smoke_parser.py --screenshot .validation/ui-parser.png` for synthetic
 offline UI progress/Stop validation, with optional `--geometry 1100x720`.
-`python inspect_library.py` inventories the configured default replay folders
+`python scripts/inspect_library.py` inventories the configured default replay folders
 using a disposable database. Scanning/parsing replay files is read-only. The
 application also supports separately confirmed permanent deletion; never select
 or delete real user replays during implementation or automated validation.
@@ -41,10 +41,10 @@ desktop UI. Build with `powershell -File build.ps1` when packaging changes.
 Do not commit, push, deploy, change live databases, or launch a Dota client as
 part of automated verification without explicit user instructions.
 
-The virtualized canvas grid lives in `replay_grid.py`; bundled public Steam hero
+The virtualized canvas grid lives in `replay_app/ui/replay_grid.py`; bundled public Steam hero
 assets live in `assets/`. Keep runtime hero rendering offline. The asset refresh
 script may request only generic public hero assets, never replay/account IDs.
-`notes_import.py` defaults to a preview, supports BOM-encoded local source text,
+`replay_app/notes_import.py` defaults to a preview, supports BOM-encoded local source text,
 and applies imports with a database backup and idempotent provenance ledger.
 Never copy a user's notes file into fixtures or overwrite existing match notes.
 
@@ -63,8 +63,8 @@ load the selected match lazily, preferring current-extractor copies. Changes to
 model/classifier versions rederive cached features during explicit parsing;
 changed replay stats require extraction. Recheck file stats after scoring and
 before committing. Model errors must preserve valid extracted graphs/metadata.
-`graphs.py` owns the strict micro19 README contract and probability-independent
-NW-first/XP-fallback shape rules; `graph_view.py` owns native canvas/panels. The
+`replay_app/graphs.py` owns the strict micro19 README contract and probability-independent
+NW-first/XP-fallback shape rules; `replay_app/ui/graph_view.py` owns native canvas/panels. The
 operator selected micro19 despite documented artifact-range inconsistencies;
 do not silently reinterpret features. No pro/role inference is used. Validate
 `python scripts/smoke_graphs.py` and `python app.py --smoke-model`; packaging must

@@ -10,27 +10,27 @@ import threading
 import tkinter as tk
 from tkinter import filedialog, messagebox, simpledialog, ttk
 import webbrowser
-from branding import apply_window_icon, brand_root, set_windows_identity
+from replay_app.ui.branding import apply_window_icon, brand_root, set_windows_identity
 
-from client_catalog import load_catalog, recipe_for_patch
-from client_install import install_client, load_recipe
-from client_recipe_dialog import create_recipe_dialog
-from library import (COMPATIBILITY_CLIENT, Store, client_for_replay, filter_matches, format_size,
+from replay_app.client_catalog import load_catalog, recipe_for_patch
+from replay_app.client_install import install_client, load_recipe
+from replay_app.ui.client_recipe_dialog import create_recipe_dialog
+from replay_app.library import (COMPATIBILITY_CLIENT, Store, client_for_replay, filter_matches, format_size,
                      launch, note_preview, presence)
-from delete_dialog import DeleteDialog
-from library_dialog import LibraryDialog
-from deletion import delete_files, make_delete_plan
-from notes_import import DEFAULT_NOTES, import_notes
-from opendota import OpenDota
-from replay_grid import ReplayGrid
-from local_parser import LocalParser
-from parse_progress import ParseProgress, ParseProgressWindow
-from search import SearchIndex
-from startup_commands_dialog import commands_for_client, open_startup_commands
-from chat import chat_lines
-from graph_view import CollapsiblePanel, ReplayGraph
-from ui_helpers import HorizontalToolbar, HoverTip
-from graphs import CATEGORIES
+from replay_app.ui.delete_dialog import DeleteDialog
+from replay_app.ui.library_dialog import LibraryDialog
+from replay_app.deletion import delete_files, make_delete_plan
+from replay_app.notes_import import DEFAULT_NOTES, import_notes
+from replay_app.opendota import OpenDota
+from replay_app.ui.replay_grid import ReplayGrid
+from replay_app.local_parser import LocalParser
+from replay_app.ui.parse_progress import ParseProgress, ParseProgressWindow
+from replay_app.search import SearchIndex
+from replay_app.ui.startup_commands_dialog import commands_for_client, open_startup_commands
+from replay_app.chat import chat_lines
+from replay_app.ui.graph_view import CollapsiblePanel, ReplayGraph
+from replay_app.ui.ui_helpers import HorizontalToolbar, HoverTip
+from replay_app.graphs import CATEGORIES
 
 BG = "#10151d"
 PANEL = "#18212c"
@@ -1214,7 +1214,7 @@ def main():
     parser.add_argument("--smoke-model", action="store_true", help="Developer-only offline bundled inference verification")
     args = parser.parse_args()
     if args.smoke_model:
-        from graphs import Micro19
+        from replay_app.graphs import Micro19
         probabilities = Micro19().predict([[10000]*10+[50000, 50000, 0, 0, 0, 0, 0, 0, 0]])
         if not math.isclose(probabilities[0], .5222032224852916, abs_tol=1e-12):
             raise RuntimeError("Bundled inference failed golden prediction verification")

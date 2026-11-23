@@ -3,7 +3,7 @@
 import tkinter as tk
 from tkinter import filedialog, ttk
 
-from client_recipe import WINDOWS_DEPOTS, import_browser_capture, import_build_pages, read_server_version, save_recipe
+from replay_app.client_recipe import WINDOWS_DEPOTS, import_browser_capture, import_build_pages, read_server_version, save_recipe
 
 
 def create_recipe_dialog(parent, on_created):

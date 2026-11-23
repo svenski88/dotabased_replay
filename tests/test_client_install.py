@@ -7,10 +7,10 @@ import tempfile
 import unittest
 from unittest.mock import patch
 
-from client_install import (BUILTIN_RECIPE, EXECUTABLE, ORIGINAL_STEAM_INFO, RECEIPT, STEAM_INFO, VERSION_ENDPOINT,
+from replay_app.client_install import (BUILTIN_RECIPE, EXECUTABLE, ORIGINAL_STEAM_INFO, RECEIPT, STEAM_INFO, VERSION_ENDPOINT,
                             configure_update_prompt, install_client, load_recipe)
-from library import Store, client_for_replay
-from migration import save_rule
+from replay_app.library import Store, client_for_replay
+from replay_app.migration import save_rule
 from test_replays import timestamp, write_replay
 
 
@@ -114,7 +114,7 @@ class ClientTests(unittest.TestCase):
             (stage / STEAM_INFO).write_bytes(original)
             return subprocess.CompletedProcess(command, 0)
 
-        with patch("client_install.subprocess.run", side_effect=run) as runner:
+        with patch("replay_app.client_install.subprocess.run", side_effect=run) as runner:
             exe = install_client(BUILTIN_RECIPE, self.root, downloader)
             self.assertEqual(exe, self.root / "Dota2_7.20e" / EXECUTABLE)
             self.assertTrue((exe.parents[3] / RECEIPT).is_file())
@@ -134,7 +134,7 @@ class ClientTests(unittest.TestCase):
     def test_failed_download_never_publishes_target_or_uses_steam_library(self):
         downloader = self.root / "DepotDownloader.exe"
         downloader.touch()
-        with patch("client_install.subprocess.run", return_value=subprocess.CompletedProcess([], 1)):
+        with patch("replay_app.client_install.subprocess.run", return_value=subprocess.CompletedProcess([], 1)):
             with self.assertRaisesRegex(ValueError, "Steam download failed"):
                 install_client(BUILTIN_RECIPE, self.root, downloader)
         self.assertFalse((self.root / "Dota2_7.20e").exists())

@@ -3,8 +3,8 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 import unittest
 
-from client_install import load_recipe
-from client_recipe import WINDOWS_DEPOTS, import_browser_capture, import_build_pages, read_server_version, save_recipe
+from replay_app.client_install import load_recipe
+from replay_app.client_recipe import WINDOWS_DEPOTS, import_browser_capture, import_build_pages, read_server_version, save_recipe
 
 
 class RecipeTests(unittest.TestCase):

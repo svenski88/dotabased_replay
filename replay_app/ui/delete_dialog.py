@@ -2,7 +2,7 @@
 import tkinter as tk
 from tkinter import ttk
 
-from library import format_size
+from replay_app.library import format_size
 
 
 class DeleteDialog(tk.Toplevel):

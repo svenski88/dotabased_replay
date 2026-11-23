@@ -9,7 +9,7 @@ import re
 import sqlite3
 import time
 
-from library import Store
+from replay_app.library import Store
 
 DEFAULT_NOTES = Path(r"G:\Dota2Classic\Dota2_6.88f\game\dota\replays\matches.md")
 MATCH_LINK = re.compile(r"(?:\[[^\]\r\n]*\]\()?https?://(?:www\.)?(?:dotabuff|opendota)\.com/matches/(\d+)(?:[/?#][^\s)]*)?\)?", re.I)

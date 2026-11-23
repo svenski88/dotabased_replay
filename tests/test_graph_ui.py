@@ -8,9 +8,9 @@ import unittest
 from unittest.mock import patch
 
 from app import ReplayApp
-from library import Store
-from local_parser import PARSER_VERSION
-from graphs import derive_graph
+from replay_app.library import Store
+from replay_app.local_parser import PARSER_VERSION
+from replay_app.graphs import derive_graph
 from test_graphs import graph_fixture
 from test_local_parser import result
 from test_replays import write_replay
@@ -155,7 +155,7 @@ class GraphUITests(unittest.TestCase):
         event.x = round(view.x(900))
         view.hover(event)
         self.assertIs(view.tooltip, tooltip)
-        from graph_view import clock
+        from replay_app.ui.graph_view import clock
         self.assertIn(clock(view.sample_at_x(event.x)["time"]), tooltip.winfo_children()[0].cget("text"))
         view.canvas_size = (view.canvas.winfo_width(), view.canvas.winfo_height())
         with patch.object(view, "after", side_effect=AssertionError("movement needs no redraw")):
@@ -193,7 +193,7 @@ class GraphUITests(unittest.TestCase):
         self.assertIn("30-second median", text)
         self.assertIn("combined team resources", text)
         self.assertIn("-15.0%", view.inspection.get())
-        from ui_helpers import monitor_bounds, tooltip_coordinates
+        from replay_app.ui.ui_helpers import monitor_bounds, tooltip_coordinates
         expected = tooltip_coordinates((event.x_root, event.y_root),
                                        (view.tooltip.winfo_reqwidth(), view.tooltip.winfo_reqheight()),
                                        monitor_bounds(view, (event.x_root, event.y_root)))

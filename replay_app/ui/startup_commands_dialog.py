@@ -3,7 +3,7 @@
 import tkinter as tk
 from tkinter import ttk
 
-from library import startup_console_args
+from replay_app.library import startup_console_args
 
 
 def chat_wheel_commands(start, phrases):

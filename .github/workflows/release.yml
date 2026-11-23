@@ -8,7 +8,7 @@ on:
       version:
         description: 'Artifact version (build only; does not publish a release)'
         required: true
-        default: '1.0-test'
+        default: '2.0.0-test'
 
 permissions:
   contents: read
@@ -105,9 +105,9 @@ jobs:
 
           Download **DotaBasedReplay-$version-windows-x64.zip**, extract the entire archive, and run **DotaBasedReplay.exe** inside the extracted folder. Keep the **_internal** folder alongside it. No Python or Go installation is needed.
 
-          Replay folder relocation: **Rescan library** now reconnects retained parsed metadata and graphs after a manual folder or drive move when file size, modification timestamp and match identity still match. Notes and ratings are preserved. The storage dialog also clarifies that existing long-term storage can be used as the source for another storage move.
+          **Libraries & clients** now manages replay folders and Dota clients separately. Add an existing client or install a pinned Windows Source 2 build from the catalog with DepotDownloader. Assign numbered patch series to installed clients, and use the menu beside **Watch Replay** to review launch settings or open the client at its main menu.
 
-          Includes offline replay browsing and parsing, gold/XP timelines with kill and objective markers, estimated win probabilities, and Comeback/Stomp/Close Game filters. Also includes pinned accounts, notes, ratings, manual API enrichment, and collapsible player/chat panels. Libraries & clients provides per-client long-term storage rules with a modified-before date, explicit preview and confirmation, verified copying across drives, and preservation of notes, ratings and parser caches. Preferences and notes stay in your local application-data folder and are not included in this download.
+          The replay grid shows verified patch labels where a Dota server-version mapping exists and marks date estimates with a tilde. Long-term storage appears alongside other replay libraries. Offline parsing, graph timelines, match notes, ratings, and tracked players continue to use your local library database.
 
           The adjacent .sha256 file contains the download checksum. The executables are unsigned. To verify that this ZIP came from the tagged Windows release workflow, run this command with the GitHub CLI:
 

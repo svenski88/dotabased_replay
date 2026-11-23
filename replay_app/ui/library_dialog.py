@@ -4,9 +4,9 @@ import re
 import tkinter as tk
 from tkinter import filedialog, messagebox, ttk
 
-from library import LIBRARY_TYPES, LibraryInMigrationRule
-from migration_dialog import MigrationDialog
-from startup_commands_dialog import open_startup_commands
+from replay_app.library import LIBRARY_TYPES, LibraryInMigrationRule
+from replay_app.ui.migration_dialog import MigrationDialog
+from replay_app.ui.startup_commands_dialog import open_startup_commands
 
 
 def tree_table(parent, columns):

@@ -1,11 +1,12 @@
 """Offline application/window identity shared with the DotaBASED website mark."""
-from pathlib import Path
 import sys
 import tkinter as tk
 
+from replay_app.resources import ASSETS
+
 
 def brand_root():
-    return Path(getattr(sys, "_MEIPASS", Path(__file__).resolve().parent)) / "assets" / "brand"
+    return ASSETS / "brand"
 
 
 def set_windows_identity():

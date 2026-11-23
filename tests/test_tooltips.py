@@ -1,6 +1,6 @@
 import unittest
-from ui_helpers import tooltip_coordinates
-from graph_view import proportional_advantage
+from replay_app.ui.ui_helpers import tooltip_coordinates
+from replay_app.ui.graph_view import proportional_advantage
 
 
 class TooltipTests(unittest.TestCase):

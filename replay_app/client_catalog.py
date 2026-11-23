@@ -3,8 +3,9 @@ from pathlib import Path
 import json
 import re
 
-from client_install import ASSETS, validate_recipe
-from client_recipe import WINDOWS_DEPOTS
+from replay_app.client_install import validate_recipe
+from replay_app.client_recipe import WINDOWS_DEPOTS
+from replay_app.resources import ASSETS
 
 
 BUILTIN_CATALOG = ASSETS / "pinned_client_catalog.json"

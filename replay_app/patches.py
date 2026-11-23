@@ -2,14 +2,14 @@
 
 from bisect import bisect_right
 import json
-from pathlib import Path
+
+from replay_app.resources import ASSETS
 
 
-_ASSETS = Path(__file__).resolve().parent / "assets"
-_RELEASES = json.loads((_ASSETS / "patch_dates.json").read_text(encoding="utf-8"))
+_RELEASES = json.loads((ASSETS / "patch_dates.json").read_text(encoding="utf-8"))
 _NAMES = tuple(_RELEASES)
 _TIMESTAMPS = tuple(_RELEASES.values())
-_VERSIONS = json.loads((_ASSETS / "patch_server_versions.json").read_text(encoding="utf-8"))
+_VERSIONS = json.loads((ASSETS / "patch_server_versions.json").read_text(encoding="utf-8"))
 
 
 def patch_for_version(version):

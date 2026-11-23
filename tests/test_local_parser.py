@@ -10,8 +10,8 @@ import unittest
 from unittest.mock import patch
 
 from app import pinned_teams
-from library import Store
-from local_parser import LocalParser, ParseError, PARSER_VERSION, validate_result
+from replay_app.library import Store
+from replay_app.local_parser import LocalParser, ParseError, PARSER_VERSION, validate_result
 
 
 def result(**fields):
@@ -144,7 +144,7 @@ class ParserTests(unittest.TestCase):
         parser = LocalParser(timeout=.15)
         def quiet(*args, **kwargs):
             return original([sys.executable, "-c", "import time; time.sleep(30)"], **kwargs)
-        with patch("local_parser.subprocess.Popen", side_effect=quiet):
+        with patch("replay_app.local_parser.subprocess.Popen", side_effect=quiet):
             with self.assertRaises(ParseError) as caught:
                 parser.parse_file("unused")
             self.assertEqual(caught.exception.status, "timeout")
@@ -160,7 +160,7 @@ class ParserTests(unittest.TestCase):
             self.assertLess(time.monotonic() - started, 2)
             self.assertIsNone(parser.process)
         parser.reset()
-        with patch("local_parser.subprocess.Popen", side_effect=lambda *a, **kw: original([sys.executable, "-c", "print('[]')"], **kw)):
+        with patch("replay_app.local_parser.subprocess.Popen", side_effect=lambda *a, **kw: original([sys.executable, "-c", "print('[]')"], **kw)):
             with self.assertRaisesRegex(ParseError, "non-object"):
                 parser.parse_file("unused")
 

@@ -4,8 +4,8 @@ import json
 import tkinter as tk
 from tkinter import filedialog, messagebox, ttk
 
-from library import format_size
-from migration import make_plan, migrate, save_rule
+from replay_app.library import format_size
+from replay_app.migration import make_plan, migrate, save_rule
 
 
 class MigrationDialog(tk.Toplevel):

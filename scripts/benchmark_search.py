@@ -7,8 +7,8 @@ import sys
 from time import perf_counter
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from library import filter_matches
-from search import SearchIndex
+from replay_app.library import filter_matches
+from replay_app.search import SearchIndex
 
 
 def catalog_fixture(count):

@@ -6,10 +6,10 @@ import tempfile
 import unittest
 from unittest.mock import patch
 
-from library import Store, filter_matches, launch, launch_command, presence
-from opendota import ApiError, OpenDota, Unavailable
-from patches import patch_at
-from replay_parser import ReplayError, STEAM_BASE, decode_summary, parse_replay, snappy
+from replay_app.library import Store, filter_matches, launch, launch_command, presence
+from replay_app.opendota import ApiError, OpenDota, Unavailable
+from replay_app.patches import patch_at
+from replay_app.replay_parser import ReplayError, STEAM_BASE, decode_summary, parse_replay, snappy
 
 
 def vint(value):
@@ -182,7 +182,7 @@ class StoreTests(unittest.TestCase):
         write_replay(path)
         self.store.scan()
         self.store.save_match("123", notes="A turning point", client="6.88f")
-        with patch("library.parse_replay", side_effect=AssertionError("should be cached")):
+        with patch("replay_app.library.parse_replay", side_effect=AssertionError("should be cached")):
             self.assertEqual(self.store.scan()["cached"], 1)
         self.assertEqual(self.store.catalog()[0]["notes"], "A turning point")
         path.unlink()
@@ -234,7 +234,7 @@ class StoreTests(unittest.TestCase):
         self.assertIn("-skip_download_player_info", pinned_args[:pinned_args.index("+playdemo")])
         self.assertEqual(args[1:5], ["-console", "-novid", "-gamestateintegration", "+playdemo"])
         self.assertEqual(args[5], str(replay.resolve()).replace("\\", "/"))
-        with patch("library.subprocess.Popen") as popen:
+        with patch("replay_app.library.subprocess.Popen") as popen:
             launch(executable, replay)
             self.assertEqual(popen.call_args.args[0], args)
             self.assertIs(popen.call_args.kwargs["shell"], False)

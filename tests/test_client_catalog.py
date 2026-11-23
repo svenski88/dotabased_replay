@@ -1,8 +1,8 @@
 from pathlib import Path
 import unittest
 
-from client_catalog import REQUIRED_DEPOTS, load_catalog, recipe_for_patch
-from client_install import load_recipe, same_build
+from replay_app.client_catalog import REQUIRED_DEPOTS, load_catalog, recipe_for_patch
+from replay_app.client_install import load_recipe, same_build
 from scripts.update_client_catalog import compile_history
 
 

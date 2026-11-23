@@ -7,8 +7,8 @@ from types import SimpleNamespace
 import unittest
 from unittest.mock import patch
 
-from library import Store
-from migration import make_plan, migrate, publish_copy, save_rule
+from replay_app.library import Store
+from replay_app.migration import make_plan, migrate, publish_copy, save_rule
 from test_replays import write_replay
 
 
@@ -144,14 +144,14 @@ class MigrationTests(unittest.TestCase):
         def publish_then_remove(*args):
             publish_copy(*args)
             Path(args[1].destination).unlink()
-        with patch("migration.publish_copy", side_effect=publish_then_remove):
+        with patch("replay_app.migration.publish_copy", side_effect=publish_then_remove):
             result = migrate(self.store, make_plan(self.store, self.rule), confirmed=True)
         self.assertEqual(len(result["failed"]), 1)
         self.assertTrue(source.exists())
 
     def test_database_failure_and_removal_failure_retain_recoverable_copy(self):
         source = self.replay()
-        with patch("migration.publish_copy", side_effect=ValueError("fixture database error")):
+        with patch("replay_app.migration.publish_copy", side_effect=ValueError("fixture database error")):
             result = migrate(self.store, make_plan(self.store, self.rule), confirmed=True)
         self.assertTrue(source.exists())
         self.assertTrue((self.storage / source.name).exists())
@@ -162,7 +162,7 @@ class MigrationTests(unittest.TestCase):
 
     def test_source_removal_failure_keeps_both_catalog_copies(self):
         source = self.replay()
-        with patch("migration.unlink_verified", side_effect=PermissionError("fixture locked")):
+        with patch("replay_app.migration.unlink_verified", side_effect=PermissionError("fixture locked")):
             result = migrate(self.store, make_plan(self.store, self.rule), confirmed=True)
         self.assertTrue(source.exists())
         self.assertEqual(len(result["copied"]), 1)

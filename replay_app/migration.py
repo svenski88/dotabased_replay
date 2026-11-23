@@ -7,7 +7,7 @@ from pathlib import Path
 import sqlite3
 import stat
 
-from deletion import DeleteTarget, check_location, identity, revalidate, unlink_verified
+from replay_app.deletion import DeleteTarget, check_location, identity, revalidate, unlink_verified
 
 
 def directory(path):

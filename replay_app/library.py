@@ -10,10 +10,10 @@ import subprocess
 import time
 import zlib
 
-from client_install import EXECUTABLE, RECEIPT
-from patches import patch_at, patch_for_version
-from replay_parser import SUMMARY_VERSION, ReplayError, parse_replay, filename_match_id
-from search import SearchIndex, compile_terms, query_terms
+from replay_app.client_install import EXECUTABLE, RECEIPT
+from replay_app.patches import patch_at, patch_for_version
+from replay_app.replay_parser import SUMMARY_VERSION, ReplayError, parse_replay, filename_match_id
+from replay_app.search import SearchIndex, compile_terms, query_terms
 
 DEFAULT_LIBRARIES = [
     {"path": r"G:\STEAM\steamapps\common\dota 2 beta\game\dota\replays", "client": "modern"},
@@ -452,7 +452,7 @@ class Store:
                 match["players"] = [{"account_id": p.get("account_id"), "name": p.get("personaname", ""), "hero": f"Hero #{p.get('hero_id', '?')}", "team": 3 if p.get("player_slot", 0) >= 128 else 2} for p in remote.get("players", [])]
             # Complete entity-stream results upgrade only fields actually present.
             # Never take relative game clock times as epoch start_time/end_time.
-            from local_parser import PARSER_VERSION
+            from replay_app.local_parser import PARSER_VERSION
             for full in sorted(match["local_results"], key=lambda item: (item.get("helper_version") == PARSER_VERSION, item.get("updated", 0))):
                 for field in ("radiant_score", "dire_score", "duration", "lobby_type", "players", "match_id", "league_id", "game_mode", "winner", "end_time"):
                     value = full.get("fields", {}).get(field)
@@ -537,7 +537,7 @@ class Store:
             db.execute("DELETE FROM parse_attempts WHERE path=?", (copy["path"],))
 
     def _write_graph(self, db, copy, version, graph):
-        from graphs import graph_summary
+        from replay_app.graphs import graph_summary
         summary = json.dumps(graph_summary(graph), allow_nan=False)
         payload = zlib.compress(json.dumps(graph, separators=(",", ":"), allow_nan=False).encode("utf-8"))
         db.execute("INSERT OR REPLACE INTO replay_graphs VALUES (?,?,?,?,?,?,?)",
@@ -560,7 +560,7 @@ class Store:
 
     def graph_for_match(self, match, preferred_path=None):
         copies = list(match.get("copies", []))
-        from local_parser import PARSER_VERSION
+        from replay_app.local_parser import PARSER_VERSION
         preferred = preferred_path or match.get("graph_summary", {}).get("path")
         summaries = {summary["path"]: summary for summary in match.get("graph_summaries", [])}
         def priority(copy):

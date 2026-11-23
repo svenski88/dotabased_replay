@@ -13,8 +13,8 @@ from unittest.mock import patch
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "tests"))
 from app import ReplayApp
-from library import Store
-from migration_dialog import MigrationDialog
+from replay_app.library import Store
+from replay_app.ui.migration_dialog import MigrationDialog
 from smoke_ui import screenshot
 from test_replays import write_replay
 
@@ -136,7 +136,7 @@ def main():
             executable = fixture / "Dota2_7.30e" / "game" / "bin" / "win64" / "dota2.exe"
             executable.parent.mkdir(parents=True)
             executable.touch()
-            with patch("library_dialog.filedialog.askopenfilename", return_value=str(executable)):
+            with patch("replay_app.ui.library_dialog.filedialog.askopenfilename", return_value=str(executable)):
                 next(child for child in descendants(settings) if isinstance(child, ttk.Button) and child.cget("text").startswith("Add installed client")).invoke()
             editor = next(child for child in settings.winfo_children() if isinstance(child, tk.Toplevel))
             next(child for child in descendants(editor) if isinstance(child, ttk.Button) and child.cget("text") == "Save client").invoke()

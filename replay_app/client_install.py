@@ -10,13 +10,14 @@ import stat
 import subprocess
 from tempfile import NamedTemporaryFile, TemporaryDirectory
 
+from replay_app.resources import ASSETS
+
 
 RECEIPT = "replay-client.json"
 EXECUTABLE = Path("game/bin/win64/dota2.exe")
 STEAM_INFO = Path("game/dota/steam.inf")
 ORIGINAL_STEAM_INFO = STEAM_INFO.with_name("steam.inf.replay-original")
 VERSION_ENDPOINT = b"https://api.steampowered.com/IGCVersion_570/GetClientVersion/v1?format=xml"
-ASSETS = Path(__file__).resolve().parent / "assets"
 BUILTIN_RECIPE = ASSETS / "client_7.20e.json"
 
 

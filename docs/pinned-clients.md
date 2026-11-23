@@ -20,7 +20,7 @@ The installer resumes partial downloads in a sibling `.installing` folder when r
 From the repository root, the equivalent installer accepts a recipe and downloader path:
 
 ```powershell
-python client_install.py --recipe assets/client_7.20e.json --parent 'D:\PinnedDota' --depot-downloader 'C:\Tools\DepotDownloader.exe' --qr
+python -m replay_app.client_install --recipe assets/client_7.20e.json --parent 'D:\PinnedDota' --depot-downloader 'C:\Tools\DepotDownloader.exe' --qr
 ```
 
 Use `--preflight` to check access to the manifests before installation. The bundled 7.20e recipe is the compatibility-tested build `3391106`, Dota version `3283`. The final 7.20e build `3500444` has a [separate importable recipe](../assets/build_manifests/client_7.20e_build_3500444.json).
