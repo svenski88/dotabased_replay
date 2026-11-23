@@ -29,7 +29,9 @@ def validate_rule(store, rule):
     if rule.get("client") not in store.client_paths():
         raise ValueError("Choose a configured replay client")
     cutoff = date.fromisoformat(rule["before"])
-    source, storage = directory(rule["source"]), directory(rule["storage"])
+    # Validate the supplied paths before resolving aliases such as Windows short names.
+    source = directory(rule["source"]).resolve(strict=True)
+    storage = directory(rule["storage"]).resolve(strict=True)
     if source.is_relative_to(storage) or storage.is_relative_to(source):
         raise ValueError("Source and storage must be separate, non-overlapping folders")
     libraries = store.libraries()

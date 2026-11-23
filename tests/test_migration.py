@@ -26,6 +26,20 @@ class MigrationTests(unittest.TestCase):
         self.store.add_library(self.source, "modern")
         self.rule = {"client": "modern", "source": str(self.source), "storage": str(self.storage), "before": "2025-01-01"}
 
+    @unittest.skipUnless(os.name == "nt", "Windows short paths")
+    def test_rule_accepts_short_paths_for_registered_folders(self):
+        import ctypes
+
+        buffer = ctypes.create_unicode_buffer(32768)
+        if not ctypes.windll.kernel32.GetShortPathNameW(str(self.root), buffer, len(buffer)):
+            self.skipTest("Windows could not obtain a short path for the test directory")
+        alias = Path(buffer.value)
+        if alias == self.root:
+            self.skipTest("Short paths are unavailable for the test directory")
+        rule = {**self.rule, "source": str(alias / self.source.name), "storage": str(alias / self.storage.name)}
+        self.assertEqual(save_rule(self.store, rule), self.rule)
+        self.assertEqual([item["path"] for item in self.store.libraries()], [str(self.source), str(self.storage)])
+
     def replay(self, name="123.dem", modified="2024-06-01"):
         path = self.source / name
         path.parent.mkdir(parents=True, exist_ok=True)
