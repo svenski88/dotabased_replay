@@ -10,3 +10,8 @@ dist/
 .validation/
 bin/
 release/
+
+# Local validation, research, and raw SteamDB captures
+/.local/
+*.log
+/assets/build_manifests/dota-steamdb-*.json

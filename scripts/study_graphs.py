@@ -15,7 +15,7 @@ import tempfile
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
-from library import Store  # noqa: E402
+from replay_app.library import Store  # noqa: E402
 
 
 def select_samples(catalog):

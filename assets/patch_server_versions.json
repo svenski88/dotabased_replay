@@ -1,0 +1,26 @@
+{
+  "3240": {
+    "patch": "7.20c",
+    "source": "https://github.com/SteamTracking/GameTracking-Dota2/tree/e19eae63a40aadebd5fc8045b96697056f319280/game/dota"
+  },
+  "3247": {
+    "patch": "7.20c",
+    "source": "https://github.com/SteamTracking/GameTracking-Dota2/tree/3e4fc846f4a99669a9bdd045f23698991b5ab529/game/dota"
+  },
+  "3261": {
+    "patch": "7.20d",
+    "source": "https://github.com/SteamTracking/GameTracking-Dota2/tree/792704270169d68ebc242f7a21c98a0426b3a119/game/dota"
+  },
+  "3278": {
+    "patch": "7.20e",
+    "source": "https://steamdb.info/patchnotes/3381488/"
+  },
+  "3279": {
+    "patch": "7.20e",
+    "source": "https://github.com/SteamTracking/GameTracking-Dota2/tree/5f756b791834e98aed531d17996ed1d2220c78e7/game/dota"
+  },
+  "3283": {
+    "patch": "7.20e",
+    "source": "https://web.archive.org/web/20191017080641id_/https://steamdb.info/patchnotes/3391106/"
+  }
+}

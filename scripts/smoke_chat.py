@@ -12,8 +12,8 @@ from unittest.mock import patch
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "tests"))
 from app import ReplayApp
-from library import Store
-from local_parser import PARSER_VERSION
+from replay_app.library import Store
+from replay_app.local_parser import PARSER_VERSION
 from smoke_ui import screenshot
 from test_local_parser import result
 from test_replays import write_replay

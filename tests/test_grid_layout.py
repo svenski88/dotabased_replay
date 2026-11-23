@@ -4,8 +4,8 @@ import tkinter as tk
 import unittest
 
 from app import duration, sort_durations
-from library import Store
-from replay_grid import ReplayGrid, ROW_HEIGHT, clamp_column_width, resize_boundary
+from replay_app.library import Store
+from replay_app.ui.replay_grid import ReplayGrid, ROW_HEIGHT, clamp_column_width, resize_boundary
 
 
 class LayoutLogicTests(unittest.TestCase):

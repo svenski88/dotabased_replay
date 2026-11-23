@@ -1,0 +1,67 @@
+# Development and releases
+
+[Back to DotaBased Replay](../README.md)
+
+## Run from source
+
+`app.py` is the desktop entry point. Application modules live in `replay_app/`,
+Tkinter components in `replay_app/ui/`, and development utilities in `scripts/`.
+
+Use Python 3.11+ with Tkinter. Browsing works with the standard library. Install the runtime requirements for offline LightGBM win estimates. Full replay parsing requires the native Go/Manta helper, built with Go 1.25+. On Windows, `python scripts/bootstrap_go.py` can download a SHA256-verified portable Go toolchain.
+
+```powershell
+python -m pip install -r requirements-runtime.txt
+python scripts/build_parser.py
+python app.py
+```
+
+Use `run.bat` to start the app on Windows, or `python app.py --database .validation/my-library.sqlite3` to use a disposable database. The default Windows database is under `%LOCALAPPDATA%\DotaBasedReplay`. On other platforms the default is `$XDG_DATA_HOME/dotabased-replay/library.sqlite3`, with `~/.local/share` used when `XDG_DATA_HOME` is unset.
+
+The native build runs Go tests and gathers third-party notices. See the [asset notes](../assets/README.md) for provenance and refresh tools.
+
+## Build and validate
+
+```powershell
+python -m pip install -r requirements-build.txt
+python -m unittest discover -s tests -v
+powershell -ExecutionPolicy Bypass -File build.ps1
+```
+
+The folder build bundles the native helper, Python/Tcl/Tk, and runtime assets in `dist/DotaBasedReplay/`. Distribute the entire folder. Use `build.ps1 -OneFile` to create a single executable. Build output, validation files, replays, and personal databases are ignored by Git.
+
+| Check | Command |
+| --- | --- |
+| Parsing progress and cancellation | `python scripts/smoke_parser.py --screenshot .validation/ui-parser.png` |
+| Library management and deletion confirmation | `python scripts/smoke_management.py` |
+| File migration with synthetic replays | `python scripts/smoke_migration.py` |
+| Graph UI with synthetic data | `python scripts/smoke_graphs.py` |
+| Search and debounce | `python scripts/smoke_search.py` |
+| Search benchmarks on synthetic catalogs | `python scripts/benchmark_search.py` |
+
+For a read-only check against configured replay folders, use `python scripts/smoke_ui.py` or `python scripts/inspect_library.py`. Both use disposable databases. Run the notes importer with `python -m replay_app.notes_import` and the parser CLI with `python -m replay_app.local_parser`. The offline checks leave Dota closed and mock API calls. Validate actual playback and live API availability separately.
+
+Search prepares an index per catalog reload and debounces typing by 150 ms. Parsing updates the grid incrementally and keeps selection and pending notes for matches that remain visible. Helper progress alone leaves the catalog cache alone, while batches of completed results share a refresh. Ordinary parsing keeps one-second graph samples. Use `bin/replay-parser.exe --graph-probe <replay.dem>` for development-only entity property discovery. The [graph feasibility study](graph-feasibility.md) records the original compatibility investigation.
+
+## Package and release on Windows
+
+Build the folder distribution first, then create the ZIP and SHA256 checksum. Use the version you intend to ship.
+
+```powershell
+powershell -ExecutionPolicy Bypass -File build.ps1 -Version v2.0.0
+python scripts/package_release.py --version v2.0.0
+Get-FileHash release/DotaBasedReplay-2.0.0-windows-x64.zip -Algorithm SHA256
+```
+
+Packaging verifies the x64 executable, helper, icons, notices, and runtime assets. It requires the embedded build version to match the requested ZIP version. The ZIP contains the app, its `_internal` folder, README, and third-party notices. The extracted-package smoke uses an empty temporary database and checks startup, About, and bundled inference.
+
+The [distribution notices](../third_party/distribution-notices.txt) identify the rights holders separately from the app source. The Valve PNGs come from the Steam CDN and are used for non-commercial replay visualization. The [Steam Subscriber Agreement, sections 2.D–G](https://store.steampowered.com/subscriber_agreement/#2) describes fan art and redistribution restrictions. Review whether the basis for use covers distributing the PNGs in the public repo and ZIP before publishing. The attribution itself grants no permission.
+
+In GitHub Actions, use **Windows release → Run workflow** with an artifact version such as `2.0.0-test` to test the build and attestation without publishing a release. Download the `windows-x64-release` artifact and extract its inner ZIP and checksum. Verify the inner ZIP with the [GitHub CLI](https://cli.github.com/manual/gh_attestation_verify).
+
+```powershell
+gh attestation verify DotaBasedReplay-2.0.0-test-windows-x64.zip --repo svenski88/dotabased_replay --signer-workflow svenski88/dotabased_replay/.github/workflows/release.yml --deny-self-hosted-runners
+```
+
+For the official `2.0.0` release, verify `DotaBasedReplay-2.0.0-windows-x64.zip` and add `--source-ref refs/tags/v2.0.0`. Attestations cover the exact ZIP built by GitHub Actions. Windows Authenticode signing is a separate step.
+
+To publish, create a fresh tag on the reviewed release commit and push it after the commit is available on `main`. The publish job checks the checksum and verifies the ZIP's provenance against that tag before creating or updating a draft. Tags such as `v2.0.0-beta.1` produce prereleases. Leave published release tags and assets intact.

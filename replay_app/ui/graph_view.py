@@ -3,8 +3,8 @@ import math
 from bisect import bisect_left
 import tkinter as tk
 from tkinter import ttk
-from graphs import smooth_signal
-from ui_helpers import make_tooltip, position_tooltip
+from replay_app.graphs import smooth_signal
+from replay_app.ui.ui_helpers import make_tooltip, position_tooltip
 
 BG = "#10151d"
 PANEL = "#18212c"

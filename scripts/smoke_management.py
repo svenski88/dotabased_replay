@@ -11,10 +11,10 @@ from types import SimpleNamespace
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "tests"))
 from app import ReplayApp
-from delete_dialog import DeleteDialog
-from deletion import make_delete_plan
-from library import Store
-from replay_grid import ROW_HEIGHT
+from replay_app.ui.delete_dialog import DeleteDialog
+from replay_app.deletion import make_delete_plan
+from replay_app.library import Store
+from replay_app.ui.replay_grid import ROW_HEIGHT
 from smoke_ui import screenshot
 from test_replays import write_replay
 
@@ -31,7 +31,7 @@ def main():
         for library in store.libraries():
             store.remove_library(library["id"])
         files = []
-        for client in ("modern", "classic"):
+        for client in ("modern", "6.88f"):
             folder = fixture_root / client
             folder.mkdir()
             store.add_library(folder, client)

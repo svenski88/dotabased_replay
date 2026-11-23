@@ -23,7 +23,7 @@ def fetch(url):
 
 def main():
     manifest = json.loads(fetch(MANIFEST))
-    directory = ASSETS / "heroes"
+    directory = ASSETS / "valve" / "heroes"
     directory.mkdir(parents=True, exist_ok=True)
     def download(hero):
         name = hero["name"].removeprefix("npc_dota_hero_")

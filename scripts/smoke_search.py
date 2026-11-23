@@ -10,8 +10,8 @@ from time import perf_counter
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "tests"))
 from app import ReplayApp
-from library import Store
-from search import SearchIndex
+from replay_app.library import Store
+from replay_app.search import SearchIndex
 from benchmark_search import catalog_fixture
 from test_replays import write_replay
 

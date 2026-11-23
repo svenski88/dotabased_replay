@@ -8,11 +8,15 @@ import re
 import struct
 
 MAX_SUMMARY = 16 * 1024 * 1024
+MAX_HEADER = 64 * 1024
+SUMMARY_VERSION = 2
 STEAM_BASE = 76561197960265728
 
 
 class ReplayError(ValueError):
-    pass
+    def __init__(self, message):
+        super().__init__(message)
+        self.metadata = {}
 
 
 def varint(data, pos=0):
@@ -137,6 +141,50 @@ def decode_summary(payload):
             "players": players, "source": "Replay summary"}
 
 
+def recorded_versions(stream, footer_offset):
+    """Read Source 2 engine and Dota server versions from DEM_FileHeader."""
+    try:
+        prefix = stream.read(30)
+        command, pos = varint(prefix)
+        _, pos = varint(prefix, pos)  # tick
+        length, pos = varint(prefix, pos)
+        if command not in (1, 65) or not 0 < length <= MAX_HEADER:
+            return {}
+        if footer_offset >= 16 and 16 + pos + length > footer_offset:
+            return {}
+        stream.seek(16 + pos)
+        payload = stream.read(length)
+        if len(payload) != length:
+            return {}
+        if command == 65:
+            decoded_size, _ = varint(payload)
+            if decoded_size > MAX_HEADER:
+                return {}
+            payload = snappy(payload)
+        header = fields(payload)
+        build = first(header, 13)
+        version = re.search(r"(?:^|[/\\])dota_v([0-9]{1,9})(?=[/\\]|$)", text(header, 6))
+        return {"replay_build": build if isinstance(build, int) and 0 < build < 2**31 else None,
+                "dota_version": int(version[1]) if version else None}
+    except ReplayError:
+        return {}
+
+
+def read_summary(stream, offset, size):
+    if not 12 <= offset < size:
+        raise ReplayError("No complete file-info footer (replay may be incomplete)")
+    stream.seek(offset)
+    prefix = stream.read(30)
+    command, pos = varint(prefix)
+    _, pos = varint(prefix, pos)  # playback tick
+    length, pos = varint(prefix, pos)
+    if command & 15 != 2 or length > MAX_SUMMARY or offset + pos + length > size:
+        raise ReplayError("Invalid file-info record")
+    stream.seek(offset + pos)
+    payload = stream.read(length)
+    return decode_summary(snappy(payload) if command & (64 | 112) else payload)
+
+
 def parse_replay(path):
     path = Path(path)
     with path.open("rb") as stream:
@@ -144,25 +192,15 @@ def parse_replay(path):
         if len(header) < 12 or header[:8] not in (b"PBUFDEM\x00", b"PBDEMS2\x00"):
             raise ReplayError("Unsupported replay header (expected PBUFDEM or PBDEMS2)")
         offset = struct.unpack_from("<I", header, 8)[0]
-        size = path.stat().st_size
-        if not 12 <= offset < size:
-            raise ReplayError("No complete file-info footer (replay may be incomplete)")
-        stream.seek(offset)
-        prefix = stream.read(30)
-        command, pos = varint(prefix)
-        _, pos = varint(prefix, pos)  # playback tick
-        length, pos = varint(prefix, pos)
-        if command & 15 != 2 or length > MAX_SUMMARY or offset + pos + length > size:
-            raise ReplayError("Invalid file-info record")
-        stream.seek(offset + pos)
-        payload = stream.read(length)
-        if command & (64 | 112):
-            payload = snappy(payload)
-        result = decode_summary(payload)
-        result["format"] = header[:7].decode("ascii")
-        if not result["match_id"]:
-            result["match_id"] = filename_match_id(path)
-        return result
+        metadata = {"format": header[:7].decode("ascii")}
+        if header.startswith(b"PBDEMS2\x00") and len(header) == 16:
+            metadata.update(recorded_versions(stream, offset))
+        try:
+            result = read_summary(stream, offset, path.stat().st_size)
+        except ReplayError as exc:
+            exc.metadata = metadata
+            raise
+        return {**result, **metadata, "match_id": result["match_id"] or filename_match_id(path)}
 
 
 def filename_match_id(path):

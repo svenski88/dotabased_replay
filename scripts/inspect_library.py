@@ -2,9 +2,11 @@
 from collections import Counter
 import json
 from pathlib import Path
+import sys
 import tempfile
 
-from library import Store, presence
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from replay_app.library import Store, presence
 
 
 def main():

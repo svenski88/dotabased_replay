@@ -1,7 +1,8 @@
 # Hero icons
 
-These 127 PNG icons are public Valve/Dota 2 game assets downloaded from the
-official Steam CDN for offline display in the replay grid. The icon files total
+The 127 PNG icons in [`valve/heroes/`](valve/heroes/) are Valve/Dota 2 game assets
+from the official Steam CDN for offline replay visualization. See the
+[artwork notice](valve/heroes/LICENSE.txt). The icon files total
 666,851 bytes. `heroes.json` records each icon's URL, SHA-256 hash, localized name
 and numeric hero ID. No replay, match or account identifiers are used to request
 them.
@@ -44,13 +45,13 @@ to the existing workspace `../dotabased/node_modules/playwright`; pass
 `--playwright C:/path/to/node_modules/playwright` to use another installed copy.
 No browser, Node, renderer or Python image package is required by app recipients.
 
-# Match service icons
+# Gameplay patch dates
 
-`links/opendota.png` and `links/dotabuff.png` are offline 20-pixel PNG versions
-of the services' public website icons, fetched 2026-10-30. Runtime link buttons
-do not fetch icons or send any match/account data until clicked.
-
-- OpenDota source: https://www.opendota.com/assets/images/logo.png
-- Dotabuff source: https://www.dotabuff.com/favicon.ico
-
-These identify links to their respective services; they are not app branding.
+`patch_dates.json` contains UTC Unix timestamps used for offline patch estimates.
+For 7.08 onward, it uses Valve's [patch notes feed](https://www.dota2.com/datafeed/patchnoteslist?language=english),
+retrieved November 20, 2026. Earlier entries use known Dota 2 release dates from
+the [Dota 2 patch archive](https://liquipedia.net/dota2/Archive:Patches) and
+[version history](https://liquipedia.net/dota2/Game_Versions/6.70_to_6.88f), entered
+at midnight UTC. The most recent entry applies until its successor is added.
+Release-day matches and events played on a different version can fall outside
+these estimates.

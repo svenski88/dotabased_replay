@@ -2,10 +2,10 @@
 from functools import lru_cache
 from dataclasses import dataclass
 import json
-from pathlib import Path
 import re
-import sys
 import unicodedata
+
+from replay_app.resources import ASSETS
 
 
 def normalize(value):
@@ -42,13 +42,12 @@ def text_match(term, text):
 
 @lru_cache(maxsize=1)
 def hero_metadata():
-    root = Path(getattr(sys, "_MEIPASS", Path(__file__).resolve().parent)) / "assets"
     try:
-        icons = json.loads((root / "heroes.json").read_text(encoding="utf-8"))["heroes"]
+        icons = json.loads((ASSETS / "heroes.json").read_text(encoding="utf-8"))["heroes"]
     except (OSError, ValueError, KeyError):
         icons = {}
     try:
-        snapshot = json.loads((root / "hero_search.json").read_text(encoding="utf-8"))
+        snapshot = json.loads((ASSETS / "hero_search.json").read_text(encoding="utf-8"))
         rows = snapshot["heroes"]
     except (OSError, ValueError, KeyError):
         rows = []

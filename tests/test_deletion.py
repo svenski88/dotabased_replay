@@ -5,9 +5,9 @@ import sqlite3
 import tempfile
 import unittest
 
-from deletion import DeletePlan, UnsafeDeletion, check_location, delete_files, make_delete_plan, unlink_verified
-from library import Store, format_size
-from replay_grid import rating_hit_test, selection_click
+from replay_app.deletion import DeletePlan, UnsafeDeletion, check_location, delete_files, make_delete_plan, unlink_verified
+from replay_app.library import Store, format_size
+from replay_app.ui.replay_grid import rating_hit_test, selection_click
 from test_replays import write_replay
 
 
@@ -59,7 +59,7 @@ class DeleteFixtureTests(unittest.TestCase):
         self.first.mkdir()
         self.second.mkdir()
         self.store.add_library(self.first, "modern")
-        self.store.add_library(self.second, "classic")
+        self.store.add_library(self.second, "6.88f")
         self.paths = [self.first / "123.dem", self.second / "123.dem"]
         for path in self.paths:
             write_replay(path)

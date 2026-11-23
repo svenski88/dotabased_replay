@@ -1,8 +1,8 @@
 import unittest
 from unittest.mock import patch
 
-from library import filter_matches
-from search import SearchIndex, hero_match, query_terms
+from replay_app.library import filter_matches
+from replay_app.search import SearchIndex, hero_match, query_terms
 from scripts.import_hero_search import snapshot
 
 
@@ -67,7 +67,7 @@ class SearchTests(unittest.TestCase):
     def test_index_reuses_prepared_metadata_and_compiled_query(self):
         index = SearchIndex(self.matches, self.accounts)
         expected = filter_matches(self.matches, self.accounts, search="SF CM", search_index=index)
-        with patch("search.normalize", side_effect=AssertionError("Warm query normalized text")), patch("search.scalar_values", side_effect=AssertionError("Warm query traversed metadata")):
+        with patch("replay_app.search.normalize", side_effect=AssertionError("Warm query normalized text")), patch("replay_app.search.scalar_values", side_effect=AssertionError("Warm query traversed metadata")):
             self.assertEqual(filter_matches(self.matches, self.accounts, search="SF CM", search_index=index), expected)
 
     def test_index_invalidates_edits_nicknames_and_metadata_reload(self):
@@ -104,8 +104,8 @@ class SearchTests(unittest.TestCase):
         unchanged = self.matches[0]
         document = index.documents[id(unchanged)]
         replaced = {**self.matches[1], "chat": [{"text": "newly parsed greeting"}]}
-        import search
-        with patch("search.prepare_document", wraps=search.prepare_document) as prepare:
+        from replay_app import search
+        with patch("replay_app.search.prepare_document", wraps=search.prepare_document) as prepare:
             index.refresh([unchanged, replaced])
         prepare.assert_called_once_with(replaced)
         self.assertIs(index.documents[id(unchanged)], document)

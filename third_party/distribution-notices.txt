@@ -1,0 +1,47 @@
+DotaBased Replay — distribution notices
+
+Project source and releases
+https://github.com/svenski88/dotabased_replay
+The project's original source is publicly viewable. An open-source license has
+not been granted for the project code. The items below retain their own terms.
+https://dotabased.com/
+
+Valve artwork and game files
+Dota 2 hero artwork © Valve Corporation. All rights reserved. The project uses
+the artwork for non-commercial fan-created replay visualization. DotaBased
+Replay is an independent community project with no Valve affiliation or
+endorsement. The project grants no redistribution rights for Valve assets.
+Steam provides game client files separately through DepotDownloader.
+See _internal/assets/valve/heroes/LICENSE.txt for the artwork notice.
+https://store.steampowered.com/subscriber_agreement/#2
+
+Prediction model
+TheWonderCow's micro19 model was obtained from his Patreon and is included
+with permission. DotaBased Replay grants no rights to the model.
+Win probabilities are estimates from the model.
+https://www.patreon.com/TheWonderCow
+
+Data references and external tools
+SteamDB provides build and manifest references. SteamTracking and Valve's
+patch notes help corroborate historical builds. The OpenDota dotaconstants
+hero manifest supplies hero metadata. OpenDota lookups are optional, and the
+app opens Dotabuff match pages when requested. DepotDownloader handles Steam
+sign-in and fetches selected game files directly from Steam.
+https://steamdb.info/
+https://github.com/SteamTracking/GameTracking-Dota2
+https://github.com/odota/dotaconstants
+https://www.opendota.com/
+https://www.dotabuff.com/
+https://github.com/SteamRE/DepotDownloader
+
+Bundled software
+The native replay helper uses Manta. Model inference uses LightGBM and NumPy.
+The Windows app bundles Python and Tcl/Tk using PyInstaller. Parser and
+inference dependency licenses are available in _internal/third_party/ and in
+the About dialog under Third-party notices.
+https://github.com/dotabuff/manta
+https://lightgbm.readthedocs.io/
+https://numpy.org/
+https://www.python.org/
+https://www.tcl-lang.org/
+https://pyinstaller.org/

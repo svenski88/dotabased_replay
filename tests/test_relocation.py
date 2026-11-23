@@ -5,8 +5,8 @@ import shutil
 import tempfile
 import unittest
 
-from library import Store
-from local_parser import PARSER_VERSION
+from replay_app.library import Store
+from replay_app.local_parser import PARSER_VERSION
 from test_graphs import graph_fixture
 from test_local_parser import result
 from test_replays import write_replay

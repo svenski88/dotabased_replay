@@ -8,10 +8,10 @@ import tempfile
 import unittest
 from unittest.mock import patch
 
-from graphs import (CLASSIFIER_VERSION, FEATURES, GraphCancelled, Micro19, classify, derive_graph,
+from replay_app.graphs import (CLASSIFIER_VERSION, FEATURES, GraphCancelled, Micro19, classify, derive_graph,
                     feature_row, model_identity, needs_derivation, validate_sample)
-from library import Store, filter_matches
-from local_parser import LocalParser, PARSER_VERSION, ParseError
+from replay_app.library import Store, filter_matches
+from replay_app.local_parser import LocalParser, PARSER_VERSION, ParseError
 from test_local_parser import result
 from test_replays import write_replay
 
@@ -176,7 +176,7 @@ class GraphStorageTests(unittest.TestCase):
             row = db.execute("SELECT summary,payload FROM replay_graphs").fetchone()
             self.assertNotIn('"samples"', row[0])
             self.assertIsInstance(row[1], bytes)
-        with patch("library.zlib.decompress", side_effect=AssertionError("catalog must stay lazy")):
+        with patch("replay_app.library.zlib.decompress", side_effect=AssertionError("catalog must stay lazy")):
             match = self.store.catalog()[0]
             self.assertEqual(match["category"], "Close Game")
             self.assertEqual((match["notes"], match["rating"]), ("keep note", 4))
@@ -264,7 +264,7 @@ class GraphStorageTests(unittest.TestCase):
         script = "import pathlib,sys;sys.stdout.buffer.write(pathlib.Path(sys.argv[1]).read_bytes())"
         def parse(records):
             fixture.write_text("\n".join(json.dumps(r) for r in records)+"\n", encoding="utf-8")
-            with patch("local_parser.subprocess.Popen", side_effect=lambda *a, **kw: original([sys.executable, "-c", script, str(fixture)], **kw)):
+            with patch("replay_app.local_parser.subprocess.Popen", side_effect=lambda *a, **kw: original([sys.executable, "-c", script, str(fixture)], **kw)):
                 return LocalParser().parse_file("unused")
         self.assertGreater(sum(len(json.dumps(e)) for e in entries), 131072)
         self.assertEqual(len(parse(entries+[final])["graph"]["samples"]), 400)

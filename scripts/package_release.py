@@ -9,11 +9,15 @@ import re
 import sqlite3
 import struct
 import subprocess
+import sys
 import tempfile
 import zipfile
 
 ROOT = Path(__file__).resolve().parents[1]
 APP = "DotaBasedReplay"
+
+sys.path.insert(0, str(ROOT))
+from replay_app.build_info import read_build_version
 
 
 def version_name(value):
@@ -37,10 +41,10 @@ def payload_files(bundle):
                      "_internal/assets/brand/replay-mark-48.png", "_internal/assets/heroes.json",
                      "_internal/third_party/parser-licenses.txt", "_internal/third_party/inference-licenses.txt",
                      "_internal/models/micro19/model.txt", "_internal/models/micro19/model_meta.json",
-                     "_internal/assets/links/opendota.png", "_internal/assets/links/dotabuff.png"):
+                     "_internal/assets/valve/heroes/LICENSE.txt", "_internal/third_party/distribution-notices.txt"):
         if not (bundle / relative).is_file():
             raise ValueError(f"Required distribution file missing: {relative}")
-    if len(list((bundle / "_internal/assets/heroes").glob("*.png"))) < 100:
+    if len(list((bundle / "_internal/assets/valve/heroes").glob("*.png"))) < 100:
         raise ValueError("Bundled hero icons are missing")
     if not any((bundle / "_internal/lightgbm" / directory / "lib_lightgbm.dll").is_file() for directory in ("bin", "lib")):
         raise ValueError("Required LightGBM inference DLL is missing")
@@ -99,6 +103,7 @@ def package(version, bundle, output):
     if output == bundle or bundle in output.parents:
         raise ValueError("Release output must be outside the distribution folder")
     files = payload_files(bundle)
+    verify_build_version(bundle, version)
     sizes = verify_binary(bundle)
     output.mkdir(parents=True, exist_ok=True)
     archive = output / f"{APP}-{version}-windows-x64.zip"
@@ -108,6 +113,7 @@ def package(version, bundle, output):
             for path in files:
                 zipped.write(path, str(Path(APP) / path.relative_to(bundle)))
             zipped.write(ROOT / "README.md", f"{APP}/README.md")
+            zipped.write(bundle / "_internal/third_party/distribution-notices.txt", f"{APP}/THIRD-PARTY-NOTICES.txt")
         # Test the extracted artifact, not just the developer's original folder.
         with tempfile.TemporaryDirectory(prefix="replay-release-") as directory:
             scratch = Path(directory)
@@ -127,6 +133,15 @@ def package(version, bundle, output):
              "sha256": digest, "icon_sizes": sizes, "extracted_startup": "passed", "bundled_inference": "passed"}
     print(json.dumps(proof, indent=2))
     return proof
+
+
+def verify_build_version(bundle, expected):
+    try:
+        actual = read_build_version(bundle / "_internal")
+    except (OSError, ValueError) as exc:
+        raise ValueError("Missing or invalid build version. Rebuild with build.ps1 -Version before packaging.") from exc
+    if actual != expected:
+        raise ValueError(f"Bundled version {actual} does not match the requested package version {expected}")
 
 
 def main():

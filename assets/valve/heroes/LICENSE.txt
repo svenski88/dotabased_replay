@@ -1,0 +1,10 @@
+Dota 2 hero artwork © Valve Corporation. All rights reserved.
+
+These images come from Valve's Steam content delivery network and are used here
+for non-commercial fan-created replay visualization. They are third-party
+assets. DotaBased Replay grants no license to copy or redistribute them.
+
+DotaBased Replay is an independent community project with no Valve affiliation,
+sponsorship, endorsement, or approval. The Steam Subscriber Agreement describes
+Valve's ownership and the terms that apply to use of Steam content.
+https://store.steampowered.com/subscriber_agreement/#2

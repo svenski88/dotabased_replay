@@ -6,10 +6,10 @@ import unittest
 from unittest.mock import patch
 
 from app import ReplayApp, pinned_teams
-from library import Store
-from local_parser import LocalParser, ParseError, PARSER_VERSION
-from parse_progress import ParseProgress, ParseProgressWindow, match_details
-from replay_grid import ReplayGrid
+from replay_app.library import Store
+from replay_app.local_parser import LocalParser, ParseError, PARSER_VERSION
+from replay_app.ui.parse_progress import ParseProgress, ParseProgressWindow, match_details
+from replay_app.ui.replay_grid import ReplayGrid
 from test_local_parser import result
 from test_replays import write_replay
 
@@ -42,7 +42,7 @@ class ProgressTests(unittest.TestCase):
             store = Store(Path(directory) / "test.sqlite3")
             for library in store.libraries():
                 store.remove_library(library["id"])
-            store.add_library(directory, "classic")
+            store.add_library(directory, "6.88f")
             for match_id in (180, 181, 182):
                 write_replay(Path(directory) / f"{match_id}.dem", match_id=match_id)
             store.scan()
@@ -121,7 +121,7 @@ class PresentationTests(unittest.TestCase):
             store = Store(Path(directory) / "test.sqlite3")
             for library in store.libraries():
                 store.remove_library(library["id"])
-            store.add_library(directory, "classic")
+            store.add_library(directory, "6.88f")
             for match_id in (180, 181, 182):
                 write_replay(Path(directory) / f"{match_id}.dem", match_id=match_id)
             store.scan()

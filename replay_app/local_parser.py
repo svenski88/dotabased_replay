@@ -9,6 +9,8 @@ import sys
 import threading
 import time
 
+from replay_app.resources import RESOURCE_ROOT
+
 PARSER_VERSION = "1.2.1+manta1.5.2"
 MAX_CHAT_BYTES = 32 * 1024 * 1024
 MAX_GRAPH_BYTES = 64 * 1024 * 1024
@@ -26,8 +28,7 @@ def validate_chat(entry):
 
 
 def helper_path():
-    base = Path(getattr(sys, "_MEIPASS", Path(__file__).resolve().parent))
-    return base / "bin" / ("replay-parser.exe" if sys.platform == "win32" else "replay-parser")
+    return RESOURCE_ROOT / "bin" / ("replay-parser.exe" if sys.platform == "win32" else "replay-parser")
 
 
 class ParseError(RuntimeError):
@@ -138,7 +139,7 @@ class LocalParser:
                 elif event.get("event") == "result":
                     result = event
                 elif event.get("event") in ("graph_sample", "graph_event"):
-                    from graphs import validate_sample, validate_event
+                    from replay_app.graphs import validate_sample, validate_event
                     try:
                         entry = (validate_sample if event["event"] == "graph_sample" else validate_event)(event.get("entry"))
                     except ValueError as exc:
@@ -192,7 +193,7 @@ class LocalParser:
                     self.process = None
 
     def derive(self, graph):
-        from graphs import derive_graph, GraphCancelled
+        from replay_app.graphs import derive_graph, GraphCancelled
         try:
             return derive_graph(graph, self.cancelled.is_set)
         except GraphCancelled as exc:
@@ -239,7 +240,7 @@ class LocalParser:
                     cached = store.full_cached(cached_copy, self.version)
                     graph = store.graph_cached(cached_copy, self.version)
                     if graph is not None:
-                        from graphs import needs_derivation
+                        from replay_app.graphs import needs_derivation
                         if needs_derivation(graph):
                             try:
                                 self.derive(graph)
@@ -312,7 +313,7 @@ def main():
     runner = LocalParser()
     try:
         if args.all:
-            from library import Store
+            from replay_app.library import Store
             print(json.dumps(runner.parse_all(Store(args.database), lambda event: print(json.dumps(event), flush=True)), indent=2))
         elif args.replay:
             print(json.dumps(runner.parse_file(args.replay), indent=2))

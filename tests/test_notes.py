@@ -3,8 +3,8 @@ import sqlite3
 import tempfile
 import unittest
 
-from library import Store, filter_matches, is_unknown, note_preview
-from notes_import import import_notes, parse_notes
+from replay_app.library import Store, filter_matches, is_unknown, note_preview
+from replay_app.notes_import import import_notes, parse_notes
 
 
 class NotesImportTests(unittest.TestCase):

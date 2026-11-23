@@ -8,9 +8,9 @@ from functools import lru_cache
 import hashlib
 import json
 import math
-from pathlib import Path
 from statistics import median
-import sys
+
+from replay_app.resources import RESOURCE_ROOT
 
 GRAPH_SCHEMA = 1
 CLASSIFIER_VERSION = "shape-1"
@@ -97,7 +97,7 @@ def feature_row(sample):
 
 
 def model_root():
-    return Path(getattr(sys, "_MEIPASS", Path(__file__).resolve().parent)) / "models/micro19"
+    return RESOURCE_ROOT / "models/micro19"
 
 
 @lru_cache(maxsize=1)
